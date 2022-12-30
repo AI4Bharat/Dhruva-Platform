@@ -16,18 +16,18 @@ services:
     # env_file:
     #   - .env
 
-  # client:
-  #   container_name: client
-  #   build:
-  #     context: ./client
-  #   stdin_open: true
-  #   tty: true
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./client:/usr/app
-  #   # env_file:
-  #   #   - .env
+  client:
+    container_name: client
+    build:
+      context: ./client
+    stdin_open: true
+    tty: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/usr/app
+    # env_file:
+    #   - .env
 
   prometheus:
     container_name: prometheus
