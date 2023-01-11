@@ -1,15 +1,24 @@
-from typing import Union
-
+from typing import Union, Callable
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-
-app = FastAPI()
-
-
-from typing import Callable
 from prometheus_fastapi_instrumentator.metrics import Info
 from prometheus_client import Counter
 
+from services import *
+
+app = FastAPI(
+    title="Dhruva API",
+    description="Backend API for communicating with the Dhruva platform",
+)
+app.include_router(services_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    # allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def http_body_language() -> Callable[[Info], None]:
     METRIC = Counter(
@@ -30,14 +39,4 @@ async def startup():
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
-
-
-@app.post("/")
-def post_root(body: dict):
-    return body
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+    return "Welcome to Dhruva API!"
