@@ -1,7 +1,8 @@
 import { Box, Button, Input, InputGroup, InputLeftElement, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import Link from "next/link";
 import {IoSearchOutline} from "react-icons/io5"
-import ContentLayout from "../../components/Layouts/ContentLayout";
+import { DashboardLayout } from "../../components/Layouts/DashboardLayout";
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 export default function Services() {
     const services = [
@@ -30,10 +31,13 @@ export default function Services() {
             modelType: "Type A"
         },
     ]
+
+    const smallscreen = useMediaQuery("(max-width: 1080px)");
+
     return (
       <>
-        <ContentLayout>
-            <Box width="30rem" bg="light.100">
+        <DashboardLayout>
+            <Box width={smallscreen?"20rem":"30rem"} bg="light.100">
             <InputGroup>
             <InputLeftElement
             color="gray.300"
@@ -67,7 +71,7 @@ export default function Services() {
             </Table>
 
             </Box>
-        </ContentLayout>
+        </DashboardLayout>
       </>
     );
   }
