@@ -10,9 +10,14 @@ router = APIRouter(
 inference_manager = InferenceManager()
 registry = inference_manager.registry
 
-@router.get("/list", response_model=dict)
+@router.get("/list", response_model=list)
 async def _list_services():
-    return registry.public_services_registry
+    response = []
+    for key, item in registry.public_services_registry.items():
+        temp = item
+        temp['serviceId'] = key
+        response.append(temp)
+    return response
 
 @router.post("/view", response_model=dict)
 async def _view_service_details(request: ServiceViewRequest):

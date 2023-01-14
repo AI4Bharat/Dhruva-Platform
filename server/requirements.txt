@@ -1,3 +1,4 @@
 fastapi
 uvicorn[standard]
 prometheus_fastapi_instrumentator
+requests
