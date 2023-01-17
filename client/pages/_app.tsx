@@ -28,13 +28,11 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
           </Box>
         </GridItem>
       )}
-      {smallscreen ? (
-        <></>
-      ) : (
+
         <GridItem style={isblur ? { opacity: 0.3 } : { opacity: 1 }}>
           {children}
         </GridItem>
-      )}
+
     </Grid>
   );
 };
