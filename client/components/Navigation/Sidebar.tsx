@@ -54,7 +54,7 @@ const Sidebar: React.FC = () => {
       onMouseLeave={() => {
         if (isOpen) setNavbar(false);
       }}
-      width={isOpen ? "300px" : "75px"}
+      width={isOpen ? "300px" : "85px"}
       transition="width 0.2s"
       boxShadow={"md"}
     >
