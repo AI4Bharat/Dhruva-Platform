@@ -6,6 +6,7 @@ import Sidebar from "../components/Navigation/Sidebar";
 import { useState } from "react";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../styles/global.css";
+import Navbar from "../components/Navigation/Navbar";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -15,27 +16,31 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const [isblur, setblur] = useState<Boolean>(false);
   const smallscreen = useMediaQuery("(max-width: 768px)");
   return (
-    <Grid templateAreas={`"nav main"`} gridTemplateColumns={"75px 1fr"}>
-      {smallscreen ? (
-        <></>
-      ) : (
-        <GridItem>
-          <Box
-            onMouseEnter={() => setblur(true)}
-            onMouseLeave={() => setblur(false)}
-          >
-            <Sidebar />
-          </Box>
-        </GridItem>
-      )}
-      {smallscreen ? (
-        <></>
-      ) : (
+    <>
+      <Grid
+        overflowX={"hidden"}
+        templateAreas={`"nav main"`}
+        gridTemplateColumns={"75px 1fr"}
+      >
+        {smallscreen ? (
+          <></>
+        ) : (
+          <GridItem>
+            <Box
+              onMouseEnter={() => setblur(true)}
+              onMouseLeave={() => setblur(false)}
+            >
+              <Sidebar />
+            </Box>
+          </GridItem>
+        )}
+
         <GridItem style={isblur ? { opacity: 0.3 } : { opacity: 1 }}>
+          {smallscreen ? <></> : <Navbar />}
           {children}
         </GridItem>
-      )}
-    </Grid>
+      </Grid>
+    </>
   );
 };
 
@@ -47,6 +52,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/models",
     "/billing",
     "/profile",
+    "/analyze",
   ].includes(appProps.router.pathname);
 
   const LayoutComponent = isLayoutNeeded ? Layout : React.Fragment;

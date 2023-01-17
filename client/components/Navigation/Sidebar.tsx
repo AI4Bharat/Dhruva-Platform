@@ -13,6 +13,7 @@ import Image from "next/image";
 import { AiOutlineDollarCircle } from "react-icons/ai";
 import { BiHomeCircle } from "react-icons/bi";
 import { IoConstructOutline, IoGridOutline } from "react-icons/io5";
+import { MdAutoGraph } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -95,8 +96,8 @@ const Sidebar: React.FC = () => {
                 w={"100%"}
                 justifyContent="flex-start"
               >
-                <Box paddingLeft={"9px"}>
-                  <BiHomeCircle size={25} />
+                <Box>
+                  <BiHomeCircle style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -108,7 +109,7 @@ const Sidebar: React.FC = () => {
               </Button>
             </Link>
           </Box>
-          {/* <Box>
+          <Box>
             <Link href={"/services"}>
               <Button
                 mb="2"
@@ -135,9 +136,9 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box> */}
+          </Box>
 
-          {/* <Box w="100%">
+          <Box w="100%">
             <Link href={"/models"}>
               <Button
                 mb="2"
@@ -153,10 +154,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <IoConstructOutline
-                    style={{ marginLeft: 12 }}
-                    size={"25px"}
-                  />
+                  <IoConstructOutline style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -167,8 +165,8 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box> */}
-          {/* <Box>
+          </Box>
+          <Box>
             <Link href={"/billing"}>
               <Button
                 mb="2"
@@ -195,34 +193,34 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box> */}
+          </Box>
 
-          {/* <Box>
-              <Link href="/analyze">
-                <Button
-                  mb="2"
-                  ml={isOpen ? 0 : 0}
-                  h={10}
-                  w="100%"
-                  variant={number === 2 ? "solid" : "ghost"}
-                  background={number === 2 ? "orange.500" : "transperent"}
-                  color ={number === 2 ? "white" : "black"}
-                  justifyContent="flex-start"
-                  size="l"
-                  boxShadow={number === 2 ? "xl" : "none"}
-                  transition="width 0.2s"
-                >
-                  <Box>
-                    <MdAutoGraph
-                      style={{ marginLeft: 12, marginRight: 12 }}
-                      size={25}
-                    />
-                  </Box>
-                  {isOpen ? <Text fontWeight={"normal"}> Starlight</Text> : <></>}
-                </Button>
-              </Link>
-            </Box> */}
-          {/* <Box position={"absolute"} bottom="10">
+          <Box>
+            <Link href="/analyze">
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                w="100%"
+                variant={number === 2 ? "solid" : "ghost"}
+                background={number === 2 ? "orange.500" : "transperent"}
+                color={number === 2 ? "white" : "black"}
+                justifyContent="flex-start"
+                size="l"
+                boxShadow={number === 2 ? "xl" : "none"}
+                transition="width 0.2s"
+              >
+                <Box>
+                  <MdAutoGraph
+                    style={{ marginLeft: 12, marginRight: 12 }}
+                    size={25}
+                  />
+                </Box>
+                {isOpen ? <Text fontWeight={"normal"}> Analyze</Text> : <></>}
+              </Button>
+            </Link>
+          </Box>
+          <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">
                 <Button
@@ -250,7 +248,7 @@ const Sidebar: React.FC = () => {
                 </Button>
               </Link>
             </Box>
-          </Box> */}
+          </Box>
         </SimpleGrid>
       </Box>
     </Box>
