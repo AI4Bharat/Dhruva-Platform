@@ -13,6 +13,7 @@ import Image from "next/image";
 import { AiOutlineDollarCircle } from "react-icons/ai";
 import { BiHomeCircle } from "react-icons/bi";
 import { IoConstructOutline, IoGridOutline } from "react-icons/io5";
+import { MdAutoGraph } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -53,7 +54,7 @@ const Sidebar: React.FC = () => {
       onMouseLeave={() => {
         if (isOpen) setNavbar(false);
       }}
-      width={isOpen ? "15%" : "5%"}
+      width={isOpen ? "300px" : "85px"}
       transition="width 0.2s"
       boxShadow={"md"}
     >
@@ -96,7 +97,7 @@ const Sidebar: React.FC = () => {
                 justifyContent="flex-start"
               >
                 <Box>
-                  <BiHomeCircle style={{ marginLeft: 16}} size={25} />
+                  <BiHomeCircle style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -124,7 +125,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <IoGridOutline style={{ marginLeft: 16 }} size={25} />
+                  <IoGridOutline style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -153,10 +154,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <IoConstructOutline
-                    style={{ marginLeft: 16 }}
-                    size={"25px"}
-                  />
+                  <IoConstructOutline style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -184,7 +182,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <AiOutlineDollarCircle style={{ marginLeft: 16 }} size={25} />
+                  <AiOutlineDollarCircle style={{ marginLeft: 12 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -197,31 +195,31 @@ const Sidebar: React.FC = () => {
             </Link>
           </Box>
 
-          {/* <Box>
-              <Link href="/analyze">
-                <Button
-                  mb="2"
-                  ml={isOpen ? 0 : 0}
-                  h={10}
-                  w="100%"
-                  variant={number === 2 ? "solid" : "ghost"}
-                  background={number === 2 ? "orange.500" : "transperent"}
-                  color ={number === 2 ? "white" : "black"}
-                  justifyContent="flex-start"
-                  size="l"
-                  boxShadow={number === 2 ? "xl" : "none"}
-                  transition="width 0.2s"
-                >
-                  <Box>
-                    <MdAutoGraph
-                      style={{ marginLeft: 12, marginRight: 12 }}
-                      size={25}
-                    />
-                  </Box>
-                  {isOpen ? <Text fontWeight={"normal"}> Starlight</Text> : <></>}
-                </Button>
-              </Link>
-            </Box> */}
+          <Box>
+            <Link href="/analyze">
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                w="100%"
+                variant={number === 2 ? "solid" : "ghost"}
+                background={number === 2 ? "orange.500" : "transperent"}
+                color={number === 2 ? "white" : "black"}
+                justifyContent="flex-start"
+                size="l"
+                boxShadow={number === 2 ? "xl" : "none"}
+                transition="width 0.2s"
+              >
+                <Box>
+                  <MdAutoGraph
+                    style={{ marginLeft: 12, marginRight: 12 }}
+                    size={25}
+                  />
+                </Box>
+                {isOpen ? <Text fontWeight={"normal"}> Analyze</Text> : <></>}
+              </Button>
+            </Link>
+          </Box>
           <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">
