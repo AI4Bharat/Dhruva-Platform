@@ -13,9 +13,11 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
+import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import ServiceCard from "../../components/Mobile/Services/ServiceCard";
 
 interface Service {
   name: string;
@@ -31,6 +33,7 @@ interface Services {
 
 export default function Services() {
   const [services, setServices] = useState<Services>({});
+  const smallscreen = useMediaQuery("(max-width: 1080px)");
 
   useEffect(() => {
     axios({
@@ -42,7 +45,8 @@ export default function Services() {
   return (
     <>
       <ContentLayout>
-        <Box width="30rem" bg="light.100">
+        <Box width= {smallscreen?"20rem":"30rem"} bg="light.100" ml={smallscreen?"1rem":"0rem"}>
+          {/* Searchbar */}
           <InputGroup>
             <InputLeftElement
               color="gray.300"
@@ -53,7 +57,24 @@ export default function Services() {
           </InputGroup>
         </Box>
         <br />
-        <Box bg="light.100">
+        {
+          smallscreen ? 
+          // Mobile View
+          <>
+        {Object.entries(services).map(([id, serviceData]) => 
+        (
+            <ServiceCard
+            name = {serviceData.name}
+            serviceID={id}
+            modelID ={serviceData.modelId}
+            date={(new Date(serviceData.publishedOn)).toDateString()}
+            />
+          
+        ))}
+          </> 
+          :
+          // Desktop View
+          <Box bg="light.100">
           <Table variant="unstyled">
             <Thead>
               <Tr>
@@ -94,7 +115,9 @@ export default function Services() {
               })}
             </Tbody>
           </Table>
-        </Box>
+          </Box>
+        }
+
       </ContentLayout>
     </>
   );
