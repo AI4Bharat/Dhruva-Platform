@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
       onMouseLeave={() => {
         if (isOpen) setNavbar(false);
       }}
-      width={isOpen ? "15%" : "5%"}
+      width={isOpen ? "300px" : "75px"}
       transition="width 0.2s"
       boxShadow={"md"}
     >
@@ -95,8 +95,8 @@ const Sidebar: React.FC = () => {
                 w={"100%"}
                 justifyContent="flex-start"
               >
-                <Box>
-                  <BiHomeCircle style={{ marginLeft: 12 }} size={25} />
+                <Box paddingLeft={"9px"}>
+                  <BiHomeCircle size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -108,7 +108,7 @@ const Sidebar: React.FC = () => {
               </Button>
             </Link>
           </Box>
-          <Box>
+          {/* <Box>
             <Link href={"/services"}>
               <Button
                 mb="2"
@@ -135,9 +135,9 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
+          </Box> */}
 
-          <Box w="100%">
+          {/* <Box w="100%">
             <Link href={"/models"}>
               <Button
                 mb="2"
@@ -167,8 +167,8 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
-          <Box>
+          </Box> */}
+          {/* <Box>
             <Link href={"/billing"}>
               <Button
                 mb="2"
@@ -195,7 +195,7 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
+          </Box> */}
 
           {/* <Box>
               <Link href="/analyze">
@@ -222,7 +222,7 @@ const Sidebar: React.FC = () => {
                 </Button>
               </Link>
             </Box> */}
-          <Box position={"absolute"} bottom="10">
+          {/* <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">
                 <Button
@@ -250,7 +250,7 @@ const Sidebar: React.FC = () => {
                 </Button>
               </Link>
             </Box>
-          </Box>
+          </Box> */}
         </SimpleGrid>
       </Box>
     </Box>

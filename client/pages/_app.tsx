@@ -13,9 +13,9 @@ interface ContentLayoutProps {
 
 const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const [isblur, setblur] = useState<Boolean>(false);
-  const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const smallscreen = useMediaQuery("(max-width: 768px)");
   return (
-    <Grid templateAreas={`"nav main"`} gridTemplateColumns={"124px 1fr"}>
+    <Grid templateAreas={`"nav main"`} gridTemplateColumns={"75px 1fr"}>
       {smallscreen ? (
         <></>
       ) : (
