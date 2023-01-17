@@ -96,7 +96,7 @@ const Sidebar: React.FC = () => {
                 justifyContent="flex-start"
               >
                 <Box>
-                  <BiHomeCircle style={{ marginLeft: 12 }} size={25} />
+                  <BiHomeCircle style={{ marginLeft: 16}} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -124,7 +124,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <IoGridOutline style={{ marginLeft: 12 }} size={25} />
+                  <IoGridOutline style={{ marginLeft: 16 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
@@ -154,7 +154,7 @@ const Sidebar: React.FC = () => {
               >
                 <Box>
                   <IoConstructOutline
-                    style={{ marginLeft: 12 }}
+                    style={{ marginLeft: 16 }}
                     size={"25px"}
                   />
                 </Box>
@@ -184,7 +184,7 @@ const Sidebar: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <AiOutlineDollarCircle style={{ marginLeft: 12 }} size={25} />
+                  <AiOutlineDollarCircle style={{ marginLeft: 16 }} size={25} />
                 </Box>
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>

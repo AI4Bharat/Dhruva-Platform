@@ -6,6 +6,7 @@ import Sidebar from "../components/Navigation/Sidebar";
 import { useState } from "react";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../styles/global.css";
+import Navbar from "../components/Navigation/Navbar";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -15,7 +16,8 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const [isblur, setblur] = useState<Boolean>(false);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   return (
-    <Grid templateAreas={`"nav main"`} gridTemplateColumns={"124px 1fr"}>
+    <>
+    <Grid overflowX={"hidden"} templateAreas={`"nav main"`} gridTemplateColumns={"124px 1fr"}>
       {smallscreen ? (
         <></>
       ) : (
@@ -30,10 +32,12 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
       )}
 
         <GridItem style={isblur ? { opacity: 0.3 } : { opacity: 1 }}>
+          {smallscreen? <></>:<Navbar/>}
           {children}
         </GridItem>
 
     </Grid>
+    </>
   );
 };
 
