@@ -1,2 +1,5 @@
 *.pyc
 *.json
+server/venv
+.DS_Store
+__pycache__
