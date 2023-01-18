@@ -45,7 +45,11 @@ export default function Services() {
   return (
     <>
       <ContentLayout>
-        <Box width= {smallscreen?"20rem":"30rem"} bg="light.100" ml={smallscreen?"1rem":"0rem"}>
+        <Box
+          width={smallscreen ? "20rem" : "30rem"}
+          bg="light.100"
+          ml={smallscreen ? "1rem" : "0rem"}
+        >
           {/* Searchbar */}
           <InputGroup>
             <InputLeftElement
@@ -57,67 +61,63 @@ export default function Services() {
           </InputGroup>
         </Box>
         <br />
-        {
-          smallscreen ? 
+        {smallscreen ? (
           // Mobile View
           <>
-        {Object.entries(services).map(([id, serviceData]) => 
-        (
-            <ServiceCard
-            name = {serviceData.name}
-            serviceID={id}
-            modelID ={serviceData.modelId}
-            date={(new Date(serviceData.publishedOn)).toDateString()}
-            />
-          
-        ))}
-          </> 
-          :
+            {Object.entries(services).map(([id, serviceData]) => (
+              <ServiceCard
+                name={serviceData.name}
+                serviceID={id}
+                modelID={serviceData.modelId}
+                date={new Date(serviceData.publishedOn).toDateString()}
+              />
+            ))}
+          </>
+        ) : (
           // Desktop View
           <Box bg="light.100">
-          <Table variant="unstyled">
-            <Thead>
-              <Tr>
-                <Th>Name</Th>
-                <Th>Service ID</Th>
-                <Th>Model ID</Th>
-                <Th>Published On</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Object.entries(services).map(([id, serviceData]) => {
-                const publishedOn = new Date(serviceData.publishedOn);
-                return (
-                  <Tr key={id} fontSize={"sm"}>
-                    <Td>{serviceData.name}</Td>
-                    <Td>{id}</Td>
-                    <Td>{serviceData.modelId}</Td>
-                    <Td>{publishedOn.toDateString()}</Td>
-                    <Td>
-                      {" "}
-                      <Link
-                        href={{
-                          pathname: `/services/view`,
-                          query: {
-                            serviceId: id,
-                          },
-                        }}
-                      >
+            <Table variant="unstyled">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Service ID</Th>
+                  <Th>Model ID</Th>
+                  <Th>Published On</Th>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Object.entries(services).map(([id, serviceData]) => {
+                  const publishedOn = new Date(serviceData.publishedOn);
+                  return (
+                    <Tr key={id} fontSize={"sm"}>
+                      <Td>{serviceData.name}</Td>
+                      <Td>{id}</Td>
+                      <Td>{serviceData.modelId}</Td>
+                      <Td>{publishedOn.toDateString()}</Td>
+                      <Td>
                         {" "}
-                        <Button size={"sm"} variant={"outline"}>
-                          View
-                        </Button>
-                      </Link>
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
+                        <Link
+                          href={{
+                            pathname: `/services/view`,
+                            query: {
+                              serviceId: id,
+                            },
+                          }}
+                        >
+                          {" "}
+                          <Button size={"sm"} variant={"outline"}>
+                            View
+                          </Button>
+                        </Link>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
           </Box>
-        }
-
+        )}
       </ContentLayout>
     </>
   );

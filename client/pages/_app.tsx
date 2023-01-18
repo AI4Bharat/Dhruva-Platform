@@ -37,7 +37,7 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
         )}
 
         <GridItem style={isblur ? { opacity: 0.3 } : { opacity: 1 }}>
-          {smallscreen ? <NavbarMobile/> : <Navbar />}
+          {smallscreen ? <NavbarMobile /> : <Navbar />}
           {children}
         </GridItem>
       </Grid>

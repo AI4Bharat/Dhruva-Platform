@@ -7,6 +7,7 @@ import {
   Grid,
   GridItem,
   Progress,
+  Input,
 } from "@chakra-ui/react";
 import { FaRegCopy, FaMicrophone } from "react-icons/fa";
 
@@ -35,8 +36,11 @@ interface LanguageConfig {
 
 export default function ASRTry({ ...props }) {
   const [languages, setLanguages] = useState<string[]>([]);
-  const [language, setLanguage] = useState("hi");
+  const [language, setLanguage] = useState("");
   const [audioText, setAudioText] = useState("");
+  const [placeholder, setPlaceHolder] = useState(
+    "Start Recording for ASR Inference..."
+  );
   const [fetching, setFetching] = useState(false);
   const [recording, setRecording] = useState(false);
   const [sampleRate, setSampleRate] = useState(16000);
@@ -45,8 +49,8 @@ export default function ASRTry({ ...props }) {
 
   const startRecording = () => {
     setRecording(!recording);
-    setAudioText("Recording Audio...");
-
+    setPlaceHolder("Recording Audio....");
+    setFetching(!fetching);
     recorder!.ondataavailable = (e: BlobEvent) => {
       audioChunks.push(e.data);
     };
@@ -57,17 +61,42 @@ export default function ASRTry({ ...props }) {
     recorder!.start(0.5);
   };
 
-  const getASROutput = (asrInput: string) => {};
+  const getASROutput = (asrInput: string) => {
+    axios({
+      method: "POST",
+      url: "https://api.dhruva.co/services/inference/asr",
+      data: {
+        serviceId: props.serviceId,
+        audio: [
+          {
+            audioContent: asrInput,
+          },
+        ],
+        config: {
+          language: {
+            sourceLanguage: language,
+          },
+          audioFormat: "wav",
+          encoding: "base64",
+          samplingRate: sampleRate,
+        },
+      },
+    }).then((response) => {
+      setAudioText(response.data.output[0].source);
+    });
+  };
 
   const stopRecording = () => {
     setRecording(!recording);
+    setFetching(!fetching);
+    setPlaceHolder("Start Recording for ASR Inference...");
     recorder!.stop();
     let blob = new Blob(audioChunks, { type: "audio/wav" });
     const reader: FileReader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = () => {
-      var base64Data = reader.result;
-      console.log(base64Data);
+      var base64Data: string = reader.result as string;
+      getASROutput(base64Data.split(",")[1]);
       setAudioChunks([]);
     };
   };
@@ -85,6 +114,7 @@ export default function ASRTry({ ...props }) {
       )
     );
     setLanguages(uniqueSourceLanguages);
+    setLanguage(uniqueSourceLanguages[0]);
   }, []);
 
   return (
@@ -99,6 +129,7 @@ export default function ASRTry({ ...props }) {
               onChange={(e) => {
                 setLanguage(e.target.value);
               }}
+              value={language}
             >
               {languages.map((language) => (
                 <option key={language} value={language}>
@@ -127,7 +158,7 @@ export default function ASRTry({ ...props }) {
             h={200}
             readOnly
             value={audioText}
-            placeholder="Start Recording for ASR Inference..."
+            placeholder={placeholder}
           />
           <Stack direction={"row"} gap={5}>
             {recording ? (
@@ -144,12 +175,22 @@ export default function ASRTry({ ...props }) {
                   startRecording();
                 }}
               >
-                <FaMicrophone /> Record
+                <FaMicrophone size={15} />
               </Button>
             )}
-            <Button>
-              <FaRegCopy /> Copy
-            </Button>
+            <Input
+              variant={"unstyled"}
+              onChangeCapture={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const selectedAudioFile = e.target["files"][0];
+                const selectedAudioReader = new FileReader();
+                selectedAudioReader.readAsDataURL(selectedAudioFile);
+                selectedAudioReader.onloadend = () => {
+                  var base64Data: string = selectedAudioReader.result as string;
+                  getASROutput(base64Data.split(",")[1]);
+                };
+              }}
+              type={"file"}
+            />
           </Stack>
         </Stack>
       </GridItem>
