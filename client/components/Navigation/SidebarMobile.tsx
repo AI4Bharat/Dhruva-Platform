@@ -120,7 +120,7 @@ const SidebarMobile: React.FC = () => {
             </Link>
           </Box>
 
-          <Box w="100%">
+          {/* <Box w="100%">
             <Link href={"/models"}>
               <Button
                 mb="2"
@@ -143,7 +143,7 @@ const SidebarMobile: React.FC = () => {
                 </Text>
               </Button>
             </Link>
-          </Box>
+          </Box> */}
           {/* <Box>
             <Link href={"/billing"}>
               <Button

@@ -138,7 +138,7 @@ const Sidebar: React.FC = () => {
             </Link>
           </Box>
 
-          <Box w="100%">
+          {/* <Box w="100%">
             <Link href={"/models"}>
               <Button
                 mb="2"
@@ -165,7 +165,7 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
+          </Box> */}
           {/* <Box>
             <Link href={"/billing"}>
               <Button

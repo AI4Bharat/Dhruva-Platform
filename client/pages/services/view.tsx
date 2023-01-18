@@ -11,6 +11,8 @@ import {
   Text,
   Grid,
   GridItem,
+  OrderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -37,6 +39,12 @@ interface Service {
     version: string;
     task: { type: string };
     languages: LanguageConfig[];
+    inferenceEndPoint: {
+      schema: {
+        request: any;
+        response: any;
+      };
+    };
   };
 }
 
@@ -50,7 +58,12 @@ export default function ViewService() {
     hardwareDescription: "",
     publishedOn: 1,
     modelId: "",
-    model: { version: "", task: { type: "" }, languages: [] },
+    model: {
+      version: "",
+      task: { type: "" },
+      languages: [],
+      inferenceEndPoint: { schema: { request: {}, response: {} } },
+    },
   });
 
   const [languages, setLanguages] = useState<LanguageConfig[]>([]);
@@ -106,6 +119,7 @@ export default function ViewService() {
             <Tabs isFitted>
               <TabList mb="1em">
                 <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
@@ -129,6 +143,76 @@ export default function ViewService() {
                       </Text>
                     </Stack>
                   </Stack>
+                </TabPanel>
+                <TabPanel>
+                  <OrderedList spacing={7.5}>
+                    <ListItem>
+                      {" "}
+                      Modify the request Schema for{" "}
+                      {serviceInfo["model"]["task"][
+                        "type"
+                      ].toLocaleUpperCase()}{" "}
+                      task.
+                    </ListItem>
+                    <pre
+                      style={{
+                        backgroundColor: "#f5f5f5",
+                        padding: 10,
+                        whiteSpace: "pre-wrap",
+                        borderRadius: 15,
+                      }}
+                    >
+                      {JSON.stringify(
+                        {
+                          serviceId: router.query["serviceId"],
+                          input:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["input"],
+                          config:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["config"],
+                          audio:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["audio"],
+                        },
+                        null,
+                        1
+                      )}
+                    </pre>
+                    <ListItem>
+                      Using the above payload schema hit the{" "}
+                      {serviceInfo["model"]["task"]["type"].toLocaleUpperCase()}{" "}
+                      inference URL at
+                      <Text color={"blue"}>
+                        https://api.dhruva.co/services/inference
+                      </Text>
+                    </ListItem>
+                    <ListItem>
+                      If the request is a success, the response will be in the
+                      format given below.
+                    </ListItem>
+                    <pre
+                      style={{
+                        backgroundColor: "#f5f5f5",
+                        padding: 10,
+                        whiteSpace: "pre-wrap",
+                        borderRadius: 15,
+                        textOverflow: "ellipsis",
+                        width: 350,
+                      }}
+                    >
+                      {JSON.stringify(
+                        serviceInfo.model.inferenceEndPoint["schema"][
+                          "response"
+                        ],
+                        null,
+                        1
+                      )}
+                    </pre>
+                  </OrderedList>
                 </TabPanel>
               </TabPanels>
             </Tabs>
@@ -158,6 +242,7 @@ export default function ViewService() {
             <Tabs isFitted>
               <TabList mb="1em">
                 <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
@@ -181,6 +266,76 @@ export default function ViewService() {
                       </Text>
                     </Stack>
                   </Stack>
+                </TabPanel>
+                <TabPanel>
+                  <OrderedList spacing={7.5}>
+                    <ListItem>
+                      {" "}
+                      Modify the request Schema for{" "}
+                      {serviceInfo["model"]["task"][
+                        "type"
+                      ].toLocaleUpperCase()}{" "}
+                      task.
+                    </ListItem>
+                    <pre
+                      style={{
+                        backgroundColor: "#f5f5f5",
+                        padding: 10,
+                        whiteSpace: "pre-wrap",
+                        borderRadius: 15,
+                      }}
+                    >
+                      {JSON.stringify(
+                        {
+                          serviceId: router.query["serviceId"],
+                          input:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["input"],
+                          config:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["config"],
+                          audio:
+                            serviceInfo.model.inferenceEndPoint["schema"][
+                              "request"
+                            ]["audio"],
+                        },
+                        null,
+                        1
+                      )}
+                    </pre>
+                    <ListItem>
+                      Using the above payload schema hit the{" "}
+                      {serviceInfo["model"]["task"]["type"].toLocaleUpperCase()}{" "}
+                      inference URL at
+                      <Text color={"blue"}>
+                        https://api.dhruva.co/services/inference
+                      </Text>
+                    </ListItem>
+                    <ListItem>
+                      If the request is a success, the response will be in the
+                      format given below.
+                    </ListItem>
+                    <pre
+                      style={{
+                        backgroundColor: "#f5f5f5",
+                        padding: 10,
+                        whiteSpace: "pre-wrap",
+                        borderRadius: 15,
+                        textOverflow: "ellipsis",
+                        width: 350,
+                      }}
+                    >
+                      {JSON.stringify(
+                        serviceInfo.model.inferenceEndPoint["schema"][
+                          "response"
+                        ],
+                        null,
+                        1
+                      )}
+                    </pre>
+                  </OrderedList>
                 </TabPanel>
               </TabPanels>
             </Tabs>
