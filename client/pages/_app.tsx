@@ -7,6 +7,7 @@ import { useState } from "react";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../styles/global.css";
 import Navbar from "../components/Navigation/Navbar";
+import NavbarMobile from "../components/Navigation/NavbarMobile";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface ContentLayoutProps {
 
 const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const [isblur, setblur] = useState<Boolean>(false);
-  const smallscreen = useMediaQuery("(max-width: 768px)");
+  const smallscreen = useMediaQuery("(max-width: 1080px)");
   return (
     <>
       <Grid
@@ -36,7 +37,7 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
         )}
 
         <GridItem style={isblur ? { opacity: 0.3 } : { opacity: 1 }}>
-          {smallscreen ? <></> : <Navbar />}
+          {smallscreen ? <NavbarMobile/> : <Navbar />}
           {children}
         </GridItem>
       </Grid>
