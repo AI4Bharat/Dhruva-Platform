@@ -11,3 +11,5 @@ class Errors(Enum):
                  "message": "Failed to get service details from db"}
     DHRUVA105 = {"kind": "DHRUVA-105",
                  "message": "Failed to get model details from db"}
+    DHRUVA106 = {"kind": "DHRUVA-106",
+                 "message": "Failed to fetch all models"}

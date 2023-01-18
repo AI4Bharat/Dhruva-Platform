@@ -43,6 +43,7 @@ class _InferenceEndPoint(BaseModel):
 
 class Model(BaseModel):
     _id: Optional[Any]
+    modelId: str
     version: str
     submittedOn: int
     updatedOn: int

@@ -11,3 +11,6 @@ class ModelRepository:
 
     def find_by_id(self, model_id: str) -> Model:
         return Model(**self.collection[model_id])
+
+    def find_all(self) -> dict[str, Model]:
+        return self.collection
