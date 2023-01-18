@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 
 const lang2label: { [key: string]: string } = {
   hi: "Hindi",
@@ -69,6 +70,23 @@ export default function NMTTry({ ...props }) {
     setTranslatedText("");
   };
 
+  const renderTransliterateComponent = () => {
+    const currentLanguage: LanguageConfig = JSON.parse(language);
+    return (
+      <IndicTransliterate
+        renderComponent={(props) => (
+          <Textarea resize="none" h={200} {...props} />
+        )}
+        onChangeText={(text) => {
+          setTltText(text);
+        }}
+        value={tltText}
+        placeholder="Type your text here to transliterate...."
+        lang={currentLanguage.sourceLanguage}
+      />
+    );
+  };
+
   return (
     <Grid templateRows="repeat(3)" gap={5}>
       <GridItem>
@@ -102,7 +120,7 @@ export default function NMTTry({ ...props }) {
       </GridItem>
       <GridItem>
         <Stack>
-          <Textarea
+          {/* <Textarea
             value={tltText}
             onChange={(e) => {
               setTltText(e.target.value);
@@ -111,7 +129,8 @@ export default function NMTTry({ ...props }) {
             resize="none"
             h={200}
             placeholder="Type your text here to translate..."
-          />
+          /> */}
+          {renderTransliterateComponent()}
           <Textarea
             readOnly
             value={translatedText}

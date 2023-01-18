@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import axios from "axios";
 
 const lang2label: { [key: string]: string } = {
@@ -78,6 +79,22 @@ export default function TTSTry({ ...props }) {
     setLanguages(uniqueSourceLanguages);
   }, []);
 
+  const renderTransliterateComponent = () => {
+    return (
+      <IndicTransliterate
+        renderComponent={(props) => (
+          <Textarea resize="none" h={200} {...props} />
+        )}
+        onChangeText={(text) => {
+          setTltText(text);
+        }}
+        value={tltText}
+        placeholder="Type your text here to generate audio..."
+        lang={language}
+      />
+    );
+  };
+
   return (
     <Grid templateRows="repeat(3)" gap={5}>
       <GridItem>
@@ -116,15 +133,7 @@ export default function TTSTry({ ...props }) {
       </GridItem>
       <GridItem>
         <Stack>
-          <Textarea
-            value={tltText}
-            onChange={(e) => {
-              setTltText(e.target.value);
-            }}
-            w={"auto"}
-            h={200}
-            placeholder="Type your text here to generate audio..."
-          />
+          {renderTransliterateComponent()}
           <Stack direction={"row"} gap={5}>
             <Button
               onClick={() => {
