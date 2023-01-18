@@ -41,12 +41,6 @@ app.add_middleware(
 #     Instrumentator().instrument(app).add(http_body_language()).expose(app)
 
 
-# Temporarily load registry files into memory until we have db
-# @app.on_event("startup")
-# async def load_registries():
-#     with open('')
-#     app.state.model_registry =
-
 @app.exception_handler(BaseError)
 async def base_error_handler(request: Request, exc: BaseError):
     logger.error(exc)
