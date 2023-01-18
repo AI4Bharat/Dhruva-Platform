@@ -20,7 +20,7 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
       <Grid
         overflowX={"hidden"}
         templateAreas={`"nav main"`}
-        gridTemplateColumns={"75px 1fr"}
+        gridTemplateColumns={"95px 1fr"}
       >
         {smallscreen ? (
           <></>

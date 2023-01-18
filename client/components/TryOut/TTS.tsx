@@ -5,6 +5,8 @@ import {
   Button,
   Textarea,
   Progress,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -77,45 +79,42 @@ export default function TTSTry({ ...props }) {
   }, []);
 
   return (
-    <>
-      <Stack direction={"row"} spacing={50}>
+    <Grid templateRows="repeat(3)" gap={5}>
+      <GridItem>
         <Stack direction={"row"}>
-          <Text className="dview-service-try-option-title">
-            Select Language:
-          </Text>
-          <Select
-            onChange={(e) => {
-              setLanguage(e.target.value);
-            }}
-          >
-            {languages.map((language) => (
-              <option key={language} value={language}>
-                {lang2label[language]}
-              </option>
-            ))}
-          </Select>
+          <Stack direction={"row"}>
+            <Text className="dview-service-try-option-title">
+              Select Language:
+            </Text>
+            <Select
+              onChange={(e) => {
+                setLanguage(e.target.value);
+              }}
+            >
+              {languages.map((language) => (
+                <option key={language} value={language}>
+                  {lang2label[language]}
+                </option>
+              ))}
+            </Select>
+          </Stack>
+          <Stack direction={"row"}>
+            <Text className="dview-service-try-option-title">Voice:</Text>
+            <Select
+              onChange={(e) => {
+                setVoice(e.target.value);
+              }}
+            >
+              <option value={"male"}>Male</option>
+              <option value={"female"}>Female</option>
+            </Select>
+          </Stack>
         </Stack>
-        <Stack direction={"row"}>
-          <Text className="dview-service-try-option-title">Voice:</Text>
-          <Select
-            onChange={(e) => {
-              setVoice(e.target.value);
-            }}
-          >
-            <option value={"male"}>Male</option>
-            <option value={"female"}>Female</option>
-          </Select>
-        </Stack>
-      </Stack>
-      {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
-      <Stack direction={"row"}>
-        <Button
-          onClick={() => {
-            getTTSAudio();
-          }}
-        >
-          <FaRegFileAudio />
-        </Button>
+      </GridItem>
+      <GridItem>
+        {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
+      </GridItem>
+      <GridItem>
         <Stack>
           <Textarea
             value={tltText}
@@ -126,9 +125,18 @@ export default function TTSTry({ ...props }) {
             h={200}
             placeholder="Type your text here to generate audio..."
           />
-          <audio src={audio} controls />
+          <Stack direction={"row"} gap={5}>
+            <Button
+              onClick={() => {
+                getTTSAudio();
+              }}
+            >
+              <FaRegFileAudio />
+            </Button>
+            <audio src={audio} controls />
+          </Stack>
         </Stack>
-      </Stack>
-    </>
+      </GridItem>
+    </Grid>
   );
 }

@@ -10,6 +10,8 @@ import {
   TabPanel,
   Text,
   Button,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -81,45 +83,47 @@ export default function ViewService() {
 
   return (
     <ContentLayout>
-      <Box className="service-view">
-        <Box className="dview-box dview-box-about">
-          <Stack spacing={10}>
-            <Stack spacing={10} direction={"row"}>
-              <Heading>{serviceInfo["name"]}</Heading>
-            </Stack>
-
-            <Tabs isFitted>
-              <TabList mb="1em">
-                <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Stack spacing={5}>
-                    <Text className="dview-service-description">
-                      {serviceInfo["serviceDescription"]}
-                    </Text>
-                    <Stack>
-                      <Text className="dview-service-info-item">
-                        Model Version : {serviceInfo["model"]["version"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Model Type : {serviceInfo["model"]["task"]["type"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Running On : {serviceInfo["hardwareDescription"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Published On :{" "}
-                        {new Date(serviceInfo["publishedOn"]).toDateString()}
-                      </Text>
-                    </Stack>
-                  </Stack>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+      <Grid
+        templateColumns="repeat(2, 1fr)"
+        gap={5}
+        className="service-view"
+        bg="light.100"
+      >
+        <GridItem>
+          <Stack spacing={10} direction={"row"}>
+            <Heading>{serviceInfo["name"]}</Heading>
           </Stack>
-        </Box>
-        <Box className="dview-box dview-box-try">
+          <Tabs isFitted>
+            <TabList mb="1em">
+              <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Stack spacing={5}>
+                  <Text className="dview-service-description">
+                    {serviceInfo["serviceDescription"]}
+                  </Text>
+                  <Stack>
+                    <Text className="dview-service-info-item">
+                      Model Version : {serviceInfo["model"]["version"]}
+                    </Text>
+                    <Text className="dview-service-info-item">
+                      Model Type : {serviceInfo["model"]["task"]["type"]}
+                    </Text>
+                    <Text className="dview-service-info-item">
+                      Running On : {serviceInfo["hardwareDescription"]}
+                    </Text>
+                    <Text className="dview-service-info-item">
+                      Published On :{" "}
+                      {new Date(serviceInfo["publishedOn"]).toDateString()}
+                    </Text>
+                  </Stack>
+                </Stack>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </GridItem>
+        <GridItem>
           <Stack spacing={10}>
             <Box className="dview-service-try-title-box">
               <Heading className="dview-service-try-title">
@@ -128,8 +132,8 @@ export default function ViewService() {
             </Box>
             {renderTryIt(serviceInfo["model"]["task"]["type"])}
           </Stack>
-        </Box>
-      </Box>
+        </GridItem>
+      </Grid>
     </ContentLayout>
   );
 }

@@ -5,6 +5,8 @@ import {
   Button,
   Textarea,
   Progress,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -30,36 +32,17 @@ interface LanguageConfig {
 }
 
 export default function NMTTry({ ...props }) {
-  const [fromLanguages, setFromLanguages] = useState<string[]>([]);
-  const [toLanguages, setToLanguages] = useState<string[]>([]);
-  const [fromLanguage, setFromLanguage] = useState("en");
-  const [toLanguage, setToLanguage] = useState("hi");
+  const [language, setLanguage] = useState(
+    JSON.stringify({
+      sourceLanguage: "en",
+      targetLanguage: "hi",
+    })
+  );
   const [tltText, setTltText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [fetching, setFetching] = useState(false);
 
-  useEffect(() => {
-    const uniqueSourceLanguages: any = Array.from(
-      new Set(
-        props.languages.map(
-          (language: LanguageConfig) => language.sourceLanguage
-        )
-      )
-    );
-    setFromLanguages(uniqueSourceLanguages);
-    const uniqueTargetLanguages: any = Array.from(
-      new Set(
-        props.languages.map((language: LanguageConfig) => {
-          if (language.sourceLanguage === fromLanguage) {
-            return language.targetLanguage;
-          }
-        })
-      )
-    );
-    setToLanguages(uniqueTargetLanguages);
-  }, []);
-
-  const getTranslation = (source: string, from: string, to: string) => {
+  const getTranslation = (source: string) => {
     setFetching(true);
     axios({
       method: "POST",
@@ -72,10 +55,7 @@ export default function NMTTry({ ...props }) {
           },
         ],
         config: {
-          language: {
-            sourceLanguage: from,
-            targetLanguage: to,
-          },
+          language: JSON.parse(language),
         },
       },
     }).then((response) => {
@@ -90,53 +70,37 @@ export default function NMTTry({ ...props }) {
   };
 
   return (
-    <Stack spacing={5} w={"100%"}>
-      <Stack direction={"row"} spacing={50}>
+    <Grid templateRows="repeat(3)" gap={5}>
+      <GridItem>
         <Stack direction={"row"}>
-          <Text className="dview-service-try-option-title">From:</Text>
-          <Select
-            onChange={(e) => {
-              clearIO();
-              setFromLanguage(e.target.value);
-              const uniqueTargetLanguages: any = Array.from(
-                new Set(
-                  props.languages.map((language: LanguageConfig) => {
-                    if (language.sourceLanguage === e.target.value) {
-                      return language.targetLanguage;
-                    }
-                  })
-                )
-              );
-              setToLanguages(uniqueTargetLanguages);
-            }}
-            value={fromLanguage}
-          >
-            {fromLanguages.map((language) => (
-              <option key={language} value={language}>
-                {lang2label[language]}
-              </option>
-            ))}
-          </Select>
+          <Stack direction={"row"}>
+            <Text className="dview-service-try-option-title">Languages:</Text>
+
+            <Select
+              onChange={(e) => {
+                clearIO();
+                setLanguage(e.target.value);
+              }}
+            >
+              {props.languages.map((languageConfig: LanguageConfig) => {
+                return (
+                  <option
+                    key={JSON.stringify(languageConfig)}
+                    value={JSON.stringify(languageConfig)}
+                  >
+                    {lang2label[languageConfig.sourceLanguage]} -{" "}
+                    {lang2label[languageConfig.targetLanguage]}
+                  </option>
+                );
+              })}
+            </Select>
+          </Stack>
         </Stack>
-        <Stack direction={"row"}>
-          <Text className="dview-service-try-option-title">To:</Text>
-          <Select
-            onChange={(e) => {
-              clearIO();
-              setToLanguage(e.target.value);
-            }}
-            value={toLanguage}
-          >
-            {toLanguages.map((language) => (
-              <option key={language} value={language}>
-                {lang2label[language]}
-              </option>
-            ))}
-          </Select>
-        </Stack>
-      </Stack>
-      {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
-      <Stack direction={"row"}>
+      </GridItem>
+      <GridItem>
+        {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
+      </GridItem>
+      <GridItem>
         <Stack>
           <Textarea
             value={tltText}
@@ -144,6 +108,7 @@ export default function NMTTry({ ...props }) {
               setTltText(e.target.value);
             }}
             w={"auto"}
+            resize="none"
             h={200}
             placeholder="Type your text here to translate..."
           />
@@ -151,18 +116,19 @@ export default function NMTTry({ ...props }) {
             readOnly
             value={translatedText}
             w={"auto"}
+            resize="none"
             h={200}
             placeholder="View Translation Here..."
           />
           <Button
             onClick={() => {
-              getTranslation(tltText, fromLanguage, toLanguage);
+              getTranslation(tltText);
             }}
           >
             Translate
           </Button>
         </Stack>
-      </Stack>
-    </Stack>
+      </GridItem>
+    </Grid>
   );
 }

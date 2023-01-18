@@ -32,7 +32,7 @@ const Navbar = () => {
   }, [router.pathname]);
   return (
     <Box
-      paddingLeft={5}
+      paddingLeft={10}
       width="120%"
       height={"6.5rem"}
       background="white"
