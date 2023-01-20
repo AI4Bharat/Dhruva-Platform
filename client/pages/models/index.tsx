@@ -17,7 +17,6 @@ import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import ServiceCard from "../../components/Mobile/Services/ServiceCard";
 import ModelCard from "../../components/Mobile/Models/ModelCard";
 
 interface Model {
@@ -45,7 +44,11 @@ export default function Models() {
   return (
     <>
       <ContentLayout>
-        <Box width= {smallscreen?"20rem":"30rem"} bg="light.100" ml={smallscreen?"1rem":"0rem"}>
+        <Box
+          width={smallscreen ? "20rem" : "30rem"}
+          bg="light.100"
+          ml={smallscreen ? "1rem" : "0rem"}
+        >
           {/* Searchbar */}
           <InputGroup>
             <InputLeftElement
@@ -57,66 +60,62 @@ export default function Models() {
           </InputGroup>
         </Box>
         <br />
-        {
-          smallscreen ? 
+        {smallscreen ? (
           // Mobile View
           <>
-        {Object.entries(models).map(([id, modelData]) => 
-        (
-            <ModelCard
-            name = {modelData.name}
-            modelID={modelData.modelId}
-            version ={modelData.version}
-            taskType={modelData.task.type}
-            />
-          
-        ))}
-          </> 
-          :
+            {Object.entries(models).map(([id, modelData]) => (
+              <ModelCard
+                name={modelData.name}
+                modelID={modelData.modelId}
+                version={modelData.version}
+                taskType={modelData.task.type}
+              />
+            ))}
+          </>
+        ) : (
           // Desktop View
           <Box bg="light.100">
-          <Table variant="unstyled">
-            <Thead>
-              <Tr>
-                <Th>Name</Th>
-                <Th>Model ID</Th>
-                <Th>Version</Th>
-                <Th>Task Type</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Object.entries(models).map(([id, modelData]) => {
-                return (
-                  <Tr key={id} fontSize={"sm"}>
-                    <Td>{modelData.name}</Td>
-                    <Td>{modelData.modelId}</Td>
-                    <Td>{modelData.version}</Td>
-                    <Td>{modelData.task.type}</Td>
-                    <Td>
-                      {" "}
-                      <Link
-                        href={{
-                          pathname: `/models`,
-                          query: {
-                            serviceId: id,
-                          },
-                        }}
-                      >
+            <Table variant="unstyled">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Model ID</Th>
+                  <Th>Version</Th>
+                  <Th>Task Type</Th>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Object.entries(models).map(([id, modelData]) => {
+                  return (
+                    <Tr key={id} fontSize={"sm"}>
+                      <Td>{modelData.name}</Td>
+                      <Td>{modelData.modelId}</Td>
+                      <Td>{modelData.version}</Td>
+                      <Td>{modelData.task.type}</Td>
+                      <Td>
                         {" "}
-                        <Button size={"sm"} variant={"outline"}>
-                          View
-                        </Button>
-                      </Link>
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
+                        <Link
+                          href={{
+                            pathname: `/models`,
+                            query: {
+                              serviceId: id,
+                            },
+                          }}
+                        >
+                          {" "}
+                          <Button size={"sm"} variant={"outline"}>
+                            View
+                          </Button>
+                        </Link>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
           </Box>
-        }
-
+        )}
       </ContentLayout>
     </>
   );
