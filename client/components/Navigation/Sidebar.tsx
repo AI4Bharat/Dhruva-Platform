@@ -165,7 +165,7 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box> */}
+          </Box>
           {/* <Box>
             <Link href={"/billing"}>
               <Button

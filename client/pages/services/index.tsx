@@ -36,9 +36,7 @@ export default function Services() {
     axios({
       method: "GET",
       url: "https://api.dhruva.co/services/details/list_services",
-    }).then((response) => {
-      setServices(response.data);
-    });
+    }).then((response) => setServices(response.data));
   }, []);
 
   return (
