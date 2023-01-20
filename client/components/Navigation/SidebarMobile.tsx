@@ -72,7 +72,7 @@ import {
             width={"100%"}
             marginLeft={"0"}
           >
-            <Box>
+            {/* <Box>
               <Link href={"/home"}>
                 <Button
                   mb="2"
@@ -94,7 +94,7 @@ import {
                     </Text>
                 </Button>
               </Link>
-            </Box>
+            </Box> */}
             <Box>
               <Link href={"/services"}>
                 <Button
@@ -144,7 +144,7 @@ import {
                 </Button>
               </Link>
             </Box>
-            <Box>
+            {/* <Box>
               <Link href={"/billing"}>
                 <Button
                   mb="2"
@@ -167,9 +167,9 @@ import {
                     </Text>
                 </Button>
               </Link>
-            </Box>
+            </Box> */}
   
-            <Box>
+            {/* <Box>
               <Link href="/analyze">
                 <Button
                   mb="2"
@@ -193,8 +193,8 @@ import {
                   <Text fontWeight={"normal"}> Analyze</Text>
                 </Button>
               </Link>
-            </Box>
-            <Box position={"absolute"} bottom="10">
+            </Box> */}
+            {/* <Box position={"absolute"} bottom="10">
               <Box>
                 <Link href="/profile">
                   <Button
@@ -218,7 +218,7 @@ import {
                   </Button>
                 </Link>
               </Box>
-            </Box>
+            </Box> */}
           </SimpleGrid>
         </Box>
       </Box>

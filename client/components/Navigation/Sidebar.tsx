@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
           width={"100%"}
           marginLeft={"0"}
         >
-          <Box>
+          {/* <Box>
             <Link href={"/home"}>
               <Button
                 mb="2"
@@ -108,7 +108,7 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
+          </Box> */}
           <Box>
             <Link href={"/services"}>
               <Button
@@ -166,7 +166,7 @@ const Sidebar: React.FC = () => {
               </Button>
             </Link>
           </Box>
-          <Box>
+          {/* <Box>
             <Link href={"/billing"}>
               <Button
                 mb="2"
@@ -193,9 +193,9 @@ const Sidebar: React.FC = () => {
                 )}
               </Button>
             </Link>
-          </Box>
+          </Box> */}
 
-          <Box>
+          {/* <Box>
             <Link href="/analyze">
               <Button
                 mb="2"
@@ -219,8 +219,8 @@ const Sidebar: React.FC = () => {
                 {isOpen ? <Text fontWeight={"normal"}> Analyze</Text> : <></>}
               </Button>
             </Link>
-          </Box>
-          <Box position={"absolute"} bottom="10">
+          </Box> */}
+          {/* <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">
                 <Button
@@ -248,7 +248,7 @@ const Sidebar: React.FC = () => {
                 </Button>
               </Link>
             </Box>
-          </Box>
+          </Box> */}
         </SimpleGrid>
       </Box>
     </Box>

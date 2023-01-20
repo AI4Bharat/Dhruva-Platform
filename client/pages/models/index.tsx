@@ -18,28 +18,28 @@ import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
+import ModelCard from "../../components/Mobile/Models/ModelCard";
 
-interface Service {
+interface Model {
   name: string;
-  serviceType: string;
-  modelType: string;
+  version: string;
   modelId: string;
-  publishedOn: number;
+  task: any;
 }
 
-interface Services {
-  [key: string]: Service;
+interface Models {
+  [key: string]: Model;
 }
 
-export default function Services() {
-  const [services, setServices] = useState<Services>({});
+export default function Models() {
+  const [models, setModels] = useState<Models>({});
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
   useEffect(() => {
     axios({
       method: "GET",
-      url: "https://api.dhruva.co/services/details/list_services",
-    }).then((response) => setServices(response.data));
+      url: "https://api.dhruva.co/services/details/list_models",
+    }).then((response) => setModels(response.data));
   }, []);
 
   return (
@@ -53,7 +53,7 @@ export default function Services() {
               pointerEvents="none"
               children={<IoSearchOutline />}
             />
-            <Input borderRadius={0} placeholder="Search for Services" />
+            <Input borderRadius={0} placeholder="Search for Models" />
           </InputGroup>
         </Box>
         <br />
@@ -61,13 +61,13 @@ export default function Services() {
           smallscreen ? 
           // Mobile View
           <>
-        {Object.entries(services).map(([id, serviceData]) => 
+        {Object.entries(models).map(([id, modelData]) => 
         (
-            <ServiceCard
-            name = {serviceData.name}
-            serviceID={id}
-            modelID ={serviceData.modelId}
-            date={(new Date(serviceData.publishedOn)).toDateString()}
+            <ModelCard
+            name = {modelData.name}
+            modelID={modelData.modelId}
+            version ={modelData.version}
+            taskType={modelData.task.type}
             />
           
         ))}
@@ -79,26 +79,25 @@ export default function Services() {
             <Thead>
               <Tr>
                 <Th>Name</Th>
-                <Th>Service ID</Th>
                 <Th>Model ID</Th>
-                <Th>Published On</Th>
+                <Th>Version</Th>
+                <Th>Task Type</Th>
                 <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {Object.entries(services).map(([id, serviceData]) => {
-                const publishedOn = new Date(serviceData.publishedOn);
+              {Object.entries(models).map(([id, modelData]) => {
                 return (
                   <Tr key={id} fontSize={"sm"}>
-                    <Td>{serviceData.name}</Td>
-                    <Td>{id}</Td>
-                    <Td>{serviceData.modelId}</Td>
-                    <Td>{publishedOn.toDateString()}</Td>
+                    <Td>{modelData.name}</Td>
+                    <Td>{modelData.modelId}</Td>
+                    <Td>{modelData.version}</Td>
+                    <Td>{modelData.task.type}</Td>
                     <Td>
                       {" "}
                       <Link
                         href={{
-                          pathname: `/services/view`,
+                          pathname: `/models`,
                           query: {
                             serviceId: id,
                           },
