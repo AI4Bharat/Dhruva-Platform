@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
+import { IndicTransliterate } from "../indic-transliterate/dist/types";
 
 const lang2label: { [key: string]: string } = {
   hi: "Hindi",

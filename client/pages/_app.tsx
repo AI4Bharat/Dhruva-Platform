@@ -6,6 +6,7 @@ import Sidebar from "../components/Navigation/Sidebar";
 import { useState } from "react";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../styles/global.css";
+import "../components/indic-transliterate/dist/index.css";
 import Navbar from "../components/Navigation/Navbar";
 import NavbarMobile from "../components/Navigation/NavbarMobile";
 

@@ -38,7 +38,7 @@ export default function Services() {
   useEffect(() => {
     axios({
       method: "GET",
-      url: "https://api.dhruva.co/services/list",
+      url: "https://api.dhruva.co/services/details/list_services",
     }).then((response) => setServices(response.data));
   }, []);
 

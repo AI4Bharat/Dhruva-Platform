@@ -73,7 +73,7 @@ export default function ViewService() {
       const serviceId = router.query["serviceId"];
       axios({
         method: "POST",
-        url: "https://api.dhruva.co/services/view",
+        url: "https://api.dhruva.co/services/details/view_service",
         data: {
           serviceId: serviceId,
         },

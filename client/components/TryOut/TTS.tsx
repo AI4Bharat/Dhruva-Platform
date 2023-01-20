@@ -10,7 +10,6 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import axios from "axios";
 
 const lang2label: { [key: string]: string } = {
