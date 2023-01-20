@@ -2,7 +2,7 @@ import { Box, Button, Heading, HStack, Text } from "@chakra-ui/react";
 import Link from "next/link";
 import React from "react";
 
-const ServiceCard = (props: any) => {
+const ModelCard = (props: any) => {
   return (
     <Box
       ml="1rem"
@@ -56,4 +56,4 @@ const ServiceCard = (props: any) => {
   );
 };
 
-export default ServiceCard;
+export default ModelCard;
