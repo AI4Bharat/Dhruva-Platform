@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import axios from "axios";
 
 const lang2label: { [key: string]: string } = {
@@ -45,6 +46,11 @@ export default function TTSTry({ ...props }) {
     axios({
       method: "POST",
       url: "https://api.dhruva.co/services/inference/tts",
+      headers: {
+        accept: "application/json",
+        authorization: process.env.NEXT_PUBLIC_API_KEY,
+        "Content-Type": "application/json",
+      },
       data: {
         serviceId: props.serviceId,
         input: [

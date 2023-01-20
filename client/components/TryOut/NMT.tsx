@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { IndicTransliterate } from "../indic-transliterate/dist/types";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 
 const lang2label: { [key: string]: string } = {
   hi: "Hindi",
@@ -48,6 +48,11 @@ export default function NMTTry({ ...props }) {
     axios({
       method: "POST",
       url: "https://api.dhruva.co/services/inference/translation",
+      headers: {
+        accept: "application/json",
+        authorization: process.env.NEXT_PUBLIC_API_KEY,
+        "Content-Type": "application/json",
+      },
       data: {
         serviceId: props.serviceId,
         input: [

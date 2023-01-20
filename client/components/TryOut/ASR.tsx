@@ -65,6 +65,11 @@ export default function ASRTry({ ...props }) {
     axios({
       method: "POST",
       url: "https://api.dhruva.co/services/inference/asr",
+      headers: {
+        accept: "application/json",
+        authorization: process.env.NEXT_PUBLIC_API_KEY,
+        "Content-Type": "application/json",
+      },
       data: {
         serviceId: props.serviceId,
         audio: [

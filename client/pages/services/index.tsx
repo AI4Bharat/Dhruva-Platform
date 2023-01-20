@@ -20,26 +20,25 @@ import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
 
 interface Service {
+  serviceId: string;
   name: string;
-  serviceType: string;
-  modelType: string;
-  modelId: string;
+  serviceDescription: string;
+  hardwareDescription: string;
   publishedOn: number;
-}
-
-interface Services {
-  [key: string]: Service;
+  modelId: string;
 }
 
 export default function Services() {
-  const [services, setServices] = useState<Services>({});
+  const [services, setServices] = useState<Service[]>([]);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
   useEffect(() => {
     axios({
       method: "GET",
       url: "https://api.dhruva.co/services/details/list_services",
-    }).then((response) => setServices(response.data));
+    }).then((response) => {
+      setServices(response.data);
+    });
   }, []);
 
   return (
@@ -67,7 +66,7 @@ export default function Services() {
             {Object.entries(services).map(([id, serviceData]) => (
               <ServiceCard
                 name={serviceData.name}
-                serviceID={id}
+                serviceID={serviceData.serviceId}
                 modelID={serviceData.modelId}
                 date={new Date(serviceData.publishedOn).toDateString()}
               />
@@ -92,7 +91,7 @@ export default function Services() {
                   return (
                     <Tr key={id} fontSize={"sm"}>
                       <Td>{serviceData.name}</Td>
-                      <Td>{id}</Td>
+                      <Td>{serviceData.serviceId}</Td>
                       <Td>{serviceData.modelId}</Td>
                       <Td>{publishedOn.toDateString()}</Td>
                       <Td>
@@ -101,7 +100,7 @@ export default function Services() {
                           href={{
                             pathname: `/services/view`,
                             query: {
-                              serviceId: id,
+                              serviceId: serviceData.serviceId,
                             },
                           }}
                         >
