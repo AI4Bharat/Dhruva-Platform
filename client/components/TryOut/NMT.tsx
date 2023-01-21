@@ -7,11 +7,16 @@ import {
   Progress,
   Grid,
   GridItem,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { getWordCount } from "../../utils/utils";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -28,32 +33,45 @@ export default function NMTTry({ ...props }) {
   const [tltText, setTltText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [fetching, setFetching] = useState(false);
+  const [fetched, setFetched] = useState(false);
+  const [requestWordCount, setRequestWordCount] = useState(0);
+  const [responseWordCount, setResponseWordCount] = useState(0);
+  const [requestTime, setRequestTime] = useState("");
 
   const getTranslation = (source: string) => {
+    setFetched(false);
     setFetching(true);
-    axios({
-      method: "POST",
-      url: dhruvaConfig.translationInference,
-      headers: {
-        accept: "application/json",
-        authorization: process.env.NEXT_PUBLIC_API_KEY,
-        "Content-Type": "application/json",
-      },
-      data: {
-        serviceId: props.serviceId,
-        input: [
-          {
-            source: source,
+    apiInstance
+      .post(
+        dhruvaConfig.translationInference,
+        {
+          serviceId: props.serviceId,
+          input: [
+            {
+              source: source,
+            },
+          ],
+          config: {
+            language: JSON.parse(language),
           },
-        ],
-        config: {
-          language: JSON.parse(language),
         },
-      },
-    }).then((response) => {
-      setTranslatedText(response.data["output"][0]["target"]);
-      setFetching(false);
-    });
+        {
+          headers: {
+            accept: "application/json",
+            authorization: process.env.NEXT_PUBLIC_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        var output = response.data["output"][0]["target"];
+        setTranslatedText(output);
+        setFetching(false);
+        setFetched(true);
+        setRequestWordCount(getWordCount(tltText));
+        setResponseWordCount(getWordCount(output));
+        setRequestTime(response.headers["request-duration"]);
+      });
   };
 
   const clearIO = () => {
@@ -109,18 +127,40 @@ export default function NMTTry({ ...props }) {
       <GridItem>
         {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
       </GridItem>
+      {fetched ? (
+        <GridItem>
+          <SimpleGrid
+            p="1rem"
+            w="100%"
+            h="auto"
+            bg="orange.100"
+            borderRadius={15}
+            columns={2}
+            spacingX="40px"
+            spacingY="20px"
+          >
+            <Stat>
+              <StatLabel>Word Count</StatLabel>
+              <StatNumber>{requestWordCount}</StatNumber>
+              <StatHelpText>Request</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>Word Count</StatLabel>
+              <StatNumber>{responseWordCount}</StatNumber>
+              <StatHelpText>Response</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>Response Time</StatLabel>
+              <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+              <StatHelpText>seconds</StatHelpText>
+            </Stat>
+          </SimpleGrid>
+        </GridItem>
+      ) : (
+        <></>
+      )}
       <GridItem>
         <Stack>
-          {/* <Textarea
-            value={tltText}
-            onChange={(e) => {
-              setTltText(e.target.value);
-            }}
-            w={"auto"}
-            resize="none"
-            h={200}
-            placeholder="Type your text here to translate..."
-          /> */}
           {renderTransliterateComponent()}
           <Textarea
             readOnly

@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
 
 const dhruvaRootURL: string = "https://api.dhruva.co";
 
@@ -28,4 +29,18 @@ const lang2label: { [key: string]: string } = {
   gu: "Gujarati",
 };
 
-export { dhruvaConfig, lang2label };
+const apiInstance = axios.create();
+
+apiInstance.interceptors.request.use((config: any) => {
+  config.headers["request-startTime"] = new Date().getTime();
+  return config;
+});
+
+apiInstance.interceptors.response.use((response: any) => {
+  const currentTime = new Date().getTime();
+  const startTime = response.config.headers["request-startTime"];
+  response.headers["request-duration"] = currentTime - startTime;
+  return response;
+});
+
+export { dhruvaConfig, lang2label, apiInstance };

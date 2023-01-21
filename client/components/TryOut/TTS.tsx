@@ -7,12 +7,17 @@ import {
   Progress,
   Grid,
   GridItem,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
-import axios from "axios";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { getWordCount } from "../../utils/utils";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -26,37 +31,53 @@ export default function TTSTry({ ...props }) {
   const [tltText, setTltText] = useState("");
   const [audio, setAudio] = useState("");
   const [fetching, setFetching] = useState(false);
+  const [fetched, setFetched] = useState(false);
+  const [requestWordCount, setRequestWordCount] = useState(0);
+  const [requestTime, setRequestTime] = useState("");
+  const [audioDuration, setAudioDuration] = useState(0);
 
-  const getTTSAudio = () => {
+  const getTTSAudio = (source: string) => {
+    setFetched(false);
     setFetching(true);
-    axios({
-      method: "POST",
-      url: dhruvaConfig.ttsInference,
-      headers: {
-        accept: "application/json",
-        authorization: process.env.NEXT_PUBLIC_API_KEY,
-        "Content-Type": "application/json",
-      },
-      data: {
-        serviceId: props.serviceId,
-        input: [
-          {
-            source: tltText,
+    apiInstance
+      .post(
+        dhruvaConfig.ttsInference,
+        {
+          serviceId: props.serviceId,
+          input: [
+            {
+              source: source,
+            },
+          ],
+          config: {
+            language: {
+              sourceLanguage: language,
+            },
+            gender: voice,
           },
-        ],
-        config: {
-          language: {
-            sourceLanguage: language,
-          },
-          gender: voice,
         },
-      },
-    }).then((response) => {
-      var audioContent = response.data["audio"][0]["audioContent"];
-      var audio = "data:audio/wav;base64," + audioContent;
-      setAudio(audio);
-      setFetching(false);
-    });
+        {
+          headers: {
+            accept: "application/json",
+            authorization: process.env.NEXT_PUBLIC_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        var audioContent = response.data["audio"][0]["audioContent"];
+        var audio = "data:audio/wav;base64," + audioContent;
+        var audioObject = new Audio(audio);
+        audioObject.addEventListener("loadedmetadata", () => {
+          setAudioDuration(audioObject.duration);
+        });
+        setAudio(audio);
+        setFetching(false);
+        setFetched(true);
+        setRequestWordCount(getWordCount(tltText));
+
+        setRequestTime(response.headers["request-duration"]);
+      });
   };
 
   useEffect(() => {
@@ -68,6 +89,7 @@ export default function TTSTry({ ...props }) {
       )
     );
     setLanguages(uniqueSourceLanguages);
+    setLanguage(uniqueSourceLanguages[0]);
   }, []);
 
   const renderTransliterateComponent = () => {
@@ -122,13 +144,45 @@ export default function TTSTry({ ...props }) {
       <GridItem>
         {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
       </GridItem>
+      {fetched ? (
+        <GridItem>
+          <SimpleGrid
+            p="1rem"
+            w="100%"
+            h="auto"
+            bg="orange.100"
+            borderRadius={15}
+            columns={2}
+            spacingX="40px"
+            spacingY="20px"
+          >
+            <Stat>
+              <StatLabel>Word Count</StatLabel>
+              <StatNumber>{requestWordCount}</StatNumber>
+              <StatHelpText>Request</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>Response Time</StatLabel>
+              <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+              <StatHelpText>seconds</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>TTS Audio Duration</StatLabel>
+              <StatNumber>{audioDuration}</StatNumber>
+              <StatHelpText>seconds</StatHelpText>
+            </Stat>
+          </SimpleGrid>
+        </GridItem>
+      ) : (
+        <></>
+      )}
       <GridItem>
         <Stack>
           {renderTransliterateComponent()}
           <Stack direction={"row"} gap={5}>
             <Button
               onClick={() => {
-                getTTSAudio();
+                getTTSAudio(tltText);
               }}
             >
               <FaRegFileAudio />

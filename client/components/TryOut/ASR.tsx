@@ -8,12 +8,18 @@ import {
   GridItem,
   Progress,
   Input,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { FaRegCopy, FaMicrophone } from "react-icons/fa";
+import { FaMicrophone } from "react-icons/fa";
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { getWordCount } from "../../utils/utils";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -29,11 +35,17 @@ export default function ASRTry({ ...props }) {
   );
   const [fetching, setFetching] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [sampleRate, setSampleRate] = useState(16000);
+  const [sampleRate, setSampleRate] = useState<number>(16000);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [recorder, setRecorder] = useState<MediaRecorder>(null);
+  const [fetched, setFetched] = useState(false);
+  const [responseWordCount, setResponseWordCount] = useState(0);
+  const [requestTime, setRequestTime] = useState("");
+  const [audioStart, setAudioStart] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
 
   const startRecording = () => {
+    setAudioStart(Date.now());
     setRecording(!recording);
     setPlaceHolder("Recording Audio....");
     setFetching(!fetching);
@@ -48,33 +60,43 @@ export default function ASRTry({ ...props }) {
   };
 
   const getASROutput = (asrInput: string) => {
-    axios({
-      method: "POST",
-      url: dhruvaConfig.asrInference,
-      headers: {
-        accept: "application/json",
-        authorization: process.env.NEXT_PUBLIC_API_KEY,
-        "Content-Type": "application/json",
-      },
-      data: {
-        serviceId: props.serviceId,
-        audio: [
-          {
-            audioContent: asrInput,
+    setFetched(false);
+    setFetching(true);
+    apiInstance
+      .post(
+        dhruvaConfig.asrInference,
+        {
+          serviceId: props.serviceId,
+          audio: [
+            {
+              audioContent: asrInput,
+            },
+          ],
+          config: {
+            language: {
+              sourceLanguage: language,
+            },
+            audioFormat: "wav",
+            encoding: "base64",
+            samplingRate: sampleRate,
           },
-        ],
-        config: {
-          language: {
-            sourceLanguage: language,
-          },
-          audioFormat: "wav",
-          encoding: "base64",
-          samplingRate: sampleRate,
         },
-      },
-    }).then((response) => {
-      setAudioText(response.data.output[0].source);
-    });
+        {
+          headers: {
+            accept: "application/json",
+            authorization: process.env.NEXT_PUBLIC_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        var output = response.data.output[0].source;
+        setFetching(false);
+        setFetched(true);
+        setAudioText(output);
+        setResponseWordCount(getWordCount(output));
+        setRequestTime(response.headers["request-duration"]);
+      });
   };
 
   const stopRecording = () => {
@@ -82,6 +104,7 @@ export default function ASRTry({ ...props }) {
     setFetching(!fetching);
     setPlaceHolder("Start Recording for ASR Inference...");
     recorder!.stop();
+    setAudioDuration(Date.now() - audioStart);
     let blob = new Blob(audioChunks, { type: "audio/wav" });
     const reader: FileReader = new FileReader();
     reader.readAsDataURL(blob);
@@ -94,7 +117,8 @@ export default function ASRTry({ ...props }) {
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setRecorder(new MediaRecorder(stream, { mimeType: "audio/webm" }));
+      var newRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      setRecorder(newRecorder);
     });
 
     const uniqueSourceLanguages: any = Array.from(
@@ -131,7 +155,11 @@ export default function ASRTry({ ...props }) {
           </Stack>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">Sample Rate:</Text>
-            <Select>
+            <Select
+              onChange={(e) => {
+                setSampleRate(Number(e.target.value));
+              }}
+            >
               <option value={48000}>48000 Hz</option>
               <option value={16000}>16000 Hz</option>
               <option value={8000}>8000 Hz</option>
@@ -142,6 +170,38 @@ export default function ASRTry({ ...props }) {
       <GridItem>
         {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
       </GridItem>
+      {fetched ? (
+        <GridItem>
+          <SimpleGrid
+            p="1rem"
+            w="100%"
+            h="auto"
+            bg="orange.100"
+            borderRadius={15}
+            columns={2}
+            spacingX="40px"
+            spacingY="20px"
+          >
+            <Stat>
+              <StatLabel>ASR Audio Duration</StatLabel>
+              <StatNumber>{audioDuration / 1000}</StatNumber>
+              <StatHelpText>seconds</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>Word Count</StatLabel>
+              <StatNumber>{responseWordCount}</StatNumber>
+              <StatHelpText>Response</StatHelpText>
+            </Stat>
+            <Stat>
+              <StatLabel>Response Time</StatLabel>
+              <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+              <StatHelpText>seconds</StatHelpText>
+            </Stat>
+          </SimpleGrid>
+        </GridItem>
+      ) : (
+        <></>
+      )}
       <GridItem>
         <Stack>
           <Textarea
@@ -177,6 +237,10 @@ export default function ASRTry({ ...props }) {
                 selectedAudioReader.readAsDataURL(selectedAudioFile);
                 selectedAudioReader.onloadend = () => {
                   var base64Data: string = selectedAudioReader.result as string;
+                  var audioObject = new Audio(base64Data);
+                  audioObject.addEventListener("loadedmetadata", () => {
+                    setAudioDuration(audioObject.duration);
+                  });
                   getASROutput(base64Data.split(",")[1]);
                 };
               }}
