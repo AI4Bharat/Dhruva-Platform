@@ -3,3 +3,10 @@
 server/venv
 .DS_Store
 __pycache__
+server/.tox
+server/coverage
+server/reports
+.coverage
+.mypy_cache
+.pytest_cache
+.vscode
