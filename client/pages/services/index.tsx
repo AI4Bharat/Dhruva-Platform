@@ -18,6 +18,7 @@ import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
+import { dhruvaConfig } from "../../config/config";
 
 interface Service {
   serviceId: string;
@@ -35,7 +36,7 @@ export default function Services() {
   useEffect(() => {
     axios({
       method: "GET",
-      url: "https://api.dhruva.co/services/details/list_services",
+      url: dhruvaConfig.listServices,
     }).then((response) => setServices(response.data));
   }, []);
 

@@ -18,6 +18,7 @@ import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ModelCard from "../../components/Mobile/Models/ModelCard";
+import { dhruvaConfig } from "../../config/config";
 
 interface Model {
   name: string;
@@ -37,7 +38,7 @@ export default function Models() {
   useEffect(() => {
     axios({
       method: "GET",
-      url: "https://api.dhruva.co/services/details/list_models",
+      url: dhruvaConfig.listModels,
     }).then((response) => setModels(response.data));
   }, []);
 

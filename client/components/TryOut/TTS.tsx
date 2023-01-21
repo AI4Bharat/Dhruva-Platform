@@ -12,21 +12,7 @@ import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import axios from "axios";
-
-const lang2label: { [key: string]: string } = {
-  hi: "Hindi",
-  ta: "Tamil",
-  en: "English",
-  te: "Telugu",
-  as: "Assamese",
-  bn: "Bengali",
-  kn: "Kannada",
-  ml: "Malayalam",
-  mr: "Marathi",
-  pa: "Punjabi",
-  or: "Oriya",
-  gu: "Gujarati",
-};
+import { dhruvaConfig, lang2label } from "../../config/config";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -45,7 +31,7 @@ export default function TTSTry({ ...props }) {
     setFetching(true);
     axios({
       method: "POST",
-      url: "https://api.dhruva.co/services/inference/tts",
+      url: dhruvaConfig.ttsInference,
       headers: {
         accept: "application/json",
         authorization: process.env.NEXT_PUBLIC_API_KEY,

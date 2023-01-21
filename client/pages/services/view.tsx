@@ -11,18 +11,16 @@ import {
   Text,
   Grid,
   GridItem,
-  OrderedList,
-  ListItem,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
 import TTSTry from "../../components/TryOut/TTS";
 import NMTTry from "../../components/TryOut/NMT";
 import useMediaQuery from "../../hooks/useMediaQuery";
-
+import { dhruvaConfig } from "../../config/config";
 import { useState, useEffect } from "react";
-
 import axios from "axios";
+import Documentation from "../../components/Documentation/Documentation";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -73,7 +71,7 @@ export default function ViewService() {
       const serviceId = router.query["serviceId"];
       axios({
         method: "POST",
-        url: "https://api.dhruva.co/services/details/view_service",
+        url: dhruvaConfig.viewService,
         data: {
           serviceId: serviceId,
         },
@@ -145,74 +143,7 @@ export default function ViewService() {
                   </Stack>
                 </TabPanel>
                 <TabPanel>
-                  <OrderedList spacing={7.5}>
-                    <ListItem>
-                      {" "}
-                      Modify the request Schema for{" "}
-                      {serviceInfo["model"]["task"][
-                        "type"
-                      ].toLocaleUpperCase()}{" "}
-                      task.
-                    </ListItem>
-                    <pre
-                      style={{
-                        backgroundColor: "#f5f5f5",
-                        padding: 10,
-                        whiteSpace: "pre-wrap",
-                        borderRadius: 15,
-                      }}
-                    >
-                      {JSON.stringify(
-                        {
-                          serviceId: router.query["serviceId"],
-                          input:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["input"],
-                          config:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["config"],
-                          audio:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["audio"],
-                        },
-                        null,
-                        1
-                      )}
-                    </pre>
-                    <ListItem>
-                      Using the above payload schema hit the{" "}
-                      {serviceInfo["model"]["task"]["type"].toLocaleUpperCase()}{" "}
-                      inference URL at
-                      <Text color={"blue"}>
-                        https://api.dhruva.co/services/inference
-                      </Text>
-                    </ListItem>
-                    <ListItem>
-                      If the request is a success, the response will be in the
-                      format given below.
-                    </ListItem>
-                    <pre
-                      style={{
-                        backgroundColor: "#f5f5f5",
-                        padding: 10,
-                        whiteSpace: "pre-wrap",
-                        borderRadius: 15,
-                        textOverflow: "ellipsis",
-                        width: 350,
-                      }}
-                    >
-                      {JSON.stringify(
-                        serviceInfo.model.inferenceEndPoint["schema"][
-                          "response"
-                        ],
-                        null,
-                        1
-                      )}
-                    </pre>
-                  </OrderedList>
+                  <Documentation serviceInfo={serviceInfo} />
                 </TabPanel>
               </TabPanels>
             </Tabs>
@@ -268,74 +199,7 @@ export default function ViewService() {
                   </Stack>
                 </TabPanel>
                 <TabPanel>
-                  <OrderedList spacing={7.5}>
-                    <ListItem>
-                      {" "}
-                      Modify the request Schema for{" "}
-                      {serviceInfo["model"]["task"][
-                        "type"
-                      ].toLocaleUpperCase()}{" "}
-                      task.
-                    </ListItem>
-                    <pre
-                      style={{
-                        backgroundColor: "#f5f5f5",
-                        padding: 10,
-                        whiteSpace: "pre-wrap",
-                        borderRadius: 15,
-                      }}
-                    >
-                      {JSON.stringify(
-                        {
-                          serviceId: router.query["serviceId"],
-                          input:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["input"],
-                          config:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["config"],
-                          audio:
-                            serviceInfo.model.inferenceEndPoint["schema"][
-                              "request"
-                            ]["audio"],
-                        },
-                        null,
-                        1
-                      )}
-                    </pre>
-                    <ListItem>
-                      Using the above payload schema hit the{" "}
-                      {serviceInfo["model"]["task"]["type"].toLocaleUpperCase()}{" "}
-                      inference URL at
-                      <Text color={"blue"}>
-                        https://api.dhruva.co/services/inference
-                      </Text>
-                    </ListItem>
-                    <ListItem>
-                      If the request is a success, the response will be in the
-                      format given below.
-                    </ListItem>
-                    <pre
-                      style={{
-                        backgroundColor: "#f5f5f5",
-                        padding: 10,
-                        whiteSpace: "pre-wrap",
-                        borderRadius: 15,
-                        textOverflow: "ellipsis",
-                        width: 350,
-                      }}
-                    >
-                      {JSON.stringify(
-                        serviceInfo.model.inferenceEndPoint["schema"][
-                          "response"
-                        ],
-                        null,
-                        1
-                      )}
-                    </pre>
-                  </OrderedList>
+                  <Documentation serviceInfo={serviceInfo} />
                 </TabPanel>
               </TabPanels>
             </Tabs>

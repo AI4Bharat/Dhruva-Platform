@@ -13,21 +13,7 @@ import { FaRegCopy, FaMicrophone } from "react-icons/fa";
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-
-const lang2label: { [key: string]: string } = {
-  hi: "Hindi",
-  ta: "Tamil",
-  en: "English",
-  te: "Telugu",
-  as: "Assamese",
-  bn: "Bengali",
-  kn: "Kannada",
-  ml: "Malayalam",
-  mr: "Marathi",
-  pa: "Punjabi",
-  or: "Oriya",
-  gu: "Gujarati",
-};
+import { dhruvaConfig, lang2label } from "../../config/config";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -64,7 +50,7 @@ export default function ASRTry({ ...props }) {
   const getASROutput = (asrInput: string) => {
     axios({
       method: "POST",
-      url: "https://api.dhruva.co/services/inference/asr",
+      url: dhruvaConfig.asrInference,
       headers: {
         accept: "application/json",
         authorization: process.env.NEXT_PUBLIC_API_KEY,
