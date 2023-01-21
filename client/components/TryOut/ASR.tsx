@@ -47,8 +47,9 @@ export default function ASRTry({ ...props }) {
   const startRecording = () => {
     setAudioStart(Date.now());
     setRecording(!recording);
+    setFetched(false);
+    setFetching(true);
     setPlaceHolder("Recording Audio....");
-    setFetching(!fetching);
     recorder!.ondataavailable = (e: BlobEvent) => {
       audioChunks.push(e.data);
     };
@@ -60,8 +61,6 @@ export default function ASRTry({ ...props }) {
   };
 
   const getASROutput = (asrInput: string) => {
-    setFetched(false);
-    setFetching(true);
     apiInstance
       .post(
         dhruvaConfig.asrInference,
@@ -91,8 +90,6 @@ export default function ASRTry({ ...props }) {
       )
       .then((response) => {
         var output = response.data.output[0].source;
-        setFetching(false);
-        setFetched(true);
         setAudioText(output);
         setResponseWordCount(getWordCount(output));
         setRequestTime(response.headers["request-duration"]);
@@ -101,7 +98,6 @@ export default function ASRTry({ ...props }) {
 
   const stopRecording = () => {
     setRecording(!recording);
-    setFetching(!fetching);
     setPlaceHolder("Start Recording for ASR Inference...");
     recorder!.stop();
     setAudioDuration(Date.now() - audioStart);
@@ -113,6 +109,8 @@ export default function ASRTry({ ...props }) {
       getASROutput(base64Data.split(",")[1]);
       setAudioChunks([]);
     };
+    setFetching(false);
+    setFetched(true);
   };
 
   useEffect(() => {
