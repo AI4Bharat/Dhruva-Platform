@@ -7,4 +7,3 @@ class BaseRepository:
         self.collection = db[collection_name]
 
     # def find_by_id(self, id: str) -> object:
-        

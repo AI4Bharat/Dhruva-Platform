@@ -1,10 +1,11 @@
 import os
 import json
+from typing import Any
 
 
 class Database:
 
-    __db = dict()
+    __db: dict[str, Any] = dict()
 
     def __init__(self) -> None:
         # currently loads registries from the file

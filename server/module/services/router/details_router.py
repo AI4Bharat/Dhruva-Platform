@@ -17,13 +17,15 @@ router = APIRouter(
 
 
 @router.get("/list_services", response_model=List[ServiceResponse])
-async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository)):
+async def _list_services(
+    service_repository: ServiceRepository = Depends(ServiceRepository),
+):
     try:
         services = service_repository.find_all()
         services_list = []
         for k in services.keys():
             services_list.append(services[k])
-    except:
+    except Exception:
         raise BaseError(Errors.DHRUVA103.value, traceback.format_exc())
 
     return services_list
@@ -32,7 +34,7 @@ async def _list_services(service_repository: ServiceRepository = Depends(Service
 @router.post("/view_service", response_model=ServiceViewResponse)
 async def _view_service_details(
     request: ServiceViewRequest,
-    details_service: DetailsService = Depends(DetailsService)
+    details_service: DetailsService = Depends(DetailsService),
 ):
     response = details_service.get_service_details(request)
     return response
@@ -45,7 +47,7 @@ async def _list_models(model_repository: ModelRepository = Depends(ModelReposito
         models_list = []
         for k in models.keys():
             models_list.append(models[k])
-    except:
+    except Exception:
         raise BaseError(Errors.DHRUVA106.value, traceback.format_exc())
 
     return models_list
@@ -54,11 +56,11 @@ async def _list_models(model_repository: ModelRepository = Depends(ModelReposito
 @router.post("/view_model", response_model=Model)
 async def _view_model_details(
     request: ModelViewRequest,
-    model_repository: ModelRepository = Depends(ModelRepository)
+    model_repository: ModelRepository = Depends(ModelRepository),
 ):
     try:
         response = model_repository.find_by_id(request.modelId)
-    except:
+    except Exception:
         raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
     return response

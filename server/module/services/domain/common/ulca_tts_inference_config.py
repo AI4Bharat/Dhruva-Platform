@@ -5,4 +5,4 @@ from .ulca_language import _ULCALanguage
 
 class _ULCATtsInferenceConfig(BaseModel):
     language: _ULCALanguage
-    gender: Literal['male', 'female']
+    gender: Literal["male", "female"]

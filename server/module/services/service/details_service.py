@@ -20,12 +20,12 @@ class DetailsService:
     def get_service_details(self, request: ServiceViewRequest) -> ServiceViewResponse:
         try:
             service = self.service_repository.find_by_id(request.serviceId)
-        except:
+        except Exception:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
         try:
             model = self.model_repository.find_by_id(service.modelId)
-        except:
+        except Exception:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
         return ServiceViewResponse(**service.dict(), model=model)
