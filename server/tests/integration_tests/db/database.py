@@ -3,15 +3,14 @@ import json
 from typing import Any
 
 
-class Database:
-
+class MockDatabase:
     __db: dict[str, Any] = dict()
 
     def __init__(self) -> None:
         # currently loads registries from the file
         # in the future when the db is implemented:
-        #   - connect to db and get database object
-        #   - optionally create collections
+        #   - implement in memory db for test purposes
+        #   - create tables/collection etc
 
         if self.__db != {}:
             return

@@ -1,13 +1,15 @@
-from typing import Union, Callable
+# from typing import Union, Callable
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_fastapi_instrumentator.metrics import Info
-from prometheus_client import Counter
+
+# from prometheus_fastapi_instrumentator import Instrumentator
+# from prometheus_fastapi_instrumentator.metrics import Info
+
+# from prometheus_client import Counter
 from exception.base_error import BaseError
+from module import ServicesApiRouter
 from log.logger import LogConfig
-from module import *
 from fastapi.logger import logger
 from logging.config import dictConfig
 
@@ -30,7 +32,9 @@ app.add_middleware(
 
 # def http_body_language() -> Callable[[Info], None]:
 #     METRIC = Counter(
-#         "http_body_language", "Number of times a certain language has been requested.", labelnames=("langs",)
+#         "http_body_language",
+#         "Number of times a certain language has been requested.",
+#         labelnames=("langs",)
 #     )
 
 #     def instrumentation(info: Info) -> None:
@@ -54,7 +58,7 @@ async def base_error_handler(request: Request, exc: BaseError):
         content={
             "detail": {
                 "kind": exc.error_kind,
-                "message": f"Request failed. Please try again."
+                "message": "Request failed. Please try again.",
             }
         },
     )
@@ -67,5 +71,5 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=5050,
-                log_level="info", workers=2)
+
+    uvicorn.run("main:app", host="0.0.0.0", port=5050, log_level="info", workers=2)

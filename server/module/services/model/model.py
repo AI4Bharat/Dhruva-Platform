@@ -35,9 +35,8 @@ class _Schema(BaseModel):
 
 class _InferenceEndPoint(BaseModel):
     class Config:
-        fields = {
-            'schema_': 'schema'
-        }
+        fields = {"schema_": "schema"}
+
     schema_: _Schema
 
 
