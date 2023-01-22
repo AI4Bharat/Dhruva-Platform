@@ -6,8 +6,12 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_fastapi_instrumentator.metrics import Info
 from prometheus_client import Counter
 from exception.base_error import BaseError
+from log.logger import LogConfig
 from module import *
 from fastapi.logger import logger
+from logging.config import dictConfig
+
+dictConfig(LogConfig().dict())
 
 app = FastAPI(
     title="Dhruva API",
