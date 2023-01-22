@@ -3,6 +3,7 @@ from fastapi import Depends
 # from db.BaseCollection import BaseCollection
 from db.database import Database
 from ..model import Service
+from pydantic import parse_obj_as
 
 
 class ServiceRepository:
@@ -15,4 +16,5 @@ class ServiceRepository:
         return Service(**self.collection[service_id])
 
     def find_all(self) -> dict[str, Service]:
-        return self.collection
+        services = parse_obj_as(dict[str, Service], self.collection)
+        return services

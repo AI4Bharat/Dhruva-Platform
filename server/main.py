@@ -9,7 +9,11 @@ from fastapi.responses import JSONResponse
 # from prometheus_client import Counter
 from exception.base_error import BaseError
 from module import ServicesApiRouter
+from log.logger import LogConfig
 from fastapi.logger import logger
+from logging.config import dictConfig
+
+dictConfig(LogConfig().dict())
 
 app = FastAPI(
     title="Dhruva API",
