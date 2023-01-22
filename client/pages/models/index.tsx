@@ -1,12 +1,15 @@
 import {
   Box,
   Button,
+  HStack,
   Input,
   InputGroup,
   InputLeftElement,
+  Spacer,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -19,6 +22,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import ModelCard from "../../components/Mobile/Models/ModelCard";
 import { dhruvaConfig } from "../../config/config";
+import Image from "next/image";
 
 interface Model {
   name: string;
@@ -26,20 +30,28 @@ interface Model {
   modelId: string;
   task: any;
 }
-
-interface Models {
-  [key: string]: Model;
-}
-
 export default function Models() {
-  const [models, setModels] = useState<Models>({});
+  const [models, setModels] = useState<Model[]>([]);
+  const [hide, togglehide] = useState<boolean>(true)
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const [filteredModels, setFilteredModels] = useState<Model[]>(models)
+
+  const modelsToggler = (event:any) => 
+  {
+    setFilteredModels(
+      models.filter((model) =>
+        model.name
+          .toLowerCase()
+          .includes(event.target.value.toLowerCase())
+      )
+    );
+  };
 
   useEffect(() => {
     axios({
       method: "GET",
       url: dhruvaConfig.listModels,
-    }).then((response) => setModels(response.data));
+    }).then((response) => {setModels(response.data); setFilteredModels(response.data); togglehide(false)});
   }, []);
 
   return (
@@ -57,14 +69,15 @@ export default function Models() {
               pointerEvents="none"
               children={<IoSearchOutline />}
             />
-            <Input borderRadius={0} placeholder="Search for Models" />
+            <Input onChange={modelsToggler} borderRadius={0} placeholder="Search for Models" />
           </InputGroup>
         </Box>
         <br />
-        {smallscreen ? (
+        {smallscreen ? ( 
           // Mobile View
-          <>
-            {Object.entries(models).map(([id, modelData]) => (
+          filteredModels.length > 0 ? 
+          <Box>
+            {Object.entries(filteredModels).map(([id, modelData]) => (
               <ModelCard
                 name={modelData.name}
                 modelID={modelData.modelId}
@@ -72,10 +85,21 @@ export default function Models() {
                 taskType={modelData.task.type}
               />
             ))}
-          </>
+          </Box> : 
+        <>                        
+          <HStack background={"gray.50"} width="100vw" height="50vh">
+            <Spacer/>
+              <Box textAlign={"center"} display={hide?"none":"block"} >
+              <Image height={300} width={300}  alt="No Results Found" src="NoResults.svg"/>
+              <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
+              </Box>
+            <Spacer/>
+          </HStack>
+        </>
         ) : (
           // Desktop View
           <Box bg="light.100">
+            {filteredModels.length > 0 ?            
             <Table variant="unstyled">
               <Thead>
                 <Tr>
@@ -87,7 +111,7 @@ export default function Models() {
                 </Tr>
               </Thead>
               <Tbody>
-                {Object.entries(models).map(([id, modelData]) => {
+                {Object.entries(filteredModels).map(([id, modelData]) => {
                   return (
                     <Tr key={id} fontSize={"sm"}>
                       <Td>{modelData.name}</Td>
@@ -114,7 +138,16 @@ export default function Models() {
                   );
                 })}
               </Tbody>
-            </Table>
+            </Table>:
+            <HStack background={"gray.50"}>
+              <Spacer/>
+                <Box textAlign={"center"} display={hide?"none":"block"}>
+                <Image height={400} width={400}  alt="No Results Found" src="NoResults.svg"/>
+                <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
+                </Box>
+              <Spacer/>
+            </HStack>}
+
           </Box>
         )}
       </ContentLayout>

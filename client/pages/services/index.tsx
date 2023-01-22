@@ -1,12 +1,15 @@
 import {
   Box,
   Button,
+  HStack,
   Input,
   InputGroup,
   InputLeftElement,
+  Spacer,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -19,6 +22,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
 import { dhruvaConfig } from "../../config/config";
+import Image from "next/image";
 
 interface Service {
   serviceId: string;
@@ -31,13 +35,26 @@ interface Service {
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
+  const [filteredservices, setFilteredServices] = useState<Service[]>([]);
+  const [hide, togglehide] = useState<boolean>(true)
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+
+  const servicesToggler = (event:any) => 
+  {
+    setFilteredServices(
+      services.filter((service) =>
+        service.name
+          .toLowerCase()
+          .includes(event.target.value.toLowerCase())
+      )
+    );
+  };
 
   useEffect(() => {
     axios({
       method: "GET",
       url: dhruvaConfig.listServices,
-    }).then((response) => setServices(response.data));
+    }).then((response) => {setServices(response.data); setFilteredServices(response.data); togglehide(false)});
   }, []);
 
   return (
@@ -55,14 +72,15 @@ export default function Services() {
               pointerEvents="none"
               children={<IoSearchOutline />}
             />
-            <Input borderRadius={0} placeholder="Search for Services" />
+            <Input borderRadius={0} onChange={servicesToggler} placeholder="Search for Services" />
           </InputGroup>
         </Box>
         <br />
         {smallscreen ? (
           // Mobile View
+          filteredservices.length > 0?
           <>
-            {Object.entries(services).map(([id, serviceData]) => (
+            {Object.entries(filteredservices).map(([id, serviceData]) => (
               <ServiceCard
                 name={serviceData.name}
                 serviceID={serviceData.serviceId}
@@ -71,9 +89,21 @@ export default function Services() {
               />
             ))}
           </>
+          :
+          <>
+            <HStack background={"gray.50"} width="100vw" height="50vh">
+            <Spacer/>
+              <Box textAlign={"center"} display={hide?"none":"block"} >
+              <Image height={300} width={300}  alt="No Results Found" src="NoResults.svg"/>
+              <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
+              </Box>
+            <Spacer/>
+          </HStack>
+          </>
         ) : (
           // Desktop View
           <Box bg="light.100">
+            {(filteredservices.length>0)?            
             <Table variant="unstyled">
               <Thead>
                 <Tr>
@@ -85,7 +115,7 @@ export default function Services() {
                 </Tr>
               </Thead>
               <Tbody>
-                {Object.entries(services).map(([id, serviceData]) => {
+                {Object.entries(filteredservices).map(([id, serviceData]) => {
                   const publishedOn = new Date(serviceData.publishedOn);
                   return (
                     <Tr key={id} fontSize={"sm"}>
@@ -113,7 +143,16 @@ export default function Services() {
                   );
                 })}
               </Tbody>
-            </Table>
+            </Table>:
+            <HStack background={"gray.50"}>
+            <Spacer/>
+            <Box textAlign={"center"} display={hide?"none":"block"}>
+              <Image height={400} width={400}  alt="No Results Found" src="NoResults.svg"/>
+              <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
+            </Box>
+            <Spacer/>
+            </HStack>
+            }
           </Box>
         )}
       </ContentLayout>
