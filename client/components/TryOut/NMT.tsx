@@ -86,12 +86,15 @@ export default function NMTTry({ ...props }) {
         renderComponent={(props) => (
           <Textarea resize="none" h={200} {...props} />
         )}
-        onChangeText={(text) => {
+        onChangeText={(text: string) => {
           setTltText(text);
         }}
         value={tltText}
         placeholder="Type your text here to transliterate...."
         lang={currentLanguage.sourceLanguage}
+        onChange={undefined}
+        onBlur={undefined}
+        onKeyDown={undefined}
       />
     );
   };

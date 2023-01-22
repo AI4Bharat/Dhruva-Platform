@@ -98,12 +98,15 @@ export default function TTSTry({ ...props }) {
         renderComponent={(props) => (
           <Textarea resize="none" h={200} {...props} />
         )}
-        onChangeText={(text) => {
+        onChangeText={(text: string) => {
           setTltText(text);
         }}
         value={tltText}
         placeholder="Type your text here to generate audio..."
         lang={language}
+        onChange={undefined}
+        onBlur={undefined}
+        onKeyDown={undefined}
       />
     );
   };
