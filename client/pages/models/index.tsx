@@ -79,6 +79,7 @@ export default function Models() {
           <Box>
             {Object.entries(filteredModels).map(([id, modelData]) => (
               <ModelCard
+                key={id}
                 name={modelData.name}
                 modelID={modelData.modelId}
                 version={modelData.version}

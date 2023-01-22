@@ -82,6 +82,7 @@ export default function Services() {
           <>
             {Object.entries(filteredservices).map(([id, serviceData]) => (
               <ServiceCard
+                key={id}
                 name={serviceData.name}
                 serviceID={serviceData.serviceId}
                 modelID={serviceData.modelId}
