@@ -1,6 +1,7 @@
 from fastapi import Depends
 from db.database import Database
 from ..model import Model
+from pydantic import parse_obj_as
 
 
 class ModelRepository:
@@ -13,4 +14,5 @@ class ModelRepository:
         return Model(**self.collection[model_id])
 
     def find_all(self) -> dict[str, Model]:
-        return self.collection
+        models = parse_obj_as(dict[str, Model], self.collection)
+        return models
