@@ -114,7 +114,7 @@ export default function TTSTry({ ...props }) {
   return (
     <Grid templateRows="repeat(3)" gap={5}>
       <GridItem>
-        <Stack direction={"row"}>
+        <Stack direction={"column"}>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">
               Select Language:
@@ -182,7 +182,7 @@ export default function TTSTry({ ...props }) {
       <GridItem>
         <Stack>
           {renderTransliterateComponent()}
-          <Stack direction={"row"} gap={5}>
+          <Stack direction={"column"} gap={5}>
             <Button
               onClick={() => {
                 getTTSAudio(tltText);
@@ -190,7 +190,7 @@ export default function TTSTry({ ...props }) {
             >
               <FaRegFileAudio />
             </Button>
-            <audio src={audio} controls />
+            <audio style={{ width: "auto" }} src={audio} controls />
           </Stack>
         </Stack>
       </GridItem>

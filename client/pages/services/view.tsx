@@ -115,7 +115,7 @@ export default function ViewService() {
               <Heading>{serviceInfo["name"]}</Heading>
             </Stack>
             <Tabs isFitted>
-              <TabList mb="1em">
+              <TabList aria-orientation="vertical" mb="1em">
                 <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                 <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
               </TabList>

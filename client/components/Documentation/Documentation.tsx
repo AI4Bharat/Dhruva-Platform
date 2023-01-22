@@ -1,4 +1,4 @@
-import { OrderedList, ListItem, Text } from "@chakra-ui/react";
+import { OrderedList, ListItem } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { dhruvaConfig } from "../../config/config";
 
@@ -13,8 +13,10 @@ const Documentation = ({ ...props }) => {
         style={{
           backgroundColor: "#f5f5f5",
           padding: 10,
-          whiteSpace: "pre-wrap",
           borderRadius: 15,
+          width: "60vw",
+          maxWidth: 400,
+          whiteSpace: "initial",
         }}
       >
         endpoint_url = {dhruvaConfig.genericInference}
@@ -28,30 +30,27 @@ const Documentation = ({ ...props }) => {
         style={{
           backgroundColor: "#f5f5f5",
           padding: 10,
-          whiteSpace: "pre-wrap",
           borderRadius: 15,
+          width: "60vw",
+          maxWidth: 400,
+          whiteSpace: "initial",
         }}
       >
-        payload ={" "}
-        {JSON.stringify(
-          {
-            serviceId: router.query["serviceId"],
-            input:
-              props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
-                "input"
-              ],
-            config:
-              props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
-                "config"
-              ],
-            audio:
-              props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
-                "audio"
-              ],
-          },
-          null,
-          1
-        )}
+        {JSON.stringify({
+          serviceId: router.query["serviceId"],
+          input:
+            props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
+              "input"
+            ],
+          config:
+            props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
+              "config"
+            ],
+          audio:
+            props.serviceInfo.model.inferenceEndPoint["schema"]["request"][
+              "audio"
+            ],
+        })}
       </pre>
       <ListItem>
         Using the above payload schema make a POST request to the endpoint.
@@ -60,8 +59,10 @@ const Documentation = ({ ...props }) => {
         style={{
           backgroundColor: "#f5f5f5",
           padding: 10,
-          whiteSpace: "pre-wrap",
           borderRadius: 15,
+          width: "60vw",
+          maxWidth: 400,
+          whiteSpace: "initial",
         }}
       >
         fetch(endpoint_url,
@@ -84,10 +85,10 @@ const Documentation = ({ ...props }) => {
         style={{
           backgroundColor: "#f5f5f5",
           padding: 10,
-          whiteSpace: "pre-wrap",
           borderRadius: 15,
-          textOverflow: "ellipsis",
-          width: 350,
+          width: "60vw",
+          maxWidth: 400,
+          whiteSpace: "initial",
         }}
       >
         {JSON.stringify(

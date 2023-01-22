@@ -133,7 +133,7 @@ export default function ASRTry({ ...props }) {
   return (
     <Grid templateRows="repeat(3)" gap={5}>
       <GridItem>
-        <Stack direction={"row"}>
+        <Stack direction={"column"}>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">
               Select Language:

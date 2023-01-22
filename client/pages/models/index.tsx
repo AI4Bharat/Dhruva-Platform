@@ -66,6 +66,7 @@ export default function Models() {
           <>
             {Object.entries(models).map(([id, modelData]) => (
               <ModelCard
+                key={id}
                 name={modelData.name}
                 modelID={modelData.modelId}
                 version={modelData.version}
