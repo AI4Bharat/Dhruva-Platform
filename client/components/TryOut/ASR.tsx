@@ -15,7 +15,7 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
-
+import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
