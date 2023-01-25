@@ -15,11 +15,13 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
-import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import {
+  StreamingClient,
+  SocketStatus,
+} from "@project-sunbird/open-speech-streaming-client";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -27,6 +29,8 @@ interface LanguageConfig {
 }
 
 export default function ASRTry({ ...props }) {
+  const [streamingClient, setStreamingClient] = useState(new StreamingClient());
+
   const [languages, setLanguages] = useState<string[]>([]);
   const [language, setLanguage] = useState("");
   const [audioText, setAudioText] = useState("");
@@ -41,11 +45,13 @@ export default function ASRTry({ ...props }) {
   const [fetched, setFetched] = useState(false);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
-  const [audioStart, setAudioStart] = useState(0);
-  const [audioDuration, setAudioDuration] = useState(0);
+
+  const [inferenceMode, setInferenceMode] = useState("rest");
+
+  const [streaming, setStreaming] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
 
   const startRecording = () => {
-    setAudioStart(Date.now());
     setRecording(!recording);
     setFetched(false);
     setFetching(true);
@@ -100,7 +106,6 @@ export default function ASRTry({ ...props }) {
     setRecording(!recording);
     setPlaceHolder("Start Recording for ASR Inference...");
     recorder!.stop();
-    setAudioDuration(Date.now() - audioStart);
     let blob = new Blob(audioChunks, { type: "audio/wav" });
     const reader: FileReader = new FileReader();
     reader.readAsDataURL(blob);
@@ -111,6 +116,45 @@ export default function ASRTry({ ...props }) {
     };
     setFetching(false);
     setFetched(true);
+  };
+
+  const startStreaming = () => {
+    setStreaming(true);
+    setFetching(true);
+    streamingClient.connect(
+      dhruvaConfig.asrStreamingInference,
+      props.serviceId,
+      process.env.NEXT_PUBLIC_API_KEY,
+      language,
+      sampleRate,
+      [],
+      function (action: any, id: any) {
+        if (action === SocketStatus.CONNECTED) {
+          console.log("Connected");
+          streamingClient.startStreaming(
+            function (transcript: string) {
+              setStreamingText(transcript);
+            },
+            (e: any) => {
+              console.log("Encountered an error: ", e);
+            }
+          );
+        } else if (action === SocketStatus.TERMINATED) {
+          console.log("Terminated");
+        } else {
+          console.log("Action: ", action, id);
+        }
+      }
+    );
+  };
+
+  const stopStreaming = () => {
+    console.log("Streaming Ended.");
+    streamingClient.stopStreaming();
+    streamingClient.disconnect();
+    setStreaming(false);
+    setFetching(false);
+    setStreamingText("");
   };
 
   useEffect(() => {
@@ -134,6 +178,19 @@ export default function ASRTry({ ...props }) {
     <Grid templateRows="repeat(3)" gap={5}>
       <GridItem>
         <Stack direction={"column"}>
+          <Stack direction={"row"}>
+            <Text className="dview-service-try-option-title">
+              Inference Mode:
+            </Text>
+            <Select
+              onChange={(e) => {
+                setInferenceMode(e.target.value);
+              }}
+            >
+              <option value={"rest"}>REST</option>
+              <option value={"streaming"}>Streaming</option>
+            </Select>
+          </Stack>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">
               Select Language:
@@ -168,6 +225,7 @@ export default function ASRTry({ ...props }) {
       <GridItem>
         {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
       </GridItem>
+
       {fetched ? (
         <GridItem>
           <SimpleGrid
@@ -180,11 +238,6 @@ export default function ASRTry({ ...props }) {
             spacingX="40px"
             spacingY="20px"
           >
-            <Stat>
-              <StatLabel>ASR Audio Duration</StatLabel>
-              <StatNumber>{audioDuration / 1000}</StatNumber>
-              <StatHelpText>seconds</StatHelpText>
-            </Stat>
             <Stat>
               <StatLabel>Word Count</StatLabel>
               <StatNumber>{responseWordCount}</StatNumber>
@@ -200,53 +253,87 @@ export default function ASRTry({ ...props }) {
       ) : (
         <></>
       )}
-      <GridItem>
-        <Stack>
-          <Textarea
-            w={"auto"}
-            h={200}
-            readOnly
-            value={audioText}
-            placeholder={placeholder}
-          />
-          <Stack direction={"row"} gap={5}>
-            {recording ? (
-              <Button
-                onClick={() => {
-                  stopRecording();
-                }}
-              >
-                <FaMicrophone /> Stop
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  startRecording();
-                }}
-              >
-                <FaMicrophone size={15} />
-              </Button>
-            )}
-            <Input
-              variant={"unstyled"}
-              onChangeCapture={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const selectedAudioFile = e.target["files"][0];
-                const selectedAudioReader = new FileReader();
-                selectedAudioReader.readAsDataURL(selectedAudioFile);
-                selectedAudioReader.onloadend = () => {
-                  var base64Data: string = selectedAudioReader.result as string;
-                  var audioObject = new Audio(base64Data);
-                  audioObject.addEventListener("loadedmetadata", () => {
-                    setAudioDuration(audioObject.duration);
-                  });
-                  getASROutput(base64Data.split(",")[1]);
-                };
-              }}
-              type={"file"}
+      {inferenceMode === "rest" ? (
+        <GridItem>
+          <Stack>
+            <Textarea
+              w={"auto"}
+              h={200}
+              readOnly
+              value={audioText}
+              placeholder={placeholder}
             />
+            <Stack direction={"row"} gap={5}>
+              {recording ? (
+                <Button
+                  onClick={() => {
+                    stopRecording();
+                  }}
+                >
+                  <FaMicrophone /> Stop
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    startRecording();
+                  }}
+                >
+                  <FaMicrophone size={15} />
+                </Button>
+              )}
+              <Input
+                variant={"unstyled"}
+                onChangeCapture={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const selectedAudioFile = e.target["files"][0];
+                  const selectedAudioReader = new FileReader();
+                  selectedAudioReader.readAsDataURL(selectedAudioFile);
+                  selectedAudioReader.onloadend = () => {
+                    setFetched(false);
+                    setFetching(true);
+                    var base64Data: string =
+                      selectedAudioReader.result as string;
+                    getASROutput(base64Data.split(",")[1]);
+                    setFetching(false);
+                    setFetched(true);
+                  };
+                }}
+                type={"file"}
+              />
+            </Stack>
           </Stack>
-        </Stack>
-      </GridItem>
+        </GridItem>
+      ) : (
+        <GridItem>
+          <Stack gap={5}>
+            <Textarea
+              w={"auto"}
+              h={200}
+              readOnly
+              value={streamingText}
+              placeholder={placeholder}
+            />
+            <Stack direction={"column"}>
+              {streaming ? (
+                <Button
+                  onClick={() => {
+                    stopStreaming();
+                  }}
+                >
+                  <FaMicrophone /> Stop
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    startStreaming();
+                  }}
+                >
+                  <FaMicrophone size={15} />
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </GridItem>
+      )}
     </Grid>
   );
 }
