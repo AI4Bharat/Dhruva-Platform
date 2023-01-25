@@ -21,3 +21,4 @@ class InferenceGateway:
             )
 
         return response.json()
+    
