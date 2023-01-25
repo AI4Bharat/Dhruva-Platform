@@ -40,7 +40,7 @@ async def _run_inference_asr(
     request: ULCAAsrInferenceRequest,
     inference_service: InferenceService = Depends(InferenceService)
 ):
-    return inference_service.run_inference(request)
+    return await inference_service.run_asr_triton_inference(request)
 
 
 @router.post("/tts", response_model=ULCATtsInferenceResponse)

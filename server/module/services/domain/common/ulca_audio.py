@@ -3,5 +3,5 @@ from pydantic import BaseModel, AnyHttpUrl
 
 
 class _ULCAAudio(BaseModel):
-    audioContent: Optional[str]
+    audioContent: Optional[list]
     audioUri: Optional[AnyHttpUrl]
