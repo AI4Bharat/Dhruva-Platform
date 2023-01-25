@@ -5,7 +5,7 @@ from ..repository.model_repository import ModelRepository
 from ..model.model import Model
 from ..error import Errors
 from ..service import DetailsService
-from ..domain.response import ServiceResponse, ServiceViewResponse
+from ..domain.response import ServiceListResponse, ServiceViewResponse
 from ..domain.request import ServiceViewRequest, ModelViewRequest
 from ..repository import ServiceRepository
 import traceback
@@ -16,16 +16,10 @@ router = APIRouter(
 )
 
 
-@router.get("/list_services", response_model=List[ServiceResponse])
-async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository)):
-    try:
-        services = service_repository.find_all()
-        services_list = []
-        for k in services.keys():
-            services_list.append(services[k])
-    except:
-        raise BaseError(Errors.DHRUVA103.value, traceback.format_exc())
-
+@router.get("/list_services", response_model=List[ServiceListResponse])
+async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository), details_service: DetailsService = Depends(DetailsService)):
+    
+    services_list = details_service.list_services()
     return services_list
 
 

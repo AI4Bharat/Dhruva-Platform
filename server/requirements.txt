@@ -26,3 +26,4 @@ websockets==10.4
 numpy
 tritonclient[all]
 gevent
+scipy

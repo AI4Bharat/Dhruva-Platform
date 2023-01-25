@@ -12,7 +12,7 @@ import tritonclient.http as http_client
 
 
 headers = {}
-headers["Authorization"] = f"Bearer 9i2vidTyIdmWO1vpDbFJAk8trK2J5rTS"
+headers["Authorization"] = f""
 
 class InferenceGateway:
     def __init__(self) -> None:
@@ -42,17 +42,16 @@ class InferenceGateway:
 
         return response.json()
 
-    async def send_triton_request(self,input_list:list,output_list:list):
+    async def send_triton_request(self,model_name:str,input_list:list,output_list:list):
         try:
-            response = self.triton_client.async_infer("offline_conformer", 
+            response = self.triton_client.async_infer(model_name, 
                         model_version="1",
                         inputs=input_list,
                         outputs=output_list,
                         headers=headers)
             response = response.get_result(block=True, timeout=4)
-            encoded_result = response.as_numpy("TRANSCRIPTS")
-            res = [result.decode("utf-8") for result in encoded_result.tolist()]
+           
         except:
             raise BaseError(Errors.DHRUVA101.value,traceback.format_exc())
-        return res
+        return response
 
