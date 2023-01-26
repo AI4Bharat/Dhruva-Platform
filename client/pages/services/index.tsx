@@ -41,57 +41,69 @@ export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
   const [sourceLang, setSourceLanguage] = useState<String>("");
   const [targetLang, setTargetLanguage] = useState<String>("");
+  const [task, setTask] = useState<String>("");
+  const [clear, setClear] = useState<Boolean>(false);
   const [filteredservices, setFilteredServices] = useState<Service[]>([]);
+  const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
-  const servicesToggler = (event: any) => {
-    setFilteredServices(
-      services.filter((service) =>
+  const clearFilters = () =>
+  {
+    setFilteredServices(services);
+    setSearchedServices(services);
+  }
+
+  const searchToggler = (event: any) => {
+    setSearchedServices(
+      filteredservices.filter((service) =>
         service.name.toLowerCase().includes(event.target.value.toLowerCase())
       )
     );
   };
 
-  const taskToggler = (event: any) => {
-    setFilteredServices(
-      services.filter((service) =>
-        service.task_type.type.includes(event.target.value)
-      )
-    );
-  };
-
-  const langToggler = (src: String, target: String) => {
-    setFilteredServices(
-      services.filter((service) => {
+  const filterToggler = () => 
+  {
+    setFilteredServices
+    (
+      services.filter((service) => 
+      {
         let found = false;
-        if (target === "" && src !== "") {
-          service.languages.every(
-            (language: { sourceLanguage: String; targetLanguage: String }) => {
-              if (language.sourceLanguage === src) {
+        if (targetLang === "" && sourceLang !== "") 
+        {
+          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
+            {
+              if (language.sourceLanguage === sourceLang) 
+              {
                 found = true;
                 return false;
               }
               return true;
             }
           );
-        } else if (src === "" && target !== "") {
-          service.languages.every(
-            (language: { sourceLanguage: String; targetLanguage: String }) => {
-              if (language.targetLanguage === target) {
+        } 
+        else if (sourceLang === "" && targetLang !== "") 
+        {
+          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
+            {
+              if (language.targetLanguage === targetLang) 
+              {
                 found = true;
                 return false;
               }
               return true;
             }
           );
-        } else if (target !== "" && src !== "") {
-          service.languages.every(
-            (language: { sourceLanguage: String; targetLanguage: String }) => {
+        } 
+        else if (targetLang !== "" && sourceLang !== "") 
+        {
+          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
+            {
               if (
-                language.targetLanguage === target &&
-                language.sourceLanguage === src
-              ) {
+                language.targetLanguage === targetLang &&
+                language.sourceLanguage === sourceLang
+              ) 
+              {
                 found = true;
                 return false;
               }
@@ -99,8 +111,13 @@ export default function Services() {
             }
           );
         }
-        return found;
-      })
+        else if (targetLang === "" && sourceLang === "" && task !== "")
+        {
+          return service.task_type.type.includes(task);
+        } 
+        return found && service.task_type.type.includes(task)
+      }
+      )
     );
   };
   const sourceLangToggler = (event: any) => {
@@ -111,6 +128,10 @@ export default function Services() {
     setTargetLanguage(event.target.value);
   };
 
+  const taskToggler = (event: any) => {
+    setTask(event.target.value);
+  };
+
   useEffect(() => {
     axios({
       method: "GET",
@@ -118,13 +139,19 @@ export default function Services() {
     }).then((response) => {
       setServices(response.data);
       setFilteredServices(response.data);
+      setSearchedServices(response.data);
       togglehide(false);
     });
   }, []);
-  useEffect(() => {
-    langToggler(sourceLang, targetLang);
-  }, [sourceLang, targetLang]);
 
+  useEffect(() => {
+    filterToggler();
+  }, [sourceLang, targetLang, task]);
+
+  useEffect(() => {
+    setSearchedServices(filteredservices)
+  }, [filteredservices]);
+  
   return (
     <>
       <ContentLayout>
@@ -146,7 +173,7 @@ export default function Services() {
               />
               <Input
                 borderRadius={0}
-                onChange={servicesToggler}
+                onChange={searchToggler}
                 placeholder="Search for Services"
               />
             </InputGroup>
@@ -203,14 +230,17 @@ export default function Services() {
                 <option value="te">Telugu</option>
               </Select>
             </InputGroup>
+            <Button width={smallscreen?"90vw":"8rem"} onClick={clearFilters}>
+              Clear Filters
+            </Button>
           </Stack>
         </Box>
         <br />
         {smallscreen ? (
           // Mobile View
-          filteredservices.length > 0 ? (
+          searchedservices.length > 0 ? (
             <>
-              {Object.entries(filteredservices).map(([id, serviceData]) => (
+              {Object.entries(searchedservices).map(([id, serviceData]) => (
                 <ServiceCard
                   key={id}
                   name={serviceData.name}
@@ -242,7 +272,7 @@ export default function Services() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {filteredservices.length > 0 ? (
+            {searchedservices.length > 0 ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>
@@ -254,7 +284,7 @@ export default function Services() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {Object.entries(filteredservices).map(([id, serviceData]) => {
+                  {Object.entries(searchedservices).map(([id, serviceData]) => {
                     const publishedOn = new Date(serviceData.publishedOn);
                     return (
                       <Tr key={id} fontSize={"sm"}>
