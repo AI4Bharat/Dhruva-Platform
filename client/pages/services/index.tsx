@@ -5,7 +5,9 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Select,
   Spacer,
+  Stack,
   Table,
   Tbody,
   Td,
@@ -31,10 +33,14 @@ interface Service {
   hardwareDescription: string;
   publishedOn: number;
   modelId: string;
+  task_type : any;
+  languages : any;
 }
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
+  const [sourceLang, setSourceLanguage] = useState<String>("")
+  const [targetLang, setTargetLanguage] = useState<String>("")
   const [filteredservices, setFilteredServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true)
   const smallscreen = useMediaQuery("(max-width: 1080px)");
@@ -50,6 +56,62 @@ export default function Services() {
     );
   };
 
+  const taskToggler = (event:any) =>
+  {
+    setFilteredServices(
+      services.filter((service) =>
+        service.task_type.type
+          .includes(event.target.value)
+      )
+    );
+  }
+
+  const langToggler = (src : String, target: String) =>
+  {
+    if(src="")
+    {
+      setFilteredServices(
+        services.filter((service) =>
+        service.languages.forEach((p:any)=>{
+          p.targetLanguage.includes(target)
+        })
+        )
+      );
+    }
+    if(target="")
+    {
+      setFilteredServices(
+        services.filter((service) =>
+        service.languages.some((p:any)=>{
+          p.sourceLanguage.includes(src)
+        })
+        )
+      );
+    }
+    else
+    {
+      setFilteredServices(
+        services.filter((service) =>
+        service.languages.some((p:any)=>{
+          p.sourceLanguage.includes(src) &&
+          p.targetLanguage.includes(target)
+        })
+        )
+      );
+    }
+  }
+  const sourceLangToggler = (event:any) =>
+  {
+    setSourceLanguage(event.target.value);
+    langToggler(sourceLang,targetLang);
+  } 
+
+  const targetLangToggler = (event:any) =>
+  {
+    setTargetLanguage(event.target.value);
+    langToggler(sourceLang,targetLang);
+  }
+
   useEffect(() => {
     axios({
       method: "GET",
@@ -61,12 +123,12 @@ export default function Services() {
     <>
       <ContentLayout>
         <Box
-          width={smallscreen ? "20rem" : "30rem"}
           bg="light.100"
           ml={smallscreen ? "1rem" : "0rem"}
         >
           {/* Searchbar */}
-          <InputGroup>
+          <Stack direction={['column', 'row']} spacing='0.5rem' background={"gray.50"}>
+          <InputGroup width={smallscreen ? "90vw" : "30rem"} background={"white"}>
             <InputLeftElement
               color="gray.300"
               pointerEvents="none"
@@ -74,6 +136,35 @@ export default function Services() {
             />
             <Input borderRadius={0} onChange={servicesToggler} placeholder="Search for Services" />
           </InputGroup>
+          <Select width={smallscreen ? "90vw" : "20rem"} background={"white"} borderRadius={0} color="gray.300" onChange={taskToggler}>
+            <option  hidden defaultChecked>Select Task Type</option>
+            <option value='translation'>Translation</option>
+            <option value='tts'>TTS</option>
+            <option value='asr'>ASR</option>
+          </Select>
+          <InputGroup width={smallscreen ? "90vw" : "30rem"} background={"white"}>
+          <Select background={"white"} borderRadius={0} color="gray.300" onChange={sourceLangToggler}>
+            <option  hidden defaultChecked>Source Language</option>
+            <option value='en'>English</option>
+            <option value='hi'>Hindi</option>
+          </Select>
+          <Select background={"white"} borderRadius={0} color="gray.300" onChange={targetLangToggler}>
+            <option  hidden defaultChecked>Target Language</option>
+            <option value='en'>English</option>
+            <option value='hi'>Hindi</option>
+            <option value='as'>Assamese</option>
+            <option value='bn'>Bengali</option>
+            <option value='gu'>Gujarati</option>
+            <option value='kn'>Kannada</option>
+            <option value='ml'>Malayalam</option>
+            <option value='mr'>Marathi</option>
+            <option value='or'>Oriya</option>
+            <option value='pa'>Punjabi</option>
+            <option value='ta'>Tamil</option>            
+            <option value='te'>Telugu</option>
+          </Select>
+          </InputGroup>
+          </Stack>
         </Box>
         <br />
         {smallscreen ? (

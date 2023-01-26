@@ -58,7 +58,7 @@ export default function Models() {
     <>
       <ContentLayout>
         <Box
-          width={smallscreen ? "20rem" : "30rem"}
+          width={smallscreen ? "90vw" : "30rem"}
           bg="light.100"
           ml={smallscreen ? "1rem" : "0rem"}
         >
