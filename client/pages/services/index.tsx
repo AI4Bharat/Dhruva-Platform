@@ -46,10 +46,12 @@ export default function Services() {
   const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const [seed, setSeed] = useState<number>(0)
 
   const clearFilters = () =>
   {
     setTask("");
+    setSeed(Math.random(1,100));
     setSourceLanguage("");
     setTargetLanguage("");
     setFilteredServices(services);
@@ -158,7 +160,7 @@ export default function Services() {
   return (
     <>
       <ContentLayout>
-        <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"}>
+        <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
           <Stack
             direction={["column", "row"]}
@@ -187,7 +189,7 @@ export default function Services() {
               color="gray.300"
               onChange={taskToggler}
             >
-              <option hidden defaultChecked>
+              <option selected hidden>
                 Select Task Type
               </option>
               <option value="translation">Translation</option>
