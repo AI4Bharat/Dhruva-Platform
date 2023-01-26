@@ -42,7 +42,6 @@ export default function Services() {
   const [sourceLang, setSourceLanguage] = useState<String>("");
   const [targetLang, setTargetLanguage] = useState<String>("");
   const [task, setTask] = useState<String>("");
-  const [clear, setClear] = useState<Boolean>(false);
   const [filteredservices, setFilteredServices] = useState<Service[]>([]);
   const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
@@ -50,6 +49,9 @@ export default function Services() {
 
   const clearFilters = () =>
   {
+    setTask("");
+    setSourceLanguage("");
+    setTargetLanguage("");
     setFilteredServices(services);
     setSearchedServices(services);
   }
@@ -64,6 +66,7 @@ export default function Services() {
 
   const filterToggler = () => 
   {
+    if(task !== "" || sourceLang!=="" || targetLang!=="")
     setFilteredServices
     (
       services.filter((service) => 
