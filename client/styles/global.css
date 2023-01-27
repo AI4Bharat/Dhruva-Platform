@@ -1,0 +1,56 @@
+.centered-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.service-view {
+  height: 100%;
+  width: 95%;
+  display: flex;
+  background-color: white;
+  flex-direction: row;
+  padding: 2%;
+}
+
+.dview-box-about {
+  padding: 30px;
+}
+
+.dview-box-try {
+  padding: 50px;
+}
+
+.dview-box {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.dview-service-description {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.dview-service-info-item {
+  color: #718096;
+}
+
+.dview-service-try-title-box {
+  display: flex;
+  width: 100%;
+  height: auto;
+}
+
+.dview-service-try-title {
+  align-self: flex-end;
+  color: #718096;
+}
+
+.dview-service-try-option-title {
+  white-space: nowrap;
+  align-self: center;
+}

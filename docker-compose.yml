@@ -11,7 +11,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./client:/usr/app
+      - ./server:/src
     command: sh -c "uvicorn main:app --reload --host 0.0.0.0"
     # env_file:
     #   - .env
