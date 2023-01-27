@@ -51,7 +51,7 @@ export default function Services() {
   const clearFilters = () =>
   {
     setTask("");
-    setSeed(Math.random(1,100));
+    setSeed(Math.random());
     setSourceLanguage("");
     setTargetLanguage("");
     setFilteredServices(services);
