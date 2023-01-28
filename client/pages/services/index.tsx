@@ -46,17 +46,16 @@ export default function Services() {
   const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const [seed, setSeed] = useState<number>(0)
+  const [seed, setSeed] = useState<number>(0);
 
-  const clearFilters = () =>
-  {
+  const clearFilters = () => {
     setTask("");
     setSeed(Math.random());
     setSourceLanguage("");
     setTargetLanguage("");
     setFilteredServices(services);
     setSearchedServices(services);
-  }
+  };
 
   const searchToggler = (event: any) => {
     setSearchedServices(
@@ -66,64 +65,59 @@ export default function Services() {
     );
   };
 
-  const filterToggler = () => 
-  {
-    if(task !== "" || sourceLang!=="" || targetLang!=="")
-    setFilteredServices
-    (
-      services.filter((service) => 
-      {
-        let found = false;
-        if (targetLang === "" && sourceLang !== "") 
-        {
-          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (language.sourceLanguage === sourceLang) 
-              {
-                found = true;
-                return false;
+  const filterToggler = () => {
+    if (task !== "" || sourceLang !== "" || targetLang !== "")
+      setFilteredServices(
+        services.filter((service) => {
+          let found = false;
+          if (targetLang === "" && sourceLang !== "") {
+            service.languages.every(
+              (language: {
+                sourceLanguage: String;
+                targetLanguage: String;
+              }) => {
+                if (language.sourceLanguage === sourceLang) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        } 
-        else if (sourceLang === "" && targetLang !== "") 
-        {
-          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (language.targetLanguage === targetLang) 
-              {
-                found = true;
-                return false;
+            );
+          } else if (sourceLang === "" && targetLang !== "") {
+            service.languages.every(
+              (language: {
+                sourceLanguage: String;
+                targetLanguage: String;
+              }) => {
+                if (language.targetLanguage === targetLang) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        } 
-        else if (targetLang !== "" && sourceLang !== "") 
-        {
-          service.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (
-                language.targetLanguage === targetLang &&
-                language.sourceLanguage === sourceLang
-              ) 
-              {
-                found = true;
-                return false;
+            );
+          } else if (targetLang !== "" && sourceLang !== "") {
+            service.languages.every(
+              (language: {
+                sourceLanguage: String;
+                targetLanguage: String;
+              }) => {
+                if (
+                  language.targetLanguage === targetLang &&
+                  language.sourceLanguage === sourceLang
+                ) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        }
-        else if (targetLang === "" && sourceLang === "" && task !== "")
-        {
-          return service.task_type.type.includes(task);
-        } 
-        return found && service.task_type.type.includes(task)
-      }
-      )
-    );
+            );
+          } else if (targetLang === "" && sourceLang === "" && task !== "") {
+            return service.task_type.type.includes(task);
+          }
+          return found && service.task_type.type.includes(task);
+        })
+      );
   };
   const sourceLangToggler = (event: any) => {
     setSourceLanguage(event.target.value);
@@ -154,9 +148,9 @@ export default function Services() {
   }, [sourceLang, targetLang, task]);
 
   useEffect(() => {
-    setSearchedServices(filteredservices)
+    setSearchedServices(filteredservices);
   }, [filteredservices]);
-  
+
   return (
     <>
       <ContentLayout>
@@ -172,7 +166,7 @@ export default function Services() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.300"
+                color="gray.600"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -186,7 +180,7 @@ export default function Services() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.300"
+              color="gray.600"
               onChange={taskToggler}
             >
               <option selected hidden>
@@ -203,7 +197,7 @@ export default function Services() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -215,7 +209,7 @@ export default function Services() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={targetLangToggler}
               >
                 <option hidden defaultChecked>
@@ -235,7 +229,10 @@ export default function Services() {
                 <option value="te">Telugu</option>
               </Select>
             </InputGroup>
-            <Button width={smallscreen?"90vw":"8rem"} onClick={clearFilters}>
+            <Button
+              width={smallscreen ? "90vw" : "8rem"}
+              onClick={clearFilters}
+            >
               Clear Filters
             </Button>
           </Stack>
