@@ -39,9 +39,9 @@ interface Service {
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
-  const [sourceLang, setSourceLanguage] = useState<String>("");
-  const [targetLang, setTargetLanguage] = useState<String>("");
-  const [task, setTask] = useState<String>("");
+  const [sourceLang, setSourceLanguage] = useState<string>("");
+  const [targetLang, setTargetLanguage] = useState<string>("");
+  const [task, setTask] = useState<string>("");
   const [filteredservices, setFilteredServices] = useState<Service[]>([]);
   const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
@@ -73,8 +73,8 @@ export default function Services() {
           if (targetLang === "" && sourceLang !== "") {
             service.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (language.sourceLanguage === sourceLang) {
                   found = true;
@@ -86,8 +86,8 @@ export default function Services() {
           } else if (sourceLang === "" && targetLang !== "") {
             service.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (language.targetLanguage === targetLang) {
                   found = true;
@@ -99,8 +99,8 @@ export default function Services() {
           } else if (targetLang !== "" && sourceLang !== "") {
             service.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (
                   language.targetLanguage === targetLang &&
@@ -177,13 +177,14 @@ export default function Services() {
               />
             </InputGroup>
             <Select
+              value={task}
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
               color="gray.600"
               onChange={taskToggler}
             >
-              <option selected hidden>
+              <option hidden defaultChecked>
                 Select Task Type
               </option>
               <option value="translation">Translation</option>
@@ -195,6 +196,7 @@ export default function Services() {
               background={"white"}
             >
               <Select
+                value={sourceLang}
                 background={"white"}
                 borderRadius={0}
                 color="gray.600"
@@ -207,6 +209,7 @@ export default function Services() {
                 <option value="hi">Hindi</option>
               </Select>
               <Select
+                value={targetLang}
                 background={"white"}
                 borderRadius={0}
                 color="gray.600"

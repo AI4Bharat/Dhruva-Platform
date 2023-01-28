@@ -36,9 +36,9 @@ interface Model {
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
-  const [sourceLang, setSourceLanguage] = useState<String>("");
-  const [targetLang, setTargetLanguage] = useState<String>("");
-  const [task, setTask] = useState<String>("");
+  const [sourceLang, setSourceLanguage] = useState<string>("");
+  const [targetLang, setTargetLanguage] = useState<string>("");
+  const [task, setTask] = useState<string>("");
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [filteredModels, setFilteredModels] = useState<Model[]>(models);
   const [searchedModels, setSearchedModels] = useState<Model[]>([]);
@@ -69,8 +69,8 @@ export default function Models() {
           if (targetLang === "" && sourceLang !== "") {
             model.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (language.sourceLanguage === sourceLang) {
                   found = true;
@@ -82,8 +82,8 @@ export default function Models() {
           } else if (sourceLang === "" && targetLang !== "") {
             model.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (language.targetLanguage === targetLang) {
                   found = true;
@@ -95,8 +95,8 @@ export default function Models() {
           } else if (targetLang !== "" && sourceLang !== "") {
             model.languages.every(
               (language: {
-                sourceLanguage: String;
-                targetLanguage: String;
+                sourceLanguage: string;
+                targetLanguage: string;
               }) => {
                 if (
                   language.targetLanguage === targetLang &&
@@ -180,7 +180,7 @@ export default function Models() {
               color="gray.600"
               onChange={taskToggler}
             >
-              <option selected hidden>
+              <option defaultChecked hidden>
                 Select Task Type
               </option>
               <option value="translation">Translation</option>
