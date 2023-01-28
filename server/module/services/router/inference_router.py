@@ -35,7 +35,7 @@ async def _run_inference_translation(
     return await inference_service.run_translation_triton_inference(request)
 
 
-@router.post("/asr")
+@router.post("/asr",response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
     request: ULCAAsrInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
 ):
