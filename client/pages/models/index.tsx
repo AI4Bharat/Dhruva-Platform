@@ -243,7 +243,7 @@ export default function Models() {
                 <ModelCard
                   key={id}
                   name={modelData.name}
-                  modelID={modelData.modelId}
+                  modelId={modelData.modelId}
                   version={modelData.version}
                   taskType={modelData.task.type}
                 />
@@ -294,9 +294,9 @@ export default function Models() {
                           {" "}
                           <Link
                             href={{
-                              pathname: `/models`,
+                              pathname: `/models/view`,
                               query: {
-                                serviceId: id,
+                                modelId: modelData.modelId,
                               },
                             }}
                           >

@@ -28,21 +28,21 @@ const ModelCard = (props: any) => {
       </Box>
       <Box fontSize={"md"}>
         <HStack>
-        <Text fontWeight={"bold"}>Version  :</Text>
-        <Text>{props.version}</Text>
+          <Text fontWeight={"bold"}>Version :</Text>
+          <Text>{props.version}</Text>
         </HStack>
       </Box>
       <Box fontSize={"md"}>
         <HStack>
-            <Text fontWeight={"bold"}>Task Type :</Text>
-            <Text>{props.taskType}</Text>
+          <Text fontWeight={"bold"}>Task Type :</Text>
+          <Text>{props.taskType}</Text>
         </HStack>
       </Box>
       <Link
         href={{
-          pathname: `/models`,
+          pathname: `/models/view`,
           query: {
-            serviceId: props.serviceID,
+            modelId: props.modelId,
           },
         }}
       >

@@ -52,6 +52,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/services",
     "/services/view",
     "/models",
+    "/models/view",
     "/billing",
     "/profile",
     "/analyze",
