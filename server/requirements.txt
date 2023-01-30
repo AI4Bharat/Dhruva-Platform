@@ -30,4 +30,4 @@ numpy==1.24.1
 tritonclient[all]==2.23.0
 gevent==22.10.2
 scipy==1.10.0
-soundfile
+soundfile==0.11.0
