@@ -1,6 +1,8 @@
 import traceback
+from typing import Union
 from fastapi import Depends
 from exception.base_error import BaseError
+from ..domain.request.ulca_generic_inference_request import ULCAGenericInferenceRequest
 from ..domain.request.ulca_asr_inference_request import ULCAAsrInferenceRequest
 from ..domain.request.ulca_translation_inference_request import ULCATranslationInferenceRequest
 from ..domain.request.ulca_tts_inference_request import ULCATtsInferenceRequest
@@ -18,7 +20,11 @@ from scipy.io.wavfile import write as scipy_wav_write
 import io
 import tritonclient.http as http_client
 from tritonclient.utils import np_to_triton_dtype
+import base64
+import soundfile as sf
+from urllib.request import urlopen
 
+import requests
 class InferenceService:
     def __init__(
         self,
@@ -30,7 +36,15 @@ class InferenceService:
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
 
-    def run_inference(self, request: _ULCABaseInferenceRequest) -> dict:
+    async def run_inference(
+        self,
+        request: Union[
+            ULCAGenericInferenceRequest,
+            ULCAAsrInferenceRequest,
+            ULCATranslationInferenceRequest,
+            ULCATtsInferenceRequest,
+        ],
+    ) -> dict:
         try:
             service = self.service_repository.find_by_id(request.serviceId)
         except:
@@ -45,16 +59,26 @@ class InferenceService:
         request_body = request.dict()
 
         if task_type == "translation":
-            # Temporary patch for NMT: Since the deployment hosts multiple models, it requires `modelId` explicitly
-            self._add_model_id_to_request(request_body)
-
-        return self.inference_gateway.send_inference_request(request_body, service)
+            request_obj = ULCATranslationInferenceRequest(**request_body)
+            return await self.run_translation_triton_inference(request_obj)
+        elif task_type == "asr":
+            request_obj = ULCAAsrInferenceRequest(**request_body)
+            return await self.run_asr_triton_inference(request_obj)
+        elif task_type == "tts":
+            request_obj = ULCATtsInferenceRequest(**request_body)
+            return await self.run_tts_triton_inference(request_obj)
 
     async def run_asr_triton_inference(self, request_body: ULCAAsrInferenceRequest) -> ULCAAsrInferenceResponse:
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
-            raw_audio = np.array(input.audioContent)
-            o = self.__pad_batch(raw_audio)
+            if input.audioContent is None and input.audioUri is not None:
+                data,_ = sf.read(io.BytesIO(urlopen(input.audioUri).read()))
+                data = data.tolist()
+            else:
+                data,_ = sf.read(io.BytesIO(base64.b64decode(input.audioContent)))
+                data = data.tolist()
+            raw_audio = np.array(data)
+            o = self.__pad_batch([raw_audio])
             input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
             input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
             input0.set_data_from_numpy(o[0])
@@ -64,7 +88,7 @@ class InferenceService:
             headers = {"Authorization": "Bearer " + service.key}
             response = await self.inference_gateway.send_triton_request(
                 url=service.endpoint,
-                model_name="offline_conformer",
+                model_name="asr_am_ensemble",
                 input_list=[input0, input1],
                 output_list=[output0],
                 headers=headers,
@@ -75,7 +99,9 @@ class InferenceService:
                 res["output"].append({"source": output})
         return res
 
-    async def run_translation_triton_inference(self, request_body: ULCATranslationInferenceRequest) -> ULCATranslationInferenceResponse:
+    async def run_translation_triton_inference(
+        self, request_body: ULCATranslationInferenceRequest
+    ) -> ULCATranslationInferenceResponse:
         results = []
         for input in request_body.input:
             input_string = input.source
@@ -126,7 +152,7 @@ class InferenceService:
 
         request_body["config"]["modelId"] = LANG_TRANS_MODEL_CODES.get(lang_pair, DEFAULT_ULCA_INDIC_TO_INDIC_MODEL_ID)
 
-    def __pad_batch(self,batch_data):
+    def __pad_batch(self, batch_data):
         batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
         max_length = max(batch_data_lens)
         batch_size = len(batch_data)
@@ -136,7 +162,7 @@ class InferenceService:
             padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
         return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
 
-    def __get_string_tensor(self,string_value:str, tensor_name:str):
+    def __get_string_tensor(self, string_value: str, tensor_name: str):
         string_obj = np.array([string_value], dtype="object")
         input_obj = http_client.InferInput(tensor_name, string_obj.shape, np_to_triton_dtype(string_obj.dtype))
         input_obj.set_data_from_numpy(string_obj)
