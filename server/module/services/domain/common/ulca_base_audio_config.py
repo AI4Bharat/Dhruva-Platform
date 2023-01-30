@@ -8,3 +8,4 @@ class _ULCABaseAudioConfig(BaseModel):
     audioFormat: Optional[str]
     encoding: Optional[str]
     samplingRate: Optional[int]
+    postProcessors: Optional[list[str]]
