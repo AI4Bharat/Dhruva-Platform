@@ -4,6 +4,9 @@ from exception.base_error import BaseError
 from ..domain.request.ulca_asr_inference_request import ULCAAsrInferenceRequest
 from ..domain.request.ulca_translation_inference_request import ULCATranslationInferenceRequest
 from ..domain.request.ulca_tts_inference_request import ULCATtsInferenceRequest
+from ..domain.response.ulca_asr_inference_response import ULCAAsrInferenceResponse
+from ..domain.response.ulca_translation_inference_response import ULCATranslationInferenceResponse
+from ..domain.response.ulca_tts_inference_response import ULCATtsInferenceResponse
 from ..error.errors import Errors
 from ..domain.constants import DEFAULT_ULCA_INDIC_TO_INDIC_MODEL_ID, LANG_TRANS_MODEL_CODES
 from ..domain.common import _ULCABaseInferenceRequest
@@ -47,7 +50,7 @@ class InferenceService:
 
         return self.inference_gateway.send_inference_request(request_body, service)
 
-    async def run_asr_triton_inference(self, request_body: ULCAAsrInferenceRequest):
+    async def run_asr_triton_inference(self, request_body: ULCAAsrInferenceRequest) -> ULCAAsrInferenceResponse:
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
             raw_audio = np.array(input.audioContent)
@@ -72,7 +75,7 @@ class InferenceService:
                 res["output"].append({"source": output})
         return res
 
-    async def run_translation_triton_inference(self, request_body: ULCATranslationInferenceRequest):
+    async def run_translation_triton_inference(self, request_body: ULCATranslationInferenceRequest) -> ULCATranslationInferenceResponse:
         results = []
         for input in request_body.input:
             input_string = input.source
@@ -93,7 +96,7 @@ class InferenceService:
         res = {"config": request_body.config, "output": results}
         return res
 
-    async def run_tts_triton_inference(self, request_body: ULCATtsInferenceRequest):
+    async def run_tts_triton_inference(self, request_body: ULCATtsInferenceRequest) -> ULCATtsInferenceResponse:
         results = []
         for input in request_body.input:
             input_string = input.source
