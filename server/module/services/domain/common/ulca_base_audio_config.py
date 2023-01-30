@@ -1,4 +1,3 @@
-from optparse import Option
 from typing import Optional
 from pydantic import BaseModel
 from .ulca_language import _ULCALanguage
@@ -9,4 +8,4 @@ class _ULCABaseAudioConfig(BaseModel):
     audioFormat: Optional[str]
     encoding: Optional[str]
     samplingRate: Optional[int]
-    postProcessors: Optional[str]
+    postProcessors: Optional[list[str]]

@@ -6,7 +6,7 @@ from exception.base_error import BaseError
 from ..error import Errors
 from ..model import Service
 import tritonclient.http as http_client
-
+from fastapi.logger import logger
 
 
 
@@ -33,7 +33,9 @@ class InferenceGateway:
                 concurrency=20,
             )
             health_ctx = triton_client.is_server_ready(headers=headers)
-            print("Is server ready - {}".format(health_ctx))
+            logger.info("Health ctx: {}".format(health_ctx))
+            if not health_ctx.get_result():
+                raise BaseError(Errors.DHRUVA101.value, "Triton server is not ready")
             response = triton_client.async_infer(
                 model_name, model_version="1", inputs=input_list, outputs=output_list, headers=headers
             )
@@ -42,4 +44,7 @@ class InferenceGateway:
         except:
             raise BaseError(Errors.DHRUVA101.value, traceback.format_exc())
         return response
+
+
+  
 
