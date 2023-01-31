@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 export default function Login() {
   const router = useRouter();
@@ -27,6 +28,9 @@ export default function Login() {
 
   return (
     <>
+    <Head>
+      <title>Login into Dhruva</title>
+    </Head>
       {isMobile ? (
         <Grid templateColumns="repeat(1, 1fr)">
           <GridItem className="centered-column" w="100%" h="100vh">

@@ -25,6 +25,7 @@ import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
 import { dhruvaConfig } from "../../config/config";
 import Image from "next/image";
+import Head from "next/head";
 
 interface Service {
   serviceId: string;
@@ -160,6 +161,9 @@ export default function Services() {
   
   return (
     <>
+    <Head>
+      <title>Services</title>
+    </Head>
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}

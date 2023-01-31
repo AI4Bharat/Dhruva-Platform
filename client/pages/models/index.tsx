@@ -25,6 +25,7 @@ import axios from "axios";
 import ModelCard from "../../components/Mobile/Models/ModelCard";
 import { dhruvaConfig } from "../../config/config";
 import Image from "next/image";
+import Head from "next/head";
 
 interface Model {
   name: string;
@@ -153,6 +154,9 @@ export default function Models() {
 
   return (
     <>
+      <Head>
+      <title>Models Registry</title>
+      </Head>
       <ContentLayout>
       <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
