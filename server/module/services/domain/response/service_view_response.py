@@ -10,5 +10,5 @@ class ServiceViewResponse(ServiceResponse):
     model: Model
 
 class ServiceListResponse(ServiceResponse):
-    task_type: _Task
+    task: _Task
     languages: List[dict]

@@ -8,5 +8,5 @@ class _Task(BaseModel):
     type: str
 
 class ServiceListResponse(ServiceResponse):
-    task_type: _Task
+    task: _Task
     languages: List[dict]
