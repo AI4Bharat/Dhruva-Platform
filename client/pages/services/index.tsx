@@ -33,7 +33,7 @@ interface Service {
   hardwareDescription: string;
   publishedOn: number;
   modelId: string;
-  task_type: any;
+  task: any;
   languages: any;
 }
 
@@ -113,9 +113,9 @@ export default function Services() {
               }
             );
           } else if (targetLang === "" && sourceLang === "" && task !== "") {
-            return service.task_type.type.includes(task);
+            return service.task.type.includes(task);
           }
-          return found && service.task_type.type.includes(task);
+          return found && service.task.type.includes(task);
         })
       );
   };

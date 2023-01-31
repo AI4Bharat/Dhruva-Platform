@@ -40,7 +40,7 @@ class DetailsService:
                         model = self.model_repository.find_by_id(services[k].modelId)
                     except:
                         raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-                    temp = ServiceListResponse(**services[k].dict(), languages=model.languages, task_type=model.task)
+                    temp = ServiceListResponse(**services[k].dict(), languages=model.languages, task=model.task)
                     services_list.append(temp)
             except:
                 raise BaseError(Errors.DHRUVA103.value, traceback.format_exc())
