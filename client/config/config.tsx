@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
 
-const dhruvaRootURL: string = "https://api.dhruva.co";
+const dhruvaRootURL: string = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 const dhruvaConfig: { [key: string]: string } = {
   listServices: `${dhruvaRootURL}/services/details/list_services`,
