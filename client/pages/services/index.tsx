@@ -45,6 +45,7 @@ export default function Services() {
   const [filteredservices, setFilteredServices] = useState<Service[]>([]);
   const [searchedservices, setSearchedServices] = useState<Service[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
+  const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [seed, setSeed] = useState<number>(0)
 
@@ -192,9 +193,9 @@ export default function Services() {
               <option selected hidden>
                 Select Task Type
               </option>
-              <option value="translation">Translation</option>
-              <option value="tts">TTS</option>
-              <option value="asr">ASR</option>
+              <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
+              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="tts">TTS</option>
+              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="asr">ASR</option>
             </Select>
             <InputGroup
               width={smallscreen ? "90vw" : "30rem"}
@@ -211,12 +212,23 @@ export default function Services() {
                 </option>
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
+                <option value="as">Assamese</option>
+                <option value="bn">Bengali</option>
+                <option value="gu">Gujarati</option>
+                <option value="kn">Kannada</option>
+                <option value="ml">Malayalam</option>
+                <option value="mr">Marathi</option>
+                <option value="or">Oriya</option>
+                <option value="pa">Punjabi</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>              
               </Select>
               <Select
                 background={"white"}
                 borderRadius={0}
                 color="gray.300"
                 onChange={targetLangToggler}
+                display={hideTarget?"none":"block"}
               >
                 <option hidden defaultChecked>
                   Target Language
