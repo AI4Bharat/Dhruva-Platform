@@ -42,19 +42,18 @@ export default function Models() {
   const [task, setTask] = useState<String>("");
   const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const [filteredModels, setFilteredModels] = useState<Model[]>(models)
+  const [filteredModels, setFilteredModels] = useState<Model[]>(models);
   const [searchedModels, setSearchedModels] = useState<Model[]>([]);
-  const [seed, setSeed] = useState<number>(0)
-  
-  const clearFilters = () =>
-  {
+  const [seed, setSeed] = useState<number>(0);
+
+  const clearFilters = () => {
     setTask("");
     setSeed(Math.random());
     setSourceLanguage("");
     setTargetLanguage("");
     setFilteredModels(models);
     setSearchedModels(models);
-  }
+  };
 
   const searchToggler = (event: any) => {
     setSearchedModels(
@@ -64,64 +63,59 @@ export default function Models() {
     );
   };
 
-  const filterToggler = () => 
-  {
-    if(task !== "" || sourceLang!=="" || targetLang!=="")
-    setFilteredModels
-    (
-      models.filter((model) => 
-      {
-        let found = false;
-        if (targetLang === "" && sourceLang !== "") 
-        {
-          model.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (language.sourceLanguage === sourceLang) 
-              {
-                found = true;
-                return false;
+  const filterToggler = () => {
+    if (task !== "" || sourceLang !== "" || targetLang !== "")
+      setFilteredModels(
+        models.filter((model) => {
+          let found = false;
+          if (targetLang === "" && sourceLang !== "") {
+            model.languages.every(
+              (language: {
+                sourceLanguage: string;
+                targetLanguage: string;
+              }) => {
+                if (language.sourceLanguage === sourceLang) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        } 
-        else if (sourceLang === "" && targetLang !== "") 
-        {
-          model.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (language.targetLanguage === targetLang) 
-              {
-                found = true;
-                return false;
+            );
+          } else if (sourceLang === "" && targetLang !== "") {
+            model.languages.every(
+              (language: {
+                sourceLanguage: string;
+                targetLanguage: string;
+              }) => {
+                if (language.targetLanguage === targetLang) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        } 
-        else if (targetLang !== "" && sourceLang !== "") 
-        {
-          model.languages.every((language: { sourceLanguage: String; targetLanguage: String }) => 
-            {
-              if (
-                language.targetLanguage === targetLang &&
-                language.sourceLanguage === sourceLang
-              ) 
-              {
-                found = true;
-                return false;
+            );
+          } else if (targetLang !== "" && sourceLang !== "") {
+            model.languages.every(
+              (language: {
+                sourceLanguage: string;
+                targetLanguage: string;
+              }) => {
+                if (
+                  language.targetLanguage === targetLang &&
+                  language.sourceLanguage === sourceLang
+                ) {
+                  found = true;
+                  return false;
+                }
+                return true;
               }
-              return true;
-            }
-          );
-        }
-        else if (targetLang === "" && sourceLang === "" && task !== "")
-        {
-          return model.task.type.includes(task);
-        } 
-        return found && model.task.type.includes(task)
-      }
-      )
-    );
+            );
+          } else if (targetLang === "" && sourceLang === "" && task !== "") {
+            return model.task.type.includes(task);
+          }
+          return found && model.task.type.includes(task);
+        })
+      );
   };
 
   const sourceLangToggler = (event: any) => {
@@ -140,16 +134,20 @@ export default function Models() {
     filterToggler();
   }, [sourceLang, targetLang, task]);
 
-
   useEffect(() => {
-    setSearchedModels(filteredModels)
+    setSearchedModels(filteredModels);
   }, [filteredModels]);
 
   useEffect(() => {
     axios({
       method: "GET",
       url: dhruvaConfig.listModels,
-    }).then((response) => {setModels(response.data); setFilteredModels(response.data); setSearchedModels(response.data); togglehide(false)});
+    }).then((response) => {
+      setModels(response.data);
+      setFilteredModels(response.data);
+      setSearchedModels(response.data);
+      togglehide(false);
+    });
   }, []);
 
   return (
@@ -158,7 +156,7 @@ export default function Models() {
       <title>Models Registry</title>
       </Head>
       <ContentLayout>
-      <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
+        <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
           <Stack
             direction={["column", "row"]}
@@ -170,7 +168,7 @@ export default function Models() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.300"
+                color="gray.600"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -184,10 +182,10 @@ export default function Models() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.300"
+              color="gray.600"
               onChange={taskToggler}
             >
-              <option selected hidden>
+              <option defaultChecked hidden>
                 Select Task Type
               </option>
               <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
@@ -201,7 +199,7 @@ export default function Models() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -244,92 +242,111 @@ export default function Models() {
                 <option value="te">Telugu</option>
               </Select>
             </InputGroup>
-            <Button width={smallscreen?"90vw":"8rem"} onClick={clearFilters}>
+            <Button
+              width={smallscreen ? "90vw" : "8rem"}
+              onClick={clearFilters}
+            >
               Clear Filters
             </Button>
           </Stack>
         </Box>
         <br />
-        {smallscreen ? ( 
+        {smallscreen ? (
           // Mobile View
-          searchedModels.length > 0 ? 
-          <Box>
-            {Object.entries(searchedModels).map(([id, modelData]) => (
-              <ModelCard
-                key={id}
-                name={modelData.name}
-                modelID={modelData.modelId}
-                version={modelData.version}
-                taskType={modelData.task.type}
-              />
-            ))}
-          </Box> : 
-        <>                        
-          <HStack background={"gray.50"} width="100vw" height="50vh">
-            <Spacer/>
-              <Box textAlign={"center"} display={hide?"none":"block"} >
-              <Image height={300} width={300}  alt="No Results Found" src="NoResults.svg"/>
-              <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
-              </Box>
-            <Spacer/>
-          </HStack>
-        </>
+          searchedModels.length > 0 ? (
+            <Box>
+              {Object.entries(searchedModels).map(([id, modelData]) => (
+                <ModelCard
+                  key={id}
+                  name={modelData.name}
+                  modelID={modelData.modelId}
+                  version={modelData.version}
+                  taskType={modelData.task.type}
+                />
+              ))}
+            </Box>
+          ) : (
+            <>
+              <HStack background={"gray.50"} width="100vw" height="50vh">
+                <Spacer />
+                <Box textAlign={"center"} display={hide ? "none" : "block"}>
+                  <Image
+                    height={300}
+                    width={300}
+                    alt="No Results Found"
+                    src="NoResults.svg"
+                  />
+                  <Text fontSize={"lg"} color="gray.400">
+                    Uh Oh! No Results Found
+                  </Text>
+                </Box>
+                <Spacer />
+              </HStack>
+            </>
+          )
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedModels.length > 0 ?            
-            <Table variant="unstyled">
-              <Thead>
-                <Tr>
-                  <Th>Name</Th>
-                  <Th>Model ID</Th>
-                  <Th>Version</Th>
-                  <Th>Task Type</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {Object.entries(searchedModels).map(([id, modelData]) => {
-                  return (
-                    <Tr key={id} fontSize={"sm"}>
-                      <Td>{modelData.name}</Td>
-                      <Td>{modelData.modelId}</Td>
-                      <Td>{modelData.version}</Td>
-                      <Td>{modelData.task.type}</Td>
-                      <Td>
-                        {" "}
-                        <Link
-                          href={{
-                            pathname: `/models`,
-                            query: {
-                              serviceId: id,
-                            },
-                          }}
-                        >
+            {searchedModels.length > 0 ? (
+              <Table variant="unstyled">
+                <Thead>
+                  <Tr>
+                    <Th>Name</Th>
+                    <Th>Model ID</Th>
+                    <Th>Version</Th>
+                    <Th>Task Type</Th>
+                    <Th>Actions</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {Object.entries(searchedModels).map(([id, modelData]) => {
+                    return (
+                      <Tr key={id} fontSize={"sm"}>
+                        <Td>{modelData.name}</Td>
+                        <Td>{modelData.modelId}</Td>
+                        <Td>{modelData.version}</Td>
+                        <Td>{modelData.task.type}</Td>
+                        <Td>
                           {" "}
-                          <Button size={"sm"} variant={"outline"}>
-                            View
-                          </Button>
-                        </Link>
-                      </Td>
-                    </Tr>
-                  );
-                })}
-              </Tbody>
-            </Table>:
-            <HStack background={"gray.50"}>
-              <Spacer/>
-                <Box textAlign={"center"} display={hide?"none":"block"}>
-                <Image height={400} width={400}  alt="No Results Found" src="NoResults.svg"/>
-                <Text fontSize={"lg"} color="gray.400">Uh Oh! No Results Found</Text>
+                          <Link
+                            href={{
+                              pathname: `/models`,
+                              query: {
+                                serviceId: id,
+                              },
+                            }}
+                          >
+                            {" "}
+                            <Button size={"sm"} variant={"outline"}>
+                              View
+                            </Button>
+                          </Link>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+                </Tbody>
+              </Table>
+            ) : (
+              <HStack background={"gray.50"}>
+                <Spacer />
+                <Box textAlign={"center"} display={hide ? "none" : "block"}>
+                  <Image
+                    height={400}
+                    width={400}
+                    alt="No Results Found"
+                    src="NoResults.svg"
+                  />
+                  <Text fontSize={"lg"} color="gray.400">
+                    Uh Oh! No Results Found
+                  </Text>
                 </Box>
-              <Spacer/>
-            </HStack>}
-
+                <Spacer />
+              </HStack>
+            )}
           </Box>
         )}
       </ContentLayout>
     </>
   );
 }
-
