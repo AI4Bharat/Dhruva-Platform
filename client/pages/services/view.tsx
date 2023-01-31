@@ -21,6 +21,7 @@ import { dhruvaConfig } from "../../config/config";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
+import Head from "next/head";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -95,6 +96,10 @@ export default function ViewService() {
   };
 
   return (
+    <>
+    <Head>
+      <title>View Service</title>
+    </Head>
     <ContentLayout>
       {smallscreen ? (
         <Grid
@@ -217,5 +222,6 @@ export default function ViewService() {
         </Grid>
       )}
     </ContentLayout>
+    </>
   );
 }

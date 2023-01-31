@@ -9,6 +9,7 @@ import "../styles/global.css";
 import "../components/indic-transliterate/dist/index.css";
 import Navbar from "../components/Navigation/Navbar";
 import NavbarMobile from "../components/Navigation/NavbarMobile";
+import Head from "next/head";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,10 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   return (
     <>
+      <Head>
+        <link rel="shortcut icon" href="AI4Bharat.svg" />
+        <link rel="icon" href="AI4Bharat.svg"/>
+      </Head>
       <Grid
         overflowX={"hidden"}
         templateAreas={`"nav main"`}
