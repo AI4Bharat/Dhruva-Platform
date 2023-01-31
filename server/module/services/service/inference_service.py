@@ -72,11 +72,11 @@ class InferenceService:
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
             if input.audioContent is None and input.audioUri is not None:
-                data,_ = sf.read(io.BytesIO(urlopen(input.audioUri).read()))
-                data = data.tolist()
+                file_bytes = urlopen(input.audioUri).read()
             else:
-                data,_ = sf.read(io.BytesIO(base64.b64decode(input.audioContent)))
-                data = data.tolist()
+                file_bytes = base64.b64decode(input.audioContent)
+            data,_ = sf.read(io.BytesIO(file_bytes))
+            data = data.tolist()
             raw_audio = np.array(data)
             o = self.__pad_batch([raw_audio])
             input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
@@ -104,7 +104,7 @@ class InferenceService:
     ) -> ULCATranslationInferenceResponse:
         results = []
         for input in request_body.input:
-            input_string = input.source
+            input_string = input.source.strip()
             inputs = [
                 self.__get_string_tensor(input_string, "INPUT_TEXT"),
                 self.__get_string_tensor(request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"),
@@ -118,7 +118,7 @@ class InferenceService:
             )
             encoded_result = response.as_numpy("OUTPUT_TEXT")
             result = encoded_result.tolist()[0].decode("utf-8")
-            results.append({"source": result, "target": input_string})
+            results.append({"source": input_string, "target": result})
         res = {"config": request_body.config, "output": results}
         return res
 
@@ -130,7 +130,7 @@ class InferenceService:
             ip_gender = request_body.config.gender
             inputs = [
                 self.__get_string_tensor(input_string, "INPUT_TEXT"),
-                self.__get_string_tensor(ip_gender, "INPUT_SPEAKER_GENDER"),
+                self.__get_string_tensor(ip_gender, "INPUT_SPEAKER_ID"),
                 self.__get_string_tensor(ip_language, "INPUT_LANGUAGE_ID"),
             ]
             output0 = http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
@@ -142,8 +142,22 @@ class InferenceService:
             wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
             byte_io = io.BytesIO()
             scipy_wav_write(byte_io, 22050, wav)
-            results.append({"source": byte_io, "target": input_string})
-        res = {"config": request_body.config, "output": results}
+            encoded_bytes = base64.b64encode(byte_io.read())
+            encoded_string = encoded_bytes.decode()
+            results.append({
+                "audioContent": encoded_string
+            })
+        res = {
+            "config": {
+                "language": {
+                    "sourceLanguage": ip_language
+                },
+                "audioFormat": "wav",
+                "encoding": "base64",
+                "samplingRate": 22050,
+            },
+            "audio": results
+        }
         return res
 
     def _add_model_id_to_request(self, request_body: dict) -> None:
