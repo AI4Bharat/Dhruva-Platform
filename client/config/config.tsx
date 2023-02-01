@@ -28,6 +28,11 @@ const lang2label: { [key: string]: string } = {
   pa: "Punjabi",
   or: "Oriya",
   gu: "Gujarati",
+  raj: "Rajasthani",
+  ur: "Urdu",
+  sa: "Sanskrit",
+  brx: "Bodo",
+  mni: "Manipuri",
 };
 
 const apiInstance = axios.create();
