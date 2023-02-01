@@ -41,12 +41,13 @@ export default function ASRTry({ ...props }) {
   const [recording, setRecording] = useState(false);
   const [sampleRate, setSampleRate] = useState<number>(16000);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-  const [recorder, setRecorder] = useState<MediaRecorder>(null);
+  const [recorder, setRecorder] = useState<any>(null);
+  const [audioStream, setAudioStream] = useState<any>(null);
   const [fetched, setFetched] = useState(false);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
 
-  const [inferenceMode, setInferenceMode] = useState("rest");
+  const [inferenceMode, setInferenceMode] = useState("streaming");
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -56,14 +57,8 @@ export default function ASRTry({ ...props }) {
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
-    recorder!.ondataavailable = (e: BlobEvent) => {
-      audioChunks.push(e.data);
-    };
-    recorder!.onstop = (e) => {
-      console.log("Recording Done...");
-    };
-
-    recorder!.start(0.5);
+    recorder.record();
+    console.log("Recording started");
   };
 
   const getASROutput = (asrInput: string) => {
@@ -102,18 +97,24 @@ export default function ASRTry({ ...props }) {
       });
   };
 
-  const stopRecording = () => {
-    setRecording(!recording);
-    setPlaceHolder("Start Recording for ASR Inference...");
-    recorder!.stop();
-    let blob = new Blob(audioChunks, { type: "audio/wav" });
-    const reader: FileReader = new FileReader();
+  const handleRecording = (blob: any) => {
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = () => {
-      var base64Data: string = reader.result as string;
-      getASROutput(base64Data.split(",")[1]);
-      setAudioChunks([]);
+      var result = reader.result as string;
+      var base64Data = result.split(",")[1];
+      var audio = new Audio("data:audio/wav;base64," + base64Data);
+      audio.play();
+      getASROutput(base64Data);
     };
+  };
+
+  const stopRecording = () => {
+    setRecording(!recording);
+    recorder.stop();
+    audioStream.getAudioTracks()[0].stop();
+    recorder.exportWAV(handleRecording, "audio/wav", 16000);
+    setPlaceHolder("Start Recording for ASR Inference...");
     setFetching(false);
     setFetched(true);
   };
@@ -159,7 +160,11 @@ export default function ASRTry({ ...props }) {
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      var newRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      setAudioStream(stream);
+      var AudioContext = window.AudioContext;
+      var audioContext = new AudioContext();
+      var input = audioContext.createMediaStreamSource(stream);
+      var newRecorder = new Recorder(input, { numChannels: 1 });
       setRecorder(newRecorder);
     });
 
