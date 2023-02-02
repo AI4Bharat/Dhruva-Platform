@@ -153,7 +153,7 @@ export default function Models() {
   return (
     <>
       <Head>
-      <title>Models Registry</title>
+        <title>Models Registry</title>
       </Head>
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
@@ -168,7 +168,7 @@ export default function Models() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.600"
+                color="gray.300"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -182,15 +182,15 @@ export default function Models() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.600"
+              color="gray.300"
               onChange={taskToggler}
             >
               <option defaultChecked hidden>
                 Select Task Type
               </option>
-              <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="tts">TTS</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="asr">ASR</option>
+              <option onClick={() => { setHideTarget(false) }} value="translation">Translation</option>
+              <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="tts">TTS</option>
+              <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="asr">ASR</option>
             </Select>
             <InputGroup
               width={smallscreen ? "90vw" : "30rem"}
@@ -199,7 +199,7 @@ export default function Models() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                color="gray.600"
+                color="gray.300"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -221,9 +221,9 @@ export default function Models() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                display={hideTarget?"none":"block"}
-                color="gray.300"
+                display={hideTarget ? "none" : "block"}
                 onChange={targetLangToggler}
+                color="gray.600"
               >
                 <option hidden defaultChecked>
                   Target Language

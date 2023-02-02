@@ -18,6 +18,7 @@ router = APIRouter(
 
 @router.get("/list_services", response_model=List[ServiceListResponse])
 async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository), details_service: DetailsService = Depends(DetailsService)):
+    
     services_list = details_service.list_services()
     return services_list
 

@@ -34,7 +34,7 @@ interface Service {
   hardwareDescription: string;
   publishedOn: number;
   modelId: string;
-  task_type: any;
+  task: any;
   languages: any;
 }
 
@@ -115,9 +115,9 @@ export default function Services() {
               }
             );
           } else if (targetLang === "" && sourceLang === "" && task !== "") {
-            return service.task_type.type.includes(task);
+            return service.task.type.includes(task);
           }
-          return found && service.task_type.type.includes(task);
+          return found && service.task.type.includes(task);
         })
       );
   };
@@ -171,7 +171,7 @@ export default function Services() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.600"
+                color="gray.300"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -186,7 +186,7 @@ export default function Services() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.600"
+              color="gray.300"
               onChange={taskToggler}
             >
               <option hidden defaultChecked>
@@ -204,7 +204,7 @@ export default function Services() {
                 value={sourceLang}
                 background={"white"}
                 borderRadius={0}
-                color="gray.600"
+                color="gray.300"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -227,7 +227,7 @@ export default function Services() {
                 value={targetLang}
                 background={"white"}
                 borderRadius={0}
-                color="gray.600"
+                color="gray.300"
                 onChange={targetLangToggler}
                 display={hideTarget?"none":"block"}
               >
