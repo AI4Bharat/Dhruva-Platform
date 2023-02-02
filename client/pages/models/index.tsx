@@ -222,7 +222,6 @@ export default function Models() {
                 background={"white"}
                 borderRadius={0}
                 display={hideTarget?"none":"block"}
-                color="gray.300"
                 onChange={targetLangToggler}
               >
                 <option hidden defaultChecked>
