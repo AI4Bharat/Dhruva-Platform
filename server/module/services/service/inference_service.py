@@ -14,6 +14,7 @@ from ..domain.constants import DEFAULT_ULCA_INDIC_TO_INDIC_MODEL_ID, LANG_TRANS_
 from ..domain.common import _ULCABaseInferenceRequest
 from ..gateway import InferenceGateway
 from ..repository import ServiceRepository, ModelRepository
+import requests
 import numpy as np
 import tritonclient.http as http_client
 from scipy.io.wavfile import write as scipy_wav_write
@@ -24,7 +25,25 @@ import base64
 import soundfile as sf
 from urllib.request import urlopen
 
-import requests
+from indictrans import Transliterator
+ISO_639_v2_to_v3 = {
+    "as": "asm",
+    "bn": "ben",
+    "en": "eng",
+    "gu": "guj",
+    "hi": "hin",
+    "kn": "kan",
+    "ml": "mal",
+    "mr": "mar",
+    "ne": "nep",
+    "or": "ori",
+    "pa": "pan",
+    "sa": "hin",
+    "ta": "tam",
+    "te": "tel",
+    "ur": "urd",
+}
+
 class InferenceService:
     def __init__(
         self,
@@ -69,6 +88,7 @@ class InferenceService:
             return await self.run_tts_triton_inference(request_obj)
 
     async def run_asr_triton_inference(self, request_body: ULCAAsrInferenceRequest) -> ULCAAsrInferenceResponse:
+        language = request_body.config.language.sourceLanguage
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
             if input.audioContent is None and input.audioUri is not None:
@@ -97,6 +117,17 @@ class InferenceService:
             outputs = [result.decode("utf-8") for result in encoded_result.tolist()]
             for output in outputs:
                 res["output"].append({"source": output})
+        
+        # Temporary patch
+        if language in {"kn", "ml", "te"}:
+            trn = Transliterator(source="tam", target=ISO_639_v2_to_v3[language])
+            for i in range(len(res["output"])):
+                res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
+        elif language in {"bn", "gu", "or", "pa", "ur"}:
+            trn = Transliterator(source="hin", target=ISO_639_v2_to_v3[language])
+            for i in range(len(res["output"])):
+                res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
+
         return res
 
     async def run_translation_triton_inference(
@@ -104,7 +135,7 @@ class InferenceService:
     ) -> ULCATranslationInferenceResponse:
         results = []
         for input in request_body.input:
-            input_string = input.source.strip()
+            input_string = input.source.replace('\n', ' ').strip()
             inputs = [
                 self.__get_string_tensor(input_string, "INPUT_TEXT"),
                 self.__get_string_tensor(request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"),

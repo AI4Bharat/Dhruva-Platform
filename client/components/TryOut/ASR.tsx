@@ -46,7 +46,7 @@ export default function ASRTry({ ...props }) {
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
 
-  const [inferenceMode, setInferenceMode] = useState("rest");
+  const [inferenceMode, setInferenceMode] = useState("streaming");
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -119,6 +119,7 @@ export default function ASRTry({ ...props }) {
   };
 
   const startStreaming = () => {
+    setStreamingText("");
     setStreaming(true);
     setFetching(true);
     streamingClient.connect(
@@ -154,7 +155,7 @@ export default function ASRTry({ ...props }) {
     streamingClient.disconnect();
     setStreaming(false);
     setFetching(false);
-    setStreamingText("");
+    // setStreamingText("");
   };
 
   useEffect(() => {
@@ -187,8 +188,8 @@ export default function ASRTry({ ...props }) {
                 setInferenceMode(e.target.value);
               }}
             >
-              <option value={"rest"}>REST</option>
               <option value={"streaming"}>Streaming</option>
+              <option value={"rest"}>REST</option>
             </Select>
           </Stack>
           <Stack direction={"row"}>

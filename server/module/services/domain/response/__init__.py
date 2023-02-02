@@ -3,4 +3,5 @@ from .service_view_response import ServiceViewResponse,ServiceListResponse
 from .ulca_generic_inference_response import ULCAGenericInferenceResponse
 from .ulca_asr_inference_response import ULCAAsrInferenceResponse
 from .ulca_tts_inference_response import ULCATtsInferenceResponse
+from .ulca_s2s_inference_response import ULCAS2SInferenceResponse
 from .ulca_translation_inference_response import ULCATranslationInferenceResponse
