@@ -41,6 +41,17 @@ class _InferenceEndPoint(BaseModel):
     schema_: _Schema
 
 
+class _Dataset(BaseModel):
+    name: str
+    values: dict[str, Any]
+    meta: Optional[dict[str, Any]]
+
+
+class _Benchmarks(BaseModel):
+    metric: str
+    datasets: List[_Dataset]
+
+
 class Model(BaseModel):
     _id: Optional[Any]
     modelId: str
@@ -55,4 +66,5 @@ class Model(BaseModel):
     license: str
     domain: List[str]
     inferenceEndPoint: _InferenceEndPoint
+    benchmarks: Optional[List[_Benchmarks]]
     submitter: _Submitter
