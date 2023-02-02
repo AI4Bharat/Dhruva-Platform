@@ -127,6 +127,11 @@ export default function Models() {
   };
 
   const taskToggler = (event: any) => {
+    if (event.target.value === "translation") setHideTarget(false);
+    else {
+      setHideTarget(true);
+      setTargetLanguage("")
+    }
     setTask(event.target.value);
   };
 
@@ -168,7 +173,7 @@ export default function Models() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.300"
+                color="gray.600"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -182,15 +187,15 @@ export default function Models() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.300"
+              color="gray.600"
               onChange={taskToggler}
             >
               <option defaultChecked hidden>
                 Select Task Type
               </option>
-              <option onClick={() => { setHideTarget(false) }} value="translation">Translation</option>
-              <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="tts">TTS</option>
-              <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="asr">ASR</option>
+              <option value="translation">Translation</option>
+              <option value="tts">TTS</option>
+              <option value="asr">ASR</option>
             </Select>
             <InputGroup
               width={smallscreen ? "90vw" : "30rem"}
@@ -199,7 +204,7 @@ export default function Models() {
               <Select
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -218,10 +223,9 @@ export default function Models() {
                 <option value="ta">Tamil</option>
                 <option value="te">Telugu</option>
               </Select>
-              <Select
+              {hideTarget ? (<></>) : (<Select
                 background={"white"}
                 borderRadius={0}
-                display={hideTarget ? "none" : "block"}
                 onChange={targetLangToggler}
                 color="gray.600"
               >
@@ -240,7 +244,7 @@ export default function Models() {
                 <option value="pa">Punjabi</option>
                 <option value="ta">Tamil</option>
                 <option value="te">Telugu</option>
-              </Select>
+              </Select>)}
             </InputGroup>
             <Button
               width={smallscreen ? "90vw" : "8rem"}

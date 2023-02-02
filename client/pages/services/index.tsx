@@ -130,6 +130,11 @@ export default function Services() {
   };
 
   const taskToggler = (event: any) => {
+    if (event.target.value === "translation") setHideTarget(false);
+    else {
+      setHideTarget(true);
+      setTargetLanguage("")
+    }
     setTask(event.target.value);
   };
 
@@ -155,9 +160,9 @@ export default function Services() {
 
   return (
     <>
-    <Head>
-      <title>Services</title>
-    </Head>
+      <Head>
+        <title>Services</title>
+      </Head>
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
@@ -171,7 +176,7 @@ export default function Services() {
               background={"white"}
             >
               <InputLeftElement
-                color="gray.300"
+                color="gray.600"
                 pointerEvents="none"
                 children={<IoSearchOutline />}
               />
@@ -186,15 +191,15 @@ export default function Services() {
               width={smallscreen ? "90vw" : "20rem"}
               background={"white"}
               borderRadius={0}
-              color="gray.300"
+              color="gray.600"
               onChange={taskToggler}
             >
               <option hidden defaultChecked>
                 Select Task Type
               </option>
-              <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="tts">TTS</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="asr">ASR</option>
+              <option value="translation">Translation</option>
+              <option value="tts">TTS</option>
+              <option value="asr">ASR</option>
             </Select>
             <InputGroup
               width={smallscreen ? "90vw" : "30rem"}
@@ -204,7 +209,7 @@ export default function Services() {
                 value={sourceLang}
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={sourceLangToggler}
               >
                 <option hidden defaultChecked>
@@ -221,15 +226,15 @@ export default function Services() {
                 <option value="or">Oriya</option>
                 <option value="pa">Punjabi</option>
                 <option value="ta">Tamil</option>
-                <option value="te">Telugu</option>              
+                <option value="te">Telugu</option>
               </Select>
               <Select
                 value={targetLang}
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={targetLangToggler}
-                display={hideTarget?"none":"block"}
+                display={hideTarget ? "none" : "block"}
               >
                 <option hidden defaultChecked>
                   Target Language
