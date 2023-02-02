@@ -20,6 +20,7 @@ class UserStateForASR:
     api_key: str
     run_inference_once_in_bytes: int
     last_inference_position_in_bytes: int
+    historical_text: str
 
 class StreamingServerASR:
     '''
@@ -106,12 +107,14 @@ class StreamingServerASR:
     async def transcribe_and_send(self, sid: str) -> None:
         if not self.client_states[sid].buffer:
             return
-        message = self.run_inference(sid)
+        transcript = self.run_inference(sid)
+        full_transcript = self.client_states[sid].historical_text + transcript.strip()
         await self.sio.emit(
             "response",
-            data=(message, self.client_states[sid].language),
+            data=(full_transcript, self.client_states[sid].language),
             room=sid
         )
+        return transcript
 
     def configure_socket_server(self):
         @self.sio.event
@@ -135,7 +138,8 @@ class StreamingServerASR:
                 service_id=query_dict["serviceId"][0],
                 api_key=query_dict["apiKey"][0],
                 run_inference_once_in_bytes=run_inference_once_in_bytes,
-                last_inference_position_in_bytes=0
+                last_inference_position_in_bytes=0,
+                historical_text=""
             )
             return True
         
@@ -152,7 +156,9 @@ class StreamingServerASR:
             
             if not is_speaking:
                 # If silence is detected, run inference once (in-case there was new data after previous inference) and clear the buffer
-                await self.transcribe_and_send(sid)
+                transcript = await self.transcribe_and_send(sid)
+                if transcript:
+                    self.client_states[sid].historical_text += transcript + '\n'
                 self.initialize_buffer(sid)
             else:
                 # Run inference once we have accumulated enough amount of audio since previous inference

@@ -127,6 +127,11 @@ export default function Models() {
   };
 
   const taskToggler = (event: any) => {
+    if (event.target.value === "translation") setHideTarget(false);
+    else {
+      setHideTarget(true);
+      setTargetLanguage("")
+    }
     setTask(event.target.value);
   };
 
@@ -153,7 +158,7 @@ export default function Models() {
   return (
     <>
       <Head>
-      <title>Models Registry</title>
+        <title>Models Registry</title>
       </Head>
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
@@ -188,9 +193,9 @@ export default function Models() {
               <option defaultChecked hidden>
                 Select Task Type
               </option>
-              <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="tts">TTS</option>
-              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="asr">ASR</option>
+              <option value="translation">Translation</option>
+              <option value="tts">TTS</option>
+              <option value="asr">ASR</option>
             </Select>
             <InputGroup
               width={smallscreen ? "90vw" : "30rem"}
@@ -218,12 +223,11 @@ export default function Models() {
                 <option value="ta">Tamil</option>
                 <option value="te">Telugu</option>
               </Select>
-              <Select
+              {hideTarget ? (<></>) : (<Select
                 background={"white"}
                 borderRadius={0}
-                display={hideTarget?"none":"block"}
-                color="gray.300"
                 onChange={targetLangToggler}
+                color="gray.600"
               >
                 <option hidden defaultChecked>
                   Target Language
@@ -240,7 +244,7 @@ export default function Models() {
                 <option value="pa">Punjabi</option>
                 <option value="ta">Tamil</option>
                 <option value="te">Telugu</option>
-              </Select>
+              </Select>)}
             </InputGroup>
             <Button
               width={smallscreen ? "90vw" : "8rem"}

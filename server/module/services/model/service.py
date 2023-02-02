@@ -11,3 +11,4 @@ class Service(BaseModel):
     publishedOn: int
     modelId: str
     endpoint: str
+    key:str
