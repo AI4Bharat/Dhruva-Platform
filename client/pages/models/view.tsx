@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { dhruvaConfig } from "../../config/config";
 import axios from "axios";
+import Head from "next/head";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -71,119 +72,121 @@ export default function ViewModel() {
     }
   }, [router.isReady]);
   return (
-    <ContentLayout>
-      {smallscreen ? (
-        <Grid
-          ml="1rem"
-          mr="1rem"
-          mb="1rem"
-          pl="1rem"
-          pr="1rem"
-          pt="1rem"
-          pb="1rem"
-          minH={"10vh"}
-          minW={"90vw"}
-          maxW={"90vw"}
-          gap={10}
-        >
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10} direction={"row"}>
-              <Heading>{modelInfo["name"]}</Heading>
-            </Stack>
-            <Tabs isFitted>
-              <TabList aria-orientation="vertical" mb="1em">
-                <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Stack spacing={5}>
-                    <Text className="dview-service-description">
-                      {modelInfo["description"]}
-                    </Text>
-                    <Stack>
-                      <Text className="dview-service-info-item">
-                        Model Version : {modelInfo["version"]}
+    <> <Head>
+      <title>View Model</title>
+    </Head> <ContentLayout>
+        {smallscreen ? (
+          <Grid
+            ml="1rem"
+            mr="1rem"
+            mb="1rem"
+            pl="1rem"
+            pr="1rem"
+            pt="1rem"
+            pb="1rem"
+            minH={"10vh"}
+            minW={"90vw"}
+            maxW={"90vw"}
+            gap={10}
+          >
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10} direction={"row"}>
+                <Heading>{modelInfo["name"]}</Heading>
+              </Stack>
+              <Tabs isFitted>
+                <TabList aria-orientation="vertical" mb="1em">
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <Stack spacing={5}>
+                      <Text className="dview-service-description">
+                        {modelInfo["description"]}
                       </Text>
-                      <Text className="dview-service-info-item">
-                        Model Type : {modelInfo["task"]["type"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Submitted On :{" "}
-                        {new Date(modelInfo["submittedOn"]).toDateString()}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Updated On :{" "}
-                        {new Date(modelInfo["updatedOn"]).toDateString()}
-                      </Text>
+                      <Stack>
+                        <Text className="dview-service-info-item">
+                          Model Version : {modelInfo["version"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Model Type : {modelInfo["task"]["type"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Submitted On :{" "}
+                          {new Date(modelInfo["submittedOn"]).toDateString()}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Updated On :{" "}
+                          {new Date(modelInfo["updatedOn"]).toDateString()}
+                        </Text>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </GridItem>
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10}>
-              <Box className="dview-service-try-title-box">
-                <Heading className="dview-service-try-title">
-                  Benchmarks
-                </Heading>
-              </Box>
-            </Stack>
-          </GridItem>
-        </Grid>
-      ) : (
-        <Grid
-          templateColumns="repeat(2, 1fr)"
-          gap={5}
-          className="service-view"
-          bg="light.100"
-        >
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10} direction={"row"}>
-              <Heading>{modelInfo["name"]}</Heading>
-            </Stack>
-            <Tabs isFitted>
-              <TabList aria-orientation="vertical" mb="1em">
-                <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Stack spacing={5}>
-                    <Text className="dview-service-description">
-                      {modelInfo["description"]}
-                    </Text>
-                    <Stack>
-                      <Text className="dview-service-info-item">
-                        Model Version : {modelInfo["version"]}
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </GridItem>
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10}>
+                <Box className="dview-service-try-title-box">
+                  <Heading className="dview-service-try-title">
+                    Benchmarks
+                  </Heading>
+                </Box>
+              </Stack>
+            </GridItem>
+          </Grid>
+        ) : (
+          <Grid
+            templateColumns="repeat(2, 1fr)"
+            gap={5}
+            className="service-view"
+            bg="light.100"
+          >
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10} direction={"row"}>
+                <Heading>{modelInfo["name"]}</Heading>
+              </Stack>
+              <Tabs isFitted>
+                <TabList aria-orientation="vertical" mb="1em">
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <Stack spacing={5}>
+                      <Text className="dview-service-description">
+                        {modelInfo["description"]}
                       </Text>
-                      <Text className="dview-service-info-item">
-                        Model Type : {modelInfo["task"]["type"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Submitted On :{" "}
-                        {new Date(modelInfo["submittedOn"]).toDateString()}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Updated On :{" "}
-                        {new Date(modelInfo["updatedOn"]).toDateString()}
-                      </Text>
+                      <Stack>
+                        <Text className="dview-service-info-item">
+                          Model Version : {modelInfo["version"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Model Type : {modelInfo["task"]["type"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Submitted On :{" "}
+                          {new Date(modelInfo["submittedOn"]).toDateString()}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Updated On :{" "}
+                          {new Date(modelInfo["updatedOn"]).toDateString()}
+                        </Text>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </GridItem>
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10}>
-              <Box className="dview-service-try-title-box">
-                <Heading className="dview-service-try-title">
-                  Benchmarks
-                </Heading>
-              </Box>
-            </Stack>
-          </GridItem>
-        </Grid>
-      )}
-    </ContentLayout>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </GridItem>
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10}>
+                <Box className="dview-service-try-title-box">
+                  <Heading className="dview-service-try-title">
+                    Benchmarks
+                  </Heading>
+                </Box>
+              </Stack>
+            </GridItem>
+          </Grid>
+        )}
+      </ContentLayout></>
   );
 }
