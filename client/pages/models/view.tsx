@@ -10,6 +10,7 @@ import {
   Text,
   Grid,
   GridItem,
+  Select
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useRouter } from "next/router";
@@ -38,7 +39,20 @@ interface Model {
   languages: LanguageConfig[];
 }
 
-export default function ViewModel() {
+interface BenchmarkDataset {
+  name: string;
+  values: any;
+  meta: {
+    direction: string;
+  }
+}
+
+interface Benchmark {
+  metric: string;
+  datasets: BenchmarkDataset[]
+}
+
+export default function ViewModel({ ...props }) {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
@@ -56,8 +70,175 @@ export default function ViewModel() {
     languages: [],
   });
 
+  const [benchmarkMetric, setBenchmarkMetric] = useState<string>("bleu")
+  const [benchmarkDataset, setBenchmarkDataset] = useState<string>("WAT2021")
+  const [benchmarkDatasets, setBenchmarkDatasets] = useState<BenchmarkDataset[]>([]);
+
+  const [benchmarks, setBenchmarks] = useState<Benchmark[]>([{
+    "metric": "bleu",
+    "datasets": [
+      {
+        "name": "WAT2021",
+        "values": {
+          "bn": "29.6",
+          "gu": "40.3",
+          "hi": "43.9",
+          "kn": "36.4",
+          "ml": "34.6",
+          "mr": "33.5",
+          "or": "34.4",
+          "pa": "43.2",
+          "ta": "33.2"
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "WAT2020",
+        "values": {
+          "te": "36.2",
+          "bn": "20",
+          "gu": "24.1",
+          "hi": "23.6",
+          "ml": "20.4",
+          "mr": "20.4",
+          "ta": "18.3"
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "WMT",
+        "values": {
+          "te": "18.5",
+          "hi": "29.7",
+          "gu": "25.1"
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "UFAL",
+        "values": {
+          "ta": "24.1"
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "PMI",
+        "values": {
+          "ta": "30.2"
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "FLORES-101",
+        "values": {
+          "bn": "",
+          "gu": "",
+          "hi": "",
+          "kn": "",
+          "ml": "",
+          "mr": "",
+          "or": "",
+          "pa": "",
+          "ta": "",
+          "te": ""
+        },
+        "meta": {
+          "direction": "IN-EN"
+        }
+      },
+      {
+        "name": "WAT2021",
+        "values": {
+          "bn": "15.3",
+          "gu": "25.6",
+          "hi": "38.6",
+          "kn": "19.1",
+          "ml": "14.7",
+          "mr": "20.1",
+          "or": "18.9",
+          "pa": "33.1",
+          "ta": "13.5"
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      },
+      {
+        "name": "WAT2020",
+        "values": {
+          "te": "36.2",
+          "bn": "20",
+          "gu": "24.1",
+          "hi": "23.6",
+          "ml": "20.4",
+          "mr": "20.4",
+          "ta": "18.3"
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      },
+      {
+        "name": "WMT",
+        "values": {
+          "te": "18.5",
+          "hi": "29.7",
+          "gu": "25.1"
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      },
+      {
+        "name": "UFAL",
+        "values": {
+          "ta": "24.1"
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      },
+      {
+        "name": "PMI",
+        "values": {
+          "ta": "30.2"
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      },
+      {
+        "name": "FLORES-101",
+        "values": {
+          "bn": "",
+          "gu": "",
+          "hi": "",
+          "kn": "",
+          "ml": "",
+          "mr": "",
+          "or": "",
+          "pa": "",
+          "ta": "",
+          "te": ""
+        },
+        "meta": {
+          "direction": "EN-IN"
+        }
+      }
+    ]
+  }])
+
   useEffect(() => {
-    console.log(router.query["modelId"]);
     if (router.isReady) {
       const modelId = router.query["modelId"];
       axios({
@@ -71,6 +252,14 @@ export default function ViewModel() {
       });
     }
   }, [router.isReady]);
+
+  useEffect(() => {
+    const currentBenchmarks = benchmarks.filter((benchmark) => benchmark["metric"] === benchmarkMetric);
+    const currentBenchmarkDatasets = currentBenchmarks[0]["datasets"];
+    setBenchmarkDatasets(currentBenchmarkDatasets);
+  }, [benchmarkMetric])
+
+
   return (
     <> <Head>
       <title>View Model</title>
@@ -184,6 +373,24 @@ export default function ViewModel() {
                   </Heading>
                 </Box>
               </Stack>
+                <Stack spacing={5}>
+                  <Stack direction={"row"}>
+                    <Text className="dview-service-try-option-title">Metric : </Text>
+                    <Select value={benchmarkMetric} onChange={(e) => { setBenchmarkMetric(e.target.value) }}>
+                      {benchmarks.map((obj: Benchmark) => { return <option key={obj["metric"]} value={obj["metric"]}>{obj["metric"].toUpperCase()}</option> })}
+                    </Select>
+                  </Stack>
+                  <Stack direction={"row"}>
+                    <Text className="dview-service-try-option-title">Dataset : </Text>
+                    <Select value={benchmarkDataset} onChange={(e) => {
+                      setBenchmarkDataset(e.target.value);
+                    }}>
+                      {benchmarkDatasets.map((obj: BenchmarkDataset) => {
+                        return <option key={obj["name"]} value={obj["name"]}>{obj["name"]}</option>
+                      })}
+                    </Select>
+                  </Stack>
+                </Stack>
             </GridItem>
           </Grid>
         )}
