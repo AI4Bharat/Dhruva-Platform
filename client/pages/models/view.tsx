@@ -70,8 +70,8 @@ export default function ViewModel({ ...props }) {
     languages: [],
   });
 
-  const [benchmarkMetric, setBenchmarkMetric] = useState<string>("bleu")
-  const [benchmarkDataset, setBenchmarkDataset] = useState<string>("WAT2021")
+  const [benchmarkMetric, setBenchmarkMetric] = useState<string>("")
+  const [benchmarkDataset, setBenchmarkDataset] = useState<string>("")
   const [benchmarkDatasets, setBenchmarkDatasets] = useState<BenchmarkDataset[]>([]);
 
   const [benchmarks, setBenchmarks] = useState<Benchmark[]>([{
@@ -251,12 +251,18 @@ export default function ViewModel({ ...props }) {
         setModelInfo(response.data);
       });
     }
+    const initialBenchmarkMetric = benchmarks[0]["metric"];
+    setBenchmarkMetric(initialBenchmarkMetric);
   }, [router.isReady]);
 
+
+
   useEffect(() => {
-    const currentBenchmarks = benchmarks.filter((benchmark) => benchmark["metric"] === benchmarkMetric);
-    const currentBenchmarkDatasets = currentBenchmarks[0]["datasets"];
-    setBenchmarkDatasets(currentBenchmarkDatasets);
+    if (benchmarkMetric !== "") {
+      const currentBenchmarks = benchmarks.filter((benchmark) => benchmark["metric"] === benchmarkMetric);
+      const currentBenchmarkDatasets = currentBenchmarks[0]["datasets"];
+      setBenchmarkDatasets(currentBenchmarkDatasets);
+    }
   }, [benchmarkMetric])
 
 
@@ -373,24 +379,25 @@ export default function ViewModel({ ...props }) {
                   </Heading>
                 </Box>
               </Stack>
-                <Stack spacing={5}>
-                  <Stack direction={"row"}>
-                    <Text className="dview-service-try-option-title">Metric : </Text>
-                    <Select value={benchmarkMetric} onChange={(e) => { setBenchmarkMetric(e.target.value) }}>
-                      {benchmarks.map((obj: Benchmark) => { return <option key={obj["metric"]} value={obj["metric"]}>{obj["metric"].toUpperCase()}</option> })}
-                    </Select>
-                  </Stack>
-                  <Stack direction={"row"}>
-                    <Text className="dview-service-try-option-title">Dataset : </Text>
-                    <Select value={benchmarkDataset} onChange={(e) => {
-                      setBenchmarkDataset(e.target.value);
-                    }}>
-                      {benchmarkDatasets.map((obj: BenchmarkDataset) => {
-                        return <option key={obj["name"]} value={obj["name"]}>{obj["name"]}</option>
-                      })}
-                    </Select>
-                  </Stack>
+              <Stack spacing={5}>
+                <Stack direction={"row"}>
+                  <Text className="dview-service-try-option-title">Metric : </Text>
+                  <Select value={benchmarkMetric} onChange={(e) => { setBenchmarkMetric(e.target.value) }}>
+                    {benchmarks.map((obj: Benchmark) => { return <option key={obj["metric"]} value={obj["metric"]}>{obj["metric"].toUpperCase()}</option> })}
+                  </Select>
                 </Stack>
+                <Stack direction={"row"}>
+                  <Text className="dview-service-try-option-title">Dataset : </Text>
+                  <Select value={benchmarkDataset} onChange={(e) => {
+                    setBenchmarkDataset(e.target.value);
+                  }}>
+                    {benchmarkDatasets.map((obj: BenchmarkDataset) => {
+                      const key = obj["meta"] ? `${obj["name"]}-${obj["meta"]["direction"]}` : obj["name"];
+                      return <option key={key} value={key}>{key}</option>
+                    })}
+                  </Select>
+                </Stack>
+              </Stack>
             </GridItem>
           </Grid>
         )}
