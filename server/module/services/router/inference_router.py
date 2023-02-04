@@ -42,7 +42,6 @@ async def _run_inference_generic(
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)
 async def _run_inference_translation(
     request: ULCATranslationInferenceRequest,
-    service_id: Union[str, None] = None,
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_translation_triton_inference(request)
@@ -70,7 +69,7 @@ async def _run_inference_tts(
 
 
 @router.post("/s2s", response_model=ULCAS2SInferenceResponse)
-async def _run_inference_asr(
+async def _run_inference_s2s_asr(
     request: ULCAS2SInferenceRequest,
     service_id: Union[str, None] = None,
     inference_service: InferenceService = Depends(InferenceService),

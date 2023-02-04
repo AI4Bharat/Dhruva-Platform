@@ -24,8 +24,10 @@ from tritonclient.utils import np_to_triton_dtype
 import base64
 import soundfile as sf
 from urllib.request import urlopen
-
+from prometheus_client import Histogram
+import time
 from indictrans import Transliterator
+
 ISO_639_v2_to_v3 = {
     "as": "asm",
     "bn": "ben",
@@ -44,6 +46,11 @@ ISO_639_v2_to_v3 = {
     "ur": "urd",
 }
 
+histogram_logger = Histogram(
+            "inference_request_processing_seconds",
+            "Time taken to process inference request",
+            ["service_id"],
+        )
 class InferenceService:
     def __init__(
         self,
@@ -54,6 +61,7 @@ class InferenceService:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
+        self.histogram_logger = histogram_logger
 
     async def run_inference(
         self,
@@ -64,6 +72,7 @@ class InferenceService:
             ULCATtsInferenceRequest,
         ],
     ) -> dict:
+        start_time = time.time()
         try:
             service = self.service_repository.find_by_id(request.serviceId)
         except:
@@ -79,6 +88,10 @@ class InferenceService:
 
         if task_type == "translation":
             request_obj = ULCATranslationInferenceRequest(**request_body)
+            end_time = time.time()
+            self.histogram_logger.labels(service_id=request.serviceId).observe(
+                end_time - start_time
+            )
             return await self.run_translation_triton_inference(request_obj)
         elif task_type == "asr":
             request_obj = ULCAAsrInferenceRequest(**request_body)
@@ -88,6 +101,7 @@ class InferenceService:
             return await self.run_tts_triton_inference(request_obj)
 
     async def run_asr_triton_inference(self, request_body: ULCAAsrInferenceRequest) -> ULCAAsrInferenceResponse:
+        start_time = time.time()
         language = request_body.config.language.sourceLanguage
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
@@ -95,7 +109,7 @@ class InferenceService:
                 file_bytes = urlopen(input.audioUri).read()
             else:
                 file_bytes = base64.b64decode(input.audioContent)
-            data,_ = sf.read(io.BytesIO(file_bytes))
+            data, _ = sf.read(io.BytesIO(file_bytes))
             data = data.tolist()
             raw_audio = np.array(data)
             o = self.__pad_batch([raw_audio])
@@ -117,7 +131,7 @@ class InferenceService:
             outputs = [result.decode("utf-8") for result in encoded_result.tolist()]
             for output in outputs:
                 res["output"].append({"source": output})
-        
+
         # Temporary patch
         if language in {"kn", "ml", "te"}:
             trn = Transliterator(source="tam", target=ISO_639_v2_to_v3[language])
@@ -127,15 +141,19 @@ class InferenceService:
             trn = Transliterator(source="hin", target=ISO_639_v2_to_v3[language])
             for i in range(len(res["output"])):
                 res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
-
+        end_time = time.time()
+        self.histogram_logger.labels(service_id=request_body.serviceId).observe(
+            end_time - start_time
+        )
         return res
 
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest
     ) -> ULCATranslationInferenceResponse:
+        start_time = time.time()
         results = []
         for input in request_body.input:
-            input_string = input.source.replace('\n', ' ').strip()
+            input_string = input.source.replace("\n", " ").strip()
             inputs = [
                 self.__get_string_tensor(input_string, "INPUT_TEXT"),
                 self.__get_string_tensor(request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"),
@@ -151,9 +169,17 @@ class InferenceService:
             result = encoded_result.tolist()[0].decode("utf-8")
             results.append({"source": input_string, "target": result})
         res = {"config": request_body.config, "output": results}
+        end_time = time.time()
+        self.histogram_logger.labels(service_id=request_body.serviceId).observe(
+            end_time - start_time
+        )
+        time.sleep(1)
+        print("ASR inference time: ", end_time - start_time)
+
         return res
 
     async def run_tts_triton_inference(self, request_body: ULCATtsInferenceRequest) -> ULCATtsInferenceResponse:
+        start_time = time.time()
         results = []
         for input in request_body.input:
             input_string = input.source
@@ -175,20 +201,20 @@ class InferenceService:
             scipy_wav_write(byte_io, 22050, wav)
             encoded_bytes = base64.b64encode(byte_io.read())
             encoded_string = encoded_bytes.decode()
-            results.append({
-                "audioContent": encoded_string
-            })
+            results.append({"audioContent": encoded_string})
         res = {
             "config": {
-                "language": {
-                    "sourceLanguage": ip_language
-                },
+                "language": {"sourceLanguage": ip_language},
                 "audioFormat": "wav",
                 "encoding": "base64",
                 "samplingRate": 22050,
             },
-            "audio": results
+            "audio": results,
         }
+        end_time = time.time()
+        self.histogram_logger.labels(service_id=request_body.serviceId).observe(
+            end_time - start_time
+        )
         return res
 
     def _add_model_id_to_request(self, request_body: dict) -> None:

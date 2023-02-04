@@ -9,7 +9,6 @@ h11==0.14.0
 httptools==0.5.0
 idna==3.4
 prometheus-client==0.15.0
-prometheus-fastapi-instrumentator==5.9.1
 pycodestyle==2.10.0
 pydantic==1.10.4
 python-dotenv==0.21.0
@@ -31,4 +30,5 @@ tritonclient[all]==2.23.0
 gevent==22.10.2
 scipy==1.10.0
 soundfile==0.11.0
+starlette_exporter
 git+https://github.com/libindic/indic-trans

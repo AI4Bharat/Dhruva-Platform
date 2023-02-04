@@ -2,14 +2,15 @@ from typing import Union, Callable
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_fastapi_instrumentator.metrics import Info
 from prometheus_client import Counter
 from exception.base_error import BaseError
 from log.logger import LogConfig
 from module import *
 from fastapi.logger import logger
 from logging.config import dictConfig
+from starlette.applications import Starlette
+from starlette_exporter import PrometheusMiddleware, handle_metrics
+
 
 dictConfig(LogConfig().dict())
 
@@ -27,26 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Starting up...")
-    Instrumentator().instrument(app).expose(app)
-
-
-# def http_body_language() -> Callable[[Info], None]:
-#     METRIC = Counter(
-#         "http_body_language", "Number of times a certain language has been requested.", labelnames=("langs",)
-#     )
-
-#     def instrumentation(info: Info) -> None:
-#         lang_str = info.request.body['langs']
-#         METRIC.labels(langs=lang_str).inc()
-
-#     return instrumentation
-
-
-
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 @app.exception_handler(BaseError)
 async def base_error_handler(request: Request, exc: BaseError):
