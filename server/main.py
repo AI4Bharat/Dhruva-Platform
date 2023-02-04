@@ -5,16 +5,14 @@ from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_client import Counter
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_fastapi_instrumentator.metrics import Info
+from starlette_exporter import handle_metrics
+from starlette_exporter.middleware import PrometheusMiddleware
 
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from log.logger import LogConfig
-from fastapi.logger import logger
-from logging.config import dictConfig
+from metrics import inference_service_callback
 from module import *
 from seq_streamer import StreamingServerTaskSequence
 
@@ -30,6 +28,7 @@ app.mount("/socket.io", streamer.app)
 
 # TODO: Depreciate this soon in-favor of above
 from asr_streamer import StreamingServerASR
+
 streamer_asr = StreamingServerASR()
 
 # Mount it at an alternative path. 
@@ -44,7 +43,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.add_middleware(
+    PrometheusMiddleware, labels={"inference_service": inference_service_callback}
+)
+app.add_route("/metrics", handle_metrics)
 
 # def http_body_language() -> Callable[[Info], None]:
 #     METRIC = Counter(
