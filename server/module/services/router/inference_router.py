@@ -28,7 +28,7 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=ULCAGenericInferenceResponse)
+@router.post("{service_id}/{model_id}", response_model=ULCAGenericInferenceResponse)
 async def _run_inference_generic(
     request: Union[
         ULCAGenericInferenceRequest, ULCAAsrInferenceRequest, ULCATranslationInferenceRequest, ULCATtsInferenceRequest
@@ -38,21 +38,21 @@ async def _run_inference_generic(
     return await inference_service.run_inference(request)
 
 
-@router.post("/translation", response_model=ULCATranslationInferenceResponse)
+@router.post("/translation/{service_id}/{model_id}", response_model=ULCATranslationInferenceResponse)
 async def _run_inference_translation(
     request: ULCATranslationInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
 ):
     return await inference_service.run_translation_triton_inference(request)
 
 
-@router.post("/asr", response_model=ULCAAsrInferenceResponse)
+@router.post("/asr/{service_id}/{model_id}", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
     request: ULCAAsrInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
 ):
     return await inference_service.run_asr_triton_inference(request)
 
 
-@router.post("/tts", response_model=ULCATtsInferenceResponse)
+@router.post("/tts/{service_id}/{model_id}", response_model=ULCATtsInferenceResponse)
 async def _run_inference_tts(
     request: ULCATtsInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
 ):
@@ -61,7 +61,7 @@ async def _run_inference_tts(
 
 # Temporary endpoint; will be removed/standardized soon
 
-@router.post("/s2s", response_model=ULCAS2SInferenceResponse)
+@router.post("/s2s/{service_id}/{model_id}", response_model=ULCAS2SInferenceResponse)
 async def _run_inference_asr(
     request: ULCAS2SInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
 ):

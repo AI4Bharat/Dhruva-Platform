@@ -28,6 +28,12 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting up...")
+    Instrumentator().instrument(app).expose(app)
+
+
 # def http_body_language() -> Callable[[Info], None]:
 #     METRIC = Counter(
 #         "http_body_language", "Number of times a certain language has been requested.", labelnames=("langs",)
@@ -40,9 +46,6 @@ app.add_middleware(
 #     return instrumentation
 
 
-# @app.on_event("startup")
-# async def load_prometheus():
-#     Instrumentator().instrument(app).add(http_body_language()).expose(app)
 
 
 @app.exception_handler(BaseError)
@@ -51,12 +54,7 @@ async def base_error_handler(request: Request, exc: BaseError):
 
     return JSONResponse(
         status_code=500,
-        content={
-            "detail": {
-                "kind": exc.error_kind,
-                "message": f"Request failed. Please try again."
-            }
-        },
+        content={"detail": {"kind": exc.error_kind, "message": f"Request failed. Please try again."}},
     )
 
 
@@ -67,5 +65,5 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=5050,
-                log_level="info", workers=2)
+
+    uvicorn.run("main:app", host="0.0.0.0", port=5050, log_level="info", workers=2)
