@@ -335,12 +335,91 @@ export default function ViewModel({ ...props }) {
               </Tabs>
             </GridItem>
             <GridItem p="1rem" bg="white">
-              <Stack spacing={10}>
-                <Box className="dview-service-try-title-box">
+              <Stack spacing={2.5}>
+                <Box m="1rem" className="dview-service-try-title-box">
                   <Heading className="dview-service-try-title">
                     Benchmarks
                   </Heading>
                 </Box>
+                <Stack spacing={5}>
+                  <Stack direction={"row"}>
+                    <Text className="dview-service-try-option-title">
+                      Metric :{" "}
+                    </Text>
+                    <Select
+                      value={benchmarkMetric}
+                      onChange={(e) => {
+                        setBenchmarkMetric(e.target.value);
+                      }}
+                    >
+                      {benchmarks.map((obj: Benchmark) => {
+                        return (
+                          <option key={obj["metric"]} value={obj["metric"]}>
+                            {obj["metric"].toUpperCase()}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </Stack>
+                  <Accordion
+                    defaultIndex={[0]}
+                    overflow={"hidden"}
+                    allowMultiple
+                  >
+                    {benchmarkDatasets.map((dataset) => {
+                      return (
+                        <AccordionItem
+                          key={
+                            dataset["meta"]
+                              ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
+                              : dataset["name"]
+                          }
+                          m={"1rem"}
+                          borderRadius={15}
+                          border={"solid"}
+                          borderWidth={0.5}
+                          borderColor={"gray.400"}
+                        >
+                          <h2>
+                            <AccordionButton>
+                              <Box as="span" flex="1" textAlign="left">
+                                {dataset["meta"]
+                                  ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
+                                  : dataset["name"]}
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                          </h2>
+                          <AccordionPanel pb={4}>
+                            <SimpleGrid
+                              p="1rem"
+                              w="100%"
+                              h="auto"
+                              bg="orange.100"
+                              borderRadius={15}
+                              columns={2}
+                              spacingX="40px"
+                              spacingY="20px"
+                            >
+                              {Object.entries(dataset["values"]).map(
+                                ([language, score]) => {
+                                  return (
+                                    <Stat key={language}>
+                                      <StatLabel>
+                                        {lang2label[language]}
+                                      </StatLabel>
+                                      <StatNumber>{score as string}</StatNumber>
+                                    </Stat>
+                                  );
+                                }
+                              )}
+                            </SimpleGrid>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                </Stack>
               </Stack>
             </GridItem>
           </Grid>
@@ -387,76 +466,91 @@ export default function ViewModel({ ...props }) {
               </Tabs>
             </GridItem>
             <GridItem p="1rem" bg="white">
-              <Stack spacing={10}>
-                <Box className="dview-service-try-title-box">
+              <Stack spacing={2.5}>
+                <Box m="1rem" className="dview-service-try-title-box">
                   <Heading className="dview-service-try-title">
                     Benchmarks
                   </Heading>
                 </Box>
-              </Stack>
-              <Stack spacing={5}>
-                <Stack direction={"row"}>
-                  <Text className="dview-service-try-option-title">
-                    Metric :{" "}
-                  </Text>
-                  <Select
-                    value={benchmarkMetric}
-                    onChange={(e) => {
-                      setBenchmarkMetric(e.target.value);
-                    }}
+                <Stack spacing={5}>
+                  <Stack direction={"row"}>
+                    <Text className="dview-service-try-option-title">
+                      Metric :{" "}
+                    </Text>
+                    <Select
+                      value={benchmarkMetric}
+                      onChange={(e) => {
+                        setBenchmarkMetric(e.target.value);
+                      }}
+                    >
+                      {benchmarks.map((obj: Benchmark) => {
+                        return (
+                          <option key={obj["metric"]} value={obj["metric"]}>
+                            {obj["metric"].toUpperCase()}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </Stack>
+                  <Accordion
+                    defaultIndex={[0]}
+                    overflow={"hidden"}
+                    allowMultiple
                   >
-                    {benchmarks.map((obj: Benchmark) => {
+                    {benchmarkDatasets.map((dataset) => {
                       return (
-                        <option key={obj["metric"]} value={obj["metric"]}>
-                          {obj["metric"].toUpperCase()}
-                        </option>
+                        <AccordionItem
+                          key={
+                            dataset["meta"]
+                              ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
+                              : dataset["name"]
+                          }
+                          m={"1rem"}
+                          borderRadius={15}
+                          border={"solid"}
+                          borderWidth={0.5}
+                          borderColor={"gray.400"}
+                        >
+                          <h2>
+                            <AccordionButton>
+                              <Box as="span" flex="1" textAlign="left">
+                                {dataset["meta"]
+                                  ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
+                                  : dataset["name"]}
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                          </h2>
+                          <AccordionPanel pb={4}>
+                            <SimpleGrid
+                              p="1rem"
+                              w="100%"
+                              h="auto"
+                              bg="orange.100"
+                              borderRadius={15}
+                              columns={2}
+                              spacingX="40px"
+                              spacingY="20px"
+                            >
+                              {Object.entries(dataset["values"]).map(
+                                ([language, score]) => {
+                                  return (
+                                    <Stat key={language}>
+                                      <StatLabel>
+                                        {lang2label[language]}
+                                      </StatLabel>
+                                      <StatNumber>{score as string}</StatNumber>
+                                    </Stat>
+                                  );
+                                }
+                              )}
+                            </SimpleGrid>
+                          </AccordionPanel>
+                        </AccordionItem>
                       );
                     })}
-                  </Select>
+                  </Accordion>
                 </Stack>
-                <Accordion defaultIndex={[0]} overflow={"hidden"} allowMultiple>
-                  {benchmarkDatasets.map((dataset) => {
-                    return (
-                      <AccordionItem>
-                        <h2>
-                          <AccordionButton>
-                            <Box as="span" flex="1" textAlign="left">
-                              {dataset["meta"]
-                                ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
-                                : dataset["name"]}
-                            </Box>
-                            <AccordionIcon />
-                          </AccordionButton>
-                        </h2>
-                        <AccordionPanel pb={4}>
-                          <SimpleGrid
-                            p="1rem"
-                            w="100%"
-                            h="auto"
-                            bg="orange.100"
-                            borderRadius={15}
-                            columns={2}
-                            spacingX="40px"
-                            spacingY="20px"
-                          >
-                            {Object.entries(dataset["values"]).map(
-                              ([language, score]) => {
-                                return (
-                                  <Stat>
-                                    <StatLabel>
-                                      {lang2label[language]}
-                                    </StatLabel>
-                                    <StatNumber>{score as string}</StatNumber>
-                                  </Stat>
-                                );
-                              }
-                            )}
-                          </SimpleGrid>
-                        </AccordionPanel>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
               </Stack>
             </GridItem>
           </Grid>
