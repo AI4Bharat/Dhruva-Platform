@@ -43,17 +43,6 @@ class _InferenceEndPoint(BaseModel):
     schema_: _Schema
 
 
-class _Dataset(BaseModel):
-    name: str
-    values: dict[str, Any]
-    meta: Optional[dict[str, Any]]
-
-
-class _Benchmarks(BaseModel):
-    metric: str
-    datasets: List[_Dataset]
-
-
 class _LanguagePair(BaseModel):
     sourceLanguage: str
     targetLanguage: Optional[str]
