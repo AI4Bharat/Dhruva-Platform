@@ -35,6 +35,24 @@ interface LanguageConfig {
   targetLanguage: string;
 }
 
+interface Benchmark {
+  benchmarkId: string;
+  name: string;
+  description: string;
+  domain: string;
+  createdOn: number;
+  languages: {
+    sourceLanguage: string;
+    targetLanguage: string;
+  };
+  score: [
+    {
+      metricName: string;
+      score: string;
+    }
+  ];
+}
+
 interface Model {
   modelId: string;
   version: string;
@@ -47,19 +65,7 @@ interface Model {
     type: string;
   };
   languages: LanguageConfig[];
-}
-
-interface BenchmarkDataset {
-  name: string;
-  values: any;
-  meta: {
-    direction: string;
-  };
-}
-
-interface Benchmark {
-  metric: string;
-  datasets: BenchmarkDataset[];
+  benchmarks: Benchmark[];
 }
 
 export default function ViewModel({ ...props }) {
@@ -78,178 +84,15 @@ export default function ViewModel({ ...props }) {
       type: "",
     },
     languages: [],
+    benchmarks: [],
   });
 
+  const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
+  const [benchmarkMetrics, setBenchmarkMetrics] = useState<string[]>([]);
   const [benchmarkMetric, setBenchmarkMetric] = useState<string>("");
-  const [benchmarkDatasets, setBenchmarkDatasets] = useState<
-    BenchmarkDataset[]
-  >([]);
-
-  const [benchmarks, setBenchmarks] = useState<Benchmark[]>([
-    {
-      metric: "bleu",
-      datasets: [
-        {
-          name: "WAT2021",
-          values: {
-            bn: "29.6",
-            gu: "40.3",
-            hi: "43.9",
-            kn: "36.4",
-            ml: "34.6",
-            mr: "33.5",
-            or: "34.4",
-            pa: "43.2",
-            ta: "33.2",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "WAT2020",
-          values: {
-            te: "36.2",
-            bn: "20",
-            gu: "24.1",
-            hi: "23.6",
-            ml: "20.4",
-            mr: "20.4",
-            ta: "18.3",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "WMT",
-          values: {
-            te: "18.5",
-            hi: "29.7",
-            gu: "25.1",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "UFAL",
-          values: {
-            ta: "24.1",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "PMI",
-          values: {
-            ta: "30.2",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "FLORES-101",
-          values: {
-            bn: "",
-            gu: "",
-            hi: "",
-            kn: "",
-            ml: "",
-            mr: "",
-            or: "",
-            pa: "",
-            ta: "",
-            te: "",
-          },
-          meta: {
-            direction: "IN-EN",
-          },
-        },
-        {
-          name: "WAT2021",
-          values: {
-            bn: "15.3",
-            gu: "25.6",
-            hi: "38.6",
-            kn: "19.1",
-            ml: "14.7",
-            mr: "20.1",
-            or: "18.9",
-            pa: "33.1",
-            ta: "13.5",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-        {
-          name: "WAT2020",
-          values: {
-            te: "36.2",
-            bn: "20",
-            gu: "24.1",
-            hi: "23.6",
-            ml: "20.4",
-            mr: "20.4",
-            ta: "18.3",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-        {
-          name: "WMT",
-          values: {
-            te: "18.5",
-            hi: "29.7",
-            gu: "25.1",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-        {
-          name: "UFAL",
-          values: {
-            ta: "24.1",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-        {
-          name: "PMI",
-          values: {
-            ta: "30.2",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-        {
-          name: "FLORES-101",
-          values: {
-            bn: "",
-            gu: "",
-            hi: "",
-            kn: "",
-            ml: "",
-            mr: "",
-            or: "",
-            pa: "",
-            ta: "",
-            te: "",
-          },
-          meta: {
-            direction: "EN-IN",
-          },
-        },
-      ],
-    },
-  ]);
+  const [benchmarkDatasets, setBenchmarkDatasets] = useState<string[]>([]);
+  const [benchmarkDataset, setBenchmarkDataset] = useState<string>("");
+  const [benchmarkValues, setBenchmarkValues] = useState<Benchmark[]>([]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -262,21 +105,49 @@ export default function ViewModel({ ...props }) {
         },
       }).then((response) => {
         setModelInfo(response.data);
+        setBenchmarks(response.data.benchmarks);
       });
     }
-    const initialBenchmarkMetric = benchmarks[0]["metric"];
-    setBenchmarkMetric(initialBenchmarkMetric);
   }, [router.isReady]);
 
   useEffect(() => {
-    if (benchmarkMetric !== "") {
-      const currentBenchmarks = benchmarks.filter(
-        (benchmark) => benchmark["metric"] === benchmarkMetric
-      );
-      const currentBenchmarkDatasets = currentBenchmarks[0]["datasets"];
-      setBenchmarkDatasets(currentBenchmarkDatasets);
-    }
-  }, [benchmarkMetric]);
+    const metrics = new Set();
+    const datasets = new Set();
+    benchmarks.forEach((benchmark) => {
+      benchmark["score"].forEach((score) => {
+        metrics.add(score["metricName"]);
+      });
+      datasets.add(benchmark["name"]);
+    });
+    const currentBenchmarkDatasets = Array.from(datasets) as string[];
+    const currentBenchmarkMetrics = Array.from(metrics) as string[];
+    setBenchmarkMetrics(currentBenchmarkMetrics);
+    setBenchmarkMetric(currentBenchmarkMetrics[0]);
+    setBenchmarkDatasets(currentBenchmarkDatasets);
+    setBenchmarkDataset(currentBenchmarkDatasets[0]);
+  }, [benchmarks]);
+
+  useEffect(() => {
+    const currentBenchmarks = benchmarks.filter(
+      (benchmark) => benchmark["name"] === benchmarkDataset
+    );
+
+    const currentMetricBenchmarks = [];
+    currentBenchmarks.forEach((benchmark) => {
+      benchmark["score"].forEach((score) => {
+        if (score["metricName"] === benchmarkMetric) {
+          const benchmarkObj = {};
+          benchmarkObj["value"] = benchmark["score"][0]["score"];
+          benchmarkObj["language"] = benchmark["languages"]["targetLanguage"]
+            ? `${benchmark["languages"]["sourceLanguage"]}-${benchmark["languages"]["targetLanguage"]}`
+            : benchmark["languages"]["sourceLanguage"];
+          currentMetricBenchmarks.push(benchmarkObj);
+        }
+      });
+    });
+
+    setBenchmarkValues(currentMetricBenchmarks);
+  }, [benchmarkMetric, benchmarkDataset]);
 
   return (
     <>
@@ -346,79 +217,12 @@ export default function ViewModel({ ...props }) {
                     <Text className="dview-service-try-option-title">
                       Metric :{" "}
                     </Text>
-                    <Select
-                      value={benchmarkMetric}
-                      onChange={(e) => {
-                        setBenchmarkMetric(e.target.value);
-                      }}
-                    >
-                      {benchmarks.map((obj: Benchmark) => {
-                        return (
-                          <option key={obj["metric"]} value={obj["metric"]}>
-                            {obj["metric"].toUpperCase()}
-                          </option>
-                        );
-                      })}
-                    </Select>
                   </Stack>
                   <Accordion
                     defaultIndex={[0]}
                     overflow={"hidden"}
                     allowMultiple
-                  >
-                    {benchmarkDatasets.map((dataset) => {
-                      return (
-                        <AccordionItem
-                          key={
-                            dataset["meta"]
-                              ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
-                              : dataset["name"]
-                          }
-                          m={"1rem"}
-                          borderRadius={15}
-                          border={"solid"}
-                          borderWidth={0.5}
-                          borderColor={"gray.400"}
-                        >
-                          <h2>
-                            <AccordionButton>
-                              <Box as="span" flex="1" textAlign="left">
-                                {dataset["meta"]
-                                  ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
-                                  : dataset["name"]}
-                              </Box>
-                              <AccordionIcon />
-                            </AccordionButton>
-                          </h2>
-                          <AccordionPanel pb={4}>
-                            <SimpleGrid
-                              p="1rem"
-                              w="100%"
-                              h="auto"
-                              bg="orange.100"
-                              borderRadius={15}
-                              columns={2}
-                              spacingX="40px"
-                              spacingY="20px"
-                            >
-                              {Object.entries(dataset["values"]).map(
-                                ([language, score]) => {
-                                  return (
-                                    <Stat key={language}>
-                                      <StatLabel>
-                                        {lang2label[language]}
-                                      </StatLabel>
-                                      <StatNumber>{score as string}</StatNumber>
-                                    </Stat>
-                                  );
-                                }
-                              )}
-                            </SimpleGrid>
-                          </AccordionPanel>
-                        </AccordionItem>
-                      );
-                    })}
-                  </Accordion>
+                  ></Accordion>
                 </Stack>
               </Stack>
             </GridItem>
@@ -483,73 +287,56 @@ export default function ViewModel({ ...props }) {
                         setBenchmarkMetric(e.target.value);
                       }}
                     >
-                      {benchmarks.map((obj: Benchmark) => {
+                      {benchmarkMetrics.map((metric) => {
                         return (
-                          <option key={obj["metric"]} value={obj["metric"]}>
-                            {obj["metric"].toUpperCase()}
+                          <option key={metric} value={metric}>
+                            {metric.toUpperCase()}
                           </option>
                         );
                       })}
                     </Select>
                   </Stack>
-                  <Accordion
-                    defaultIndex={[0]}
-                    overflow={"hidden"}
-                    allowMultiple
+                  <Stack direction={"row"}>
+                    <Text className="dview-service-try-option-title">
+                      Dataset :{" "}
+                    </Text>
+                    <Select
+                      value={benchmarkDataset}
+                      onChange={(e) => {
+                        setBenchmarkDataset(e.target.value);
+                      }}
+                    >
+                      {benchmarkDatasets.map((dataset) => {
+                        return (
+                          <option key={dataset} value={dataset}>
+                            {dataset.toUpperCase()}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </Stack>
+                  <SimpleGrid
+                    p="1rem"
+                    w="100%"
+                    h="auto"
+                    bg="orange.100"
+                    borderRadius={15}
+                    columns={2}
+                    spacingX="40px"
+                    spacingY="20px"
                   >
-                    {benchmarkDatasets.map((dataset) => {
+                    {benchmarkValues.map((benchmark) => {
                       return (
-                        <AccordionItem
-                          key={
-                            dataset["meta"]
-                              ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
-                              : dataset["name"]
-                          }
-                          m={"1rem"}
-                          borderRadius={15}
-                          border={"solid"}
-                          borderWidth={0.5}
-                          borderColor={"gray.400"}
-                        >
-                          <h2>
-                            <AccordionButton>
-                              <Box as="span" flex="1" textAlign="left">
-                                {dataset["meta"]
-                                  ? `${dataset["name"]}-${dataset["meta"]["direction"]}`
-                                  : dataset["name"]}
-                              </Box>
-                              <AccordionIcon />
-                            </AccordionButton>
-                          </h2>
-                          <AccordionPanel pb={4}>
-                            <SimpleGrid
-                              p="1rem"
-                              w="100%"
-                              h="auto"
-                              bg="orange.100"
-                              borderRadius={15}
-                              columns={2}
-                              spacingX="40px"
-                              spacingY="20px"
-                            >
-                              {Object.entries(dataset["values"]).map(
-                                ([language, score]) => {
-                                  return (
-                                    <Stat key={language}>
-                                      <StatLabel>
-                                        {lang2label[language]}
-                                      </StatLabel>
-                                      <StatNumber>{score as string}</StatNumber>
-                                    </Stat>
-                                  );
-                                }
-                              )}
-                            </SimpleGrid>
-                          </AccordionPanel>
-                        </AccordionItem>
+                        <Stat>
+                          <StatLabel>
+                            {benchmarkMetric.toUpperCase()} Score
+                          </StatLabel>
+                          <StatNumber>{benchmark["value"]}</StatNumber>
+                          <StatHelpText>{benchmark["language"]}</StatHelpText>
+                        </Stat>
                       );
                     })}
-                  </Accordion>
+                  </SimpleGrid>
                 </Stack>
               </Stack>
             </GridItem>
