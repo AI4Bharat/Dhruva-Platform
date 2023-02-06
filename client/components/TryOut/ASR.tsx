@@ -22,7 +22,6 @@ import {
   StreamingClient,
   SocketStatus,
 } from "@project-sunbird/open-speech-streaming-client";
-import Script from "next/script";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -41,7 +40,6 @@ export default function ASRTry({ ...props }) {
   const [fetching, setFetching] = useState(false);
   const [recording, setRecording] = useState(false);
   const [sampleRate, setSampleRate] = useState<number>(16000);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [recorder, setRecorder] = useState<any>(null);
   const [audioStream, setAudioStream] = useState<any>(null);
   const [fetched, setFetched] = useState(false);
