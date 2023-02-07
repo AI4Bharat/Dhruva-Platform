@@ -89,7 +89,6 @@ export default function STSTry({ ...props }) {
       )
       .then((response) => {
         const data = response.data;
-        console.log(data);
         setSourceText(data["output"][0]["source"]);
         setTargetText(data["output"][0]["target"]);
         setAudioContent(

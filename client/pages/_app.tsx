@@ -64,7 +64,10 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
   return (
     <ChakraProvider theme={customTheme}>
       <LayoutComponent>
-        <Script type="text/javascript" src="/recorder.js" />
+        <Script
+          type="text/javascript"
+          src="https://ai4bharat.github.io/Recorderjs/lib/recorder.js"
+        />
         <Component {...pageProps} />
       </LayoutComponent>
     </ChakraProvider>
