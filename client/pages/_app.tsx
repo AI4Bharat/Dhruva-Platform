@@ -9,7 +9,7 @@ import "../styles/global.css";
 import "../components/indic-transliterate/dist/index.css";
 import Navbar from "../components/Navigation/Navbar";
 import NavbarMobile from "../components/Navigation/NavbarMobile";
-import Head from "next/head";
+import Script from "next/script";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -20,10 +20,6 @@ const Layout: React.FC<ContentLayoutProps> = ({ children }) => {
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   return (
     <>
-      <Head>
-        <link rel="shortcut icon" href="AI4Bharat.svg" />
-        <link rel="icon" href="AI4Bharat.svg"/>
-      </Head>
       <Grid
         overflowX={"hidden"}
         templateAreas={`"nav main"`}
@@ -57,6 +53,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/services",
     "/services/view",
     "/models",
+    "/models/view",
     "/billing",
     "/profile",
     "/analyze",
@@ -67,6 +64,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
   return (
     <ChakraProvider theme={customTheme}>
       <LayoutComponent>
+        <Script type="text/javascript" src="/recorder.js" />
         <Component {...pageProps} />
       </LayoutComponent>
     </ChakraProvider>

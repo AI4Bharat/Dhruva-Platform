@@ -13,6 +13,7 @@ const dhruvaConfig: { [key: string]: string } = {
   ttsInference: `${dhruvaRootURL}/services/inference/tts`,
   asrInference: `${dhruvaRootURL}/services/inference/asr`,
   asrStreamingInference: `wss://api.dhruva.ai4bharat.org`,
+  stsInference: `${dhruvaRootURL}/services/inference/s2s`,
 };
 
 const lang2label: { [key: string]: string } = {

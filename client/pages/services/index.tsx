@@ -131,6 +131,11 @@ export default function Services() {
   };
 
   const taskToggler = (event: any) => {
+    if (event.target.value === "translation") setHideTarget(false);
+    else {
+      setHideTarget(true);
+      setTargetLanguage("")
+    }
     setTask(event.target.value);
   };
 
@@ -169,7 +174,7 @@ export default function Services() {
                 background={"white"}
               >
                 <InputLeftElement
-                  color="gray.300"
+                  color="gray.600"
                   pointerEvents="none"
                   children={<IoSearchOutline />}
                 />
@@ -184,7 +189,7 @@ export default function Services() {
                 width={smallscreen ? "90vw" : "20rem"}
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={taskToggler}
               >
                 <option hidden defaultChecked>
@@ -225,7 +230,7 @@ export default function Services() {
                   value={sourceLang}
                   background={"white"}
                   borderRadius={0}
-                  color="gray.300"
+                  color="gray.600"
                   onChange={sourceLangToggler}
                 >
                   <option hidden defaultChecked>
@@ -248,7 +253,7 @@ export default function Services() {
                   value={targetLang}
                   background={"white"}
                   borderRadius={0}
-                  color="gray.300"
+                  color="gray.600"
                   onChange={targetLangToggler}
                   display={hideTarget ? "none" : "block"}
                 >
@@ -283,7 +288,7 @@ export default function Services() {
                 background={"white"}
               >
                 <InputLeftElement
-                  color="gray.300"
+                  color="gray.600"
                   pointerEvents="none"
                   children={<IoSearchOutline />}
                 />
@@ -298,7 +303,7 @@ export default function Services() {
                 width={smallscreen ? "90vw" : "20rem"}
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={taskToggler}
               >
                 <option hidden defaultChecked>
@@ -339,7 +344,7 @@ export default function Services() {
                   value={sourceLang}
                   background={"white"}
                   borderRadius={0}
-                  color="gray.300"
+                  color="gray.600"
                   onChange={sourceLangToggler}
                 >
                   <option hidden defaultChecked>
@@ -362,7 +367,7 @@ export default function Services() {
                   value={targetLang}
                   background={"white"}
                   borderRadius={0}
-                  color="gray.300"
+                  color="gray.600"
                   onChange={targetLangToggler}
                   display={hideTarget ? "none" : "block"}
                 >

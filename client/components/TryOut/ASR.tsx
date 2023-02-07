@@ -40,8 +40,8 @@ export default function ASRTry({ ...props }) {
   const [fetching, setFetching] = useState(false);
   const [recording, setRecording] = useState(false);
   const [sampleRate, setSampleRate] = useState<number>(16000);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-  const [recorder, setRecorder] = useState<MediaRecorder>(null);
+  const [recorder, setRecorder] = useState<any>(null);
+  const [audioStream, setAudioStream] = useState<any>(null);
   const [fetched, setFetched] = useState(false);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
@@ -56,14 +56,8 @@ export default function ASRTry({ ...props }) {
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
-    recorder!.ondataavailable = (e: BlobEvent) => {
-      audioChunks.push(e.data);
-    };
-    recorder!.onstop = (e) => {
-      console.log("Recording Done...");
-    };
-
-    recorder!.start(0.5);
+    recorder.record();
+    console.log("Recording started");
   };
 
   const getASROutput = (asrInput: string) => {
@@ -102,18 +96,24 @@ export default function ASRTry({ ...props }) {
       });
   };
 
-  const stopRecording = () => {
-    setRecording(!recording);
-    setPlaceHolder("Start Recording for ASR Inference...");
-    recorder!.stop();
-    let blob = new Blob(audioChunks, { type: "audio/wav" });
-    const reader: FileReader = new FileReader();
+  const handleRecording = (blob: any) => {
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = () => {
-      var base64Data: string = reader.result as string;
-      getASROutput(base64Data.split(",")[1]);
-      setAudioChunks([]);
+      var result = reader.result as string;
+      var base64Data = result.split(",")[1];
+      var audio = new Audio("data:audio/wav;base64," + base64Data);
+      audio.play();
+      getASROutput(base64Data);
     };
+  };
+
+  const stopRecording = () => {
+    setRecording(!recording);
+    recorder.stop();
+    audioStream.getAudioTracks()[0].stop();
+    recorder.exportWAV(handleRecording, "audio/wav", 16000);
+    setPlaceHolder("Start Recording for ASR Inference...");
     setFetching(false);
     setFetched(true);
   };
@@ -155,12 +155,16 @@ export default function ASRTry({ ...props }) {
     streamingClient.disconnect();
     setStreaming(false);
     setFetching(false);
-    // setStreamingText("");
   };
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      var newRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      setAudioStream(stream);
+      var AudioContext = window.AudioContext;
+      var audioContext = new AudioContext();
+      var input = audioContext.createMediaStreamSource(stream);
+      var Recorder = (window as any).Recorder;
+      var newRecorder = new Recorder(input, { numChannels: 1 });
       setRecorder(newRecorder);
     });
 
@@ -176,165 +180,169 @@ export default function ASRTry({ ...props }) {
   }, []);
 
   return (
-    <Grid templateRows="repeat(3)" gap={5}>
-      <GridItem>
-        <Stack direction={"column"}>
-          <Stack direction={"row"}>
-            <Text className="dview-service-try-option-title">
-              Inference Mode:
-            </Text>
-            <Select
-              onChange={(e) => {
-                setInferenceMode(e.target.value);
-              }}
-            >
-              <option value={"streaming"}>Streaming</option>
-              <option value={"rest"}>REST</option>
-            </Select>
-          </Stack>
-          <Stack direction={"row"}>
-            <Text className="dview-service-try-option-title">
-              Select Language:
-            </Text>
-            <Select
-              onChange={(e) => {
-                setLanguage(e.target.value);
-              }}
-              value={language}
-            >
-              {languages.map((language) => (
-                <option key={language} value={language}>
-                  {lang2label[language]}
-                </option>
-              ))}
-            </Select>
-          </Stack>
-          <Stack direction={"row"}>
-            <Text className="dview-service-try-option-title">Sample Rate:</Text>
-            <Select
-              onChange={(e) => {
-                setSampleRate(Number(e.target.value));
-              }}
-            >
-              <option value={48000}>48000 Hz</option>
-              <option value={16000}>16000 Hz</option>
-              <option value={8000}>8000 Hz</option>
-            </Select>
-          </Stack>
-        </Stack>
-      </GridItem>
-      <GridItem>
-        {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
-      </GridItem>
-
-      {fetched ? (
+    <>
+      <Grid templateRows="repeat(3)" gap={5}>
         <GridItem>
-          <SimpleGrid
-            p="1rem"
-            w="100%"
-            h="auto"
-            bg="orange.100"
-            borderRadius={15}
-            columns={2}
-            spacingX="40px"
-            spacingY="20px"
-          >
-            <Stat>
-              <StatLabel>Word Count</StatLabel>
-              <StatNumber>{responseWordCount}</StatNumber>
-              <StatHelpText>Response</StatHelpText>
-            </Stat>
-            <Stat>
-              <StatLabel>Response Time</StatLabel>
-              <StatNumber>{Number(requestTime) / 1000}</StatNumber>
-              <StatHelpText>seconds</StatHelpText>
-            </Stat>
-          </SimpleGrid>
-        </GridItem>
-      ) : (
-        <></>
-      )}
-      {inferenceMode === "rest" ? (
-        <GridItem>
-          <Stack>
-            <Textarea
-              w={"auto"}
-              h={200}
-              readOnly
-              value={audioText}
-              placeholder={placeholder}
-            />
-            <Stack direction={"row"} gap={5}>
-              {recording ? (
-                <Button
-                  onClick={() => {
-                    stopRecording();
-                  }}
-                >
-                  <FaMicrophone /> Stop
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    startRecording();
-                  }}
-                >
-                  <FaMicrophone size={15} />
-                </Button>
-              )}
-              <Input
-                variant={"unstyled"}
-                onChangeCapture={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const selectedAudioFile = e.target["files"][0];
-                  const selectedAudioReader = new FileReader();
-                  selectedAudioReader.readAsDataURL(selectedAudioFile);
-                  selectedAudioReader.onloadend = () => {
-                    setFetched(false);
-                    setFetching(true);
-                    var base64Data: string =
-                      selectedAudioReader.result as string;
-                    getASROutput(base64Data.split(",")[1]);
-                    setFetching(false);
-                    setFetched(true);
-                  };
+          <Stack direction={"column"}>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">
+                Inference Mode:
+              </Text>
+              <Select
+                onChange={(e) => {
+                  setInferenceMode(e.target.value);
                 }}
-                type={"file"}
-              />
+              >
+                <option value={"streaming"}>Streaming</option>
+                <option value={"rest"}>REST</option>
+              </Select>
+            </Stack>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">
+                Select Language:
+              </Text>
+              <Select
+                onChange={(e) => {
+                  setLanguage(e.target.value);
+                }}
+                value={language}
+              >
+                {languages.map((language) => (
+                  <option key={language} value={language}>
+                    {lang2label[language]}
+                  </option>
+                ))}
+              </Select>
+            </Stack>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">
+                Sample Rate:
+              </Text>
+              <Select
+                onChange={(e) => {
+                  setSampleRate(Number(e.target.value));
+                }}
+              >
+                <option value={48000}>48000 Hz</option>
+                <option value={16000}>16000 Hz</option>
+                <option value={8000}>8000 Hz</option>
+              </Select>
             </Stack>
           </Stack>
         </GridItem>
-      ) : (
         <GridItem>
-          <Stack gap={5}>
-            <Textarea
-              w={"auto"}
-              h={200}
-              readOnly
-              value={streamingText}
-              placeholder={placeholder}
-            />
-            <Stack direction={"column"}>
-              {streaming ? (
-                <Button
-                  onClick={() => {
-                    stopStreaming();
-                  }}
-                >
-                  <FaMicrophone /> Stop
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    startStreaming();
-                  }}
-                >
-                  <FaMicrophone size={15} />
-                </Button>
-              )}
-            </Stack>
-          </Stack>
+          {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
         </GridItem>
-      )}
-    </Grid>
+
+        {fetched ? (
+          <GridItem>
+            <SimpleGrid
+              p="1rem"
+              w="100%"
+              h="auto"
+              bg="orange.100"
+              borderRadius={15}
+              columns={2}
+              spacingX="40px"
+              spacingY="20px"
+            >
+              <Stat>
+                <StatLabel>Word Count</StatLabel>
+                <StatNumber>{responseWordCount}</StatNumber>
+                <StatHelpText>Response</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Response Time</StatLabel>
+                <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+                <StatHelpText>seconds</StatHelpText>
+              </Stat>
+            </SimpleGrid>
+          </GridItem>
+        ) : (
+          <></>
+        )}
+        {inferenceMode === "rest" ? (
+          <GridItem>
+            <Stack>
+              <Textarea
+                w={"auto"}
+                h={200}
+                readOnly
+                value={audioText}
+                placeholder={placeholder}
+              />
+              <Stack direction={"row"} gap={5}>
+                {recording ? (
+                  <Button
+                    onClick={() => {
+                      stopRecording();
+                    }}
+                  >
+                    <FaMicrophone /> Stop
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      startRecording();
+                    }}
+                  >
+                    <FaMicrophone size={15} />
+                  </Button>
+                )}
+                <Input
+                  variant={"unstyled"}
+                  onChangeCapture={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const selectedAudioFile = e.target["files"][0];
+                    const selectedAudioReader = new FileReader();
+                    selectedAudioReader.readAsDataURL(selectedAudioFile);
+                    selectedAudioReader.onloadend = () => {
+                      setFetched(false);
+                      setFetching(true);
+                      var base64Data: string =
+                        selectedAudioReader.result as string;
+                      getASROutput(base64Data.split(",")[1]);
+                      setFetching(false);
+                      setFetched(true);
+                    };
+                  }}
+                  type={"file"}
+                />
+              </Stack>
+            </Stack>
+          </GridItem>
+        ) : (
+          <GridItem>
+            <Stack gap={5}>
+              <Textarea
+                w={"auto"}
+                h={200}
+                readOnly
+                value={streamingText}
+                placeholder={placeholder}
+              />
+              <Stack direction={"column"}>
+                {streaming ? (
+                  <Button
+                    onClick={() => {
+                      stopStreaming();
+                    }}
+                  >
+                    <FaMicrophone /> Stop
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      startStreaming();
+                    }}
+                  >
+                    <FaMicrophone size={15} />
+                  </Button>
+                )}
+              </Stack>
+            </Stack>
+          </GridItem>
+        )}
+      </Grid>
+    </>
   );
 }

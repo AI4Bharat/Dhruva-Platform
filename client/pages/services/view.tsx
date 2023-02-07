@@ -16,6 +16,7 @@ import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
 import TTSTry from "../../components/TryOut/TTS";
 import NMTTry from "../../components/TryOut/NMT";
+import STSTry from "../../components/TryOut/STS";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { dhruvaConfig } from "../../config/config";
 import { useState, useEffect } from "react";
@@ -92,136 +93,138 @@ export default function ViewService() {
         return <TTSTry languages={languages} serviceId={serviceId} />;
       case "translation":
         return <NMTTry languages={languages} serviceId={serviceId} />;
+      case "sts":
+        return <STSTry languages={languages} serviceId={serviceId} />;
     }
   };
 
   return (
     <>
-    <Head>
-      <title>View Service</title>
-    </Head>
-    <ContentLayout>
-      {smallscreen ? (
-        <Grid
-          ml="1rem"
-          mr="1rem"
-          mb="1rem"
-          pl="1rem"
-          pr="1rem"
-          pt="1rem"
-          pb="1rem"
-          minH={"10vh"}
-          minW={"90vw"}
-          maxW={"90vw"}
-          gap={10}
-        >
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10} direction={"row"}>
-              <Heading>{serviceInfo["name"]}</Heading>
-            </Stack>
-            <Tabs isFitted>
-              <TabList aria-orientation="vertical" mb="1em">
-                <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-                <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Stack spacing={5}>
-                    <Text className="dview-service-description">
-                      {serviceInfo["serviceDescription"]}
-                    </Text>
-                    <Stack>
-                      <Text className="dview-service-info-item">
-                        Model Version : {serviceInfo["model"]["version"]}
+      <Head>
+        <title>View Service</title>
+      </Head>
+      <ContentLayout>
+        {smallscreen ? (
+          <Grid
+            ml="1rem"
+            mr="1rem"
+            mb="1rem"
+            pl="1rem"
+            pr="1rem"
+            pt="1rem"
+            pb="1rem"
+            minH={"10vh"}
+            minW={"90vw"}
+            maxW={"90vw"}
+            gap={10}
+          >
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10} direction={"row"}>
+                <Heading>{serviceInfo["name"]}</Heading>
+              </Stack>
+              <Tabs isFitted>
+                <TabList aria-orientation="vertical" mb="1em">
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <Stack spacing={5}>
+                      <Text className="dview-service-description">
+                        {serviceInfo["serviceDescription"]}
                       </Text>
-                      <Text className="dview-service-info-item">
-                        Model Type : {serviceInfo["model"]["task"]["type"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Running On : {serviceInfo["hardwareDescription"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Published On :{" "}
-                        {new Date(serviceInfo["publishedOn"]).toDateString()}
-                      </Text>
+                      <Stack>
+                        <Text className="dview-service-info-item">
+                          Model Version : {serviceInfo["model"]["version"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Model Type : {serviceInfo["model"]["task"]["type"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Running On : {serviceInfo["hardwareDescription"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Published On :{" "}
+                          {new Date(serviceInfo["publishedOn"]).toDateString()}
+                        </Text>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </TabPanel>
-                <TabPanel>
-                  <Documentation serviceInfo={serviceInfo} />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </GridItem>
-          <GridItem p="1rem" bg="white">
-            <Stack spacing={10}>
-              <Box className="dview-service-try-title-box">
-                <Heading className="dview-service-try-title">
-                  Try it out here!
-                </Heading>
-              </Box>
-              {renderTryIt(serviceInfo["model"]["task"]["type"])}
-            </Stack>
-          </GridItem>
-        </Grid>
-      ) : (
-        <Grid
-          templateColumns="repeat(2, 1fr)"
-          gap={5}
-          className="service-view"
-          bg="light.100"
-        >
-          <GridItem>
-            <Stack spacing={10} direction={"row"}>
-              <Heading>{serviceInfo["name"]}</Heading>
-            </Stack>
-            <Tabs isFitted>
-              <TabList mb="1em">
-                <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-                <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Stack spacing={5}>
-                    <Text className="dview-service-description">
-                      {serviceInfo["serviceDescription"]}
-                    </Text>
-                    <Stack>
-                      <Text className="dview-service-info-item">
-                        Model Version : {serviceInfo["model"]["version"]}
+                  </TabPanel>
+                  <TabPanel>
+                    <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </GridItem>
+            <GridItem p="1rem" bg="white">
+              <Stack spacing={10}>
+                <Box className="dview-service-try-title-box">
+                  <Heading className="dview-service-try-title">
+                    Try it out here!
+                  </Heading>
+                </Box>
+                {renderTryIt(serviceInfo["model"]["task"]["type"])}
+              </Stack>
+            </GridItem>
+          </Grid>
+        ) : (
+          <Grid
+            templateColumns="repeat(2, 1fr)"
+            gap={5}
+            className="service-view"
+            bg="light.100"
+          >
+            <GridItem>
+              <Stack spacing={10} direction={"row"}>
+                <Heading>{serviceInfo["name"]}</Heading>
+              </Stack>
+              <Tabs isFitted>
+                <TabList mb="1em">
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <Stack spacing={5}>
+                      <Text className="dview-service-description">
+                        {serviceInfo["serviceDescription"]}
                       </Text>
-                      <Text className="dview-service-info-item">
-                        Model Type : {serviceInfo["model"]["task"]["type"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Running On : {serviceInfo["hardwareDescription"]}
-                      </Text>
-                      <Text className="dview-service-info-item">
-                        Published On :{" "}
-                        {new Date(serviceInfo["publishedOn"]).toDateString()}
-                      </Text>
+                      <Stack>
+                        <Text className="dview-service-info-item">
+                          Model Version : {serviceInfo["model"]["version"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Model Type : {serviceInfo["model"]["task"]["type"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Running On : {serviceInfo["hardwareDescription"]}
+                        </Text>
+                        <Text className="dview-service-info-item">
+                          Published On :{" "}
+                          {new Date(serviceInfo["publishedOn"]).toDateString()}
+                        </Text>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                </TabPanel>
-                <TabPanel>
-                  <Documentation serviceInfo={serviceInfo} />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </GridItem>
-          <GridItem>
-            <Stack spacing={10}>
-              <Box className="dview-service-try-title-box">
-                <Heading className="dview-service-try-title">
-                  Try it out here!
-                </Heading>
-              </Box>
-              {renderTryIt(serviceInfo["model"]["task"]["type"])}
-            </Stack>
-          </GridItem>
-        </Grid>
-      )}
-    </ContentLayout>
+                  </TabPanel>
+                  <TabPanel>
+                    <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </GridItem>
+            <GridItem>
+              <Stack spacing={10}>
+                <Box className="dview-service-try-title-box">
+                  <Heading className="dview-service-try-title">
+                    Try it out here!
+                  </Heading>
+                </Box>
+                {renderTryIt(serviceInfo["model"]["task"]["type"])}
+              </Stack>
+            </GridItem>
+          </Grid>
+        )}
+      </ContentLayout>
     </>
   );
 }
