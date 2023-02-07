@@ -96,6 +96,7 @@ export default function NMTTry({ ...props }) {
         onChange={undefined}
         onBlur={undefined}
         onKeyDown={undefined}
+        enabled={currentLanguage.sourceLanguage !== "en"}
       />
     );
   };

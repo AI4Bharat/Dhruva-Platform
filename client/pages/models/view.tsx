@@ -105,7 +105,8 @@ export default function ViewModel({ ...props }) {
         },
       }).then((response) => {
         setModelInfo(response.data);
-        setBenchmarks(response.data.benchmarks);
+        if (response.data.benchmarks !== null)
+          setBenchmarks(response.data.benchmarks);
       });
     }
   }, [router.isReady]);
@@ -212,18 +213,82 @@ export default function ViewModel({ ...props }) {
                     Benchmarks
                   </Heading>
                 </Box>
-                <Stack spacing={5}>
-                  <Stack direction={"row"}>
-                    <Text className="dview-service-try-option-title">
-                      Metric :{" "}
-                    </Text>
+                {benchmarks.length !== 0 ? (
+                  <Stack spacing={5}>
+                    <Stack direction={"row"}>
+                      <Text className="dview-service-try-option-title">
+                        Metric :{" "}
+                      </Text>
+                      <Select
+                        value={benchmarkMetric}
+                        onChange={(e) => {
+                          setBenchmarkMetric(e.target.value);
+                        }}
+                      >
+                        {benchmarkMetrics.map((metric) => {
+                          return (
+                            <option key={metric} value={metric}>
+                              {metric.toUpperCase()}
+                            </option>
+                          );
+                        })}
+                      </Select>
+                    </Stack>
+                    <Stack direction={"row"}>
+                      <Text className="dview-service-try-option-title">
+                        Dataset :{" "}
+                      </Text>
+                      <Select
+                        value={benchmarkDataset}
+                        onChange={(e) => {
+                          setBenchmarkDataset(e.target.value);
+                        }}
+                      >
+                        {benchmarkDatasets.map((dataset) => {
+                          return (
+                            <option key={dataset} value={dataset}>
+                              {dataset.toUpperCase()}
+                            </option>
+                          );
+                        })}
+                      </Select>
+                    </Stack>
+                    <SimpleGrid
+                      p="1rem"
+                      w="100%"
+                      h="auto"
+                      bg="orange.100"
+                      borderRadius={15}
+                      columns={2}
+                      spacingX="40px"
+                      spacingY="20px"
+                    >
+                      {benchmarkValues.map((benchmark, idx) => {
+                        return (
+                          <Stat key={idx}>
+                            <StatLabel>
+                              {benchmarkMetric.toUpperCase()} Score
+                            </StatLabel>
+                            <StatNumber>{benchmark["value"]}</StatNumber>
+                            <StatHelpText>{benchmark["language"]}</StatHelpText>
+                          </Stat>
+                        );
+                      })}
+                    </SimpleGrid>
                   </Stack>
-                  <Accordion
-                    defaultIndex={[0]}
-                    overflow={"hidden"}
-                    allowMultiple
-                  ></Accordion>
-                </Stack>
+                ) : (
+                  <Box
+                    borderRadius={15}
+                    height={100}
+                    width="auto"
+                    bg={"orange.100"}
+                    display="flex"
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                  >
+                    <Text fontWeight={"bold"}>No Benchmarks Found.</Text>
+                  </Box>
+                )}
               </Stack>
             </GridItem>
           </Grid>
@@ -276,68 +341,82 @@ export default function ViewModel({ ...props }) {
                     Benchmarks
                   </Heading>
                 </Box>
-                <Stack spacing={5}>
-                  <Stack direction={"row"}>
-                    <Text className="dview-service-try-option-title">
-                      Metric :{" "}
-                    </Text>
-                    <Select
-                      value={benchmarkMetric}
-                      onChange={(e) => {
-                        setBenchmarkMetric(e.target.value);
-                      }}
+                {benchmarks.length !== 0 ? (
+                  <Stack spacing={5}>
+                    <Stack direction={"row"}>
+                      <Text className="dview-service-try-option-title">
+                        Metric :{" "}
+                      </Text>
+                      <Select
+                        value={benchmarkMetric}
+                        onChange={(e) => {
+                          setBenchmarkMetric(e.target.value);
+                        }}
+                      >
+                        {benchmarkMetrics.map((metric) => {
+                          return (
+                            <option key={metric} value={metric}>
+                              {metric.toUpperCase()}
+                            </option>
+                          );
+                        })}
+                      </Select>
+                    </Stack>
+                    <Stack direction={"row"}>
+                      <Text className="dview-service-try-option-title">
+                        Dataset :{" "}
+                      </Text>
+                      <Select
+                        value={benchmarkDataset}
+                        onChange={(e) => {
+                          setBenchmarkDataset(e.target.value);
+                        }}
+                      >
+                        {benchmarkDatasets.map((dataset) => {
+                          return (
+                            <option key={dataset} value={dataset}>
+                              {dataset.toUpperCase()}
+                            </option>
+                          );
+                        })}
+                      </Select>
+                    </Stack>
+                    <SimpleGrid
+                      p="1rem"
+                      w="100%"
+                      h="auto"
+                      bg="orange.100"
+                      borderRadius={15}
+                      columns={2}
+                      spacingX="40px"
+                      spacingY="20px"
                     >
-                      {benchmarkMetrics.map((metric) => {
+                      {benchmarkValues.map((benchmark) => {
                         return (
-                          <option key={metric} value={metric}>
-                            {metric.toUpperCase()}
-                          </option>
+                          <Stat>
+                            <StatLabel>
+                              {benchmarkMetric.toUpperCase()} Score
+                            </StatLabel>
+                            <StatNumber>{benchmark["value"]}</StatNumber>
+                            <StatHelpText>{benchmark["language"]}</StatHelpText>
+                          </Stat>
                         );
                       })}
-                    </Select>
+                    </SimpleGrid>
                   </Stack>
-                  <Stack direction={"row"}>
-                    <Text className="dview-service-try-option-title">
-                      Dataset :{" "}
-                    </Text>
-                    <Select
-                      value={benchmarkDataset}
-                      onChange={(e) => {
-                        setBenchmarkDataset(e.target.value);
-                      }}
-                    >
-                      {benchmarkDatasets.map((dataset) => {
-                        return (
-                          <option key={dataset} value={dataset}>
-                            {dataset.toUpperCase()}
-                          </option>
-                        );
-                      })}
-                    </Select>
-                  </Stack>
-                  <SimpleGrid
-                    p="1rem"
-                    w="100%"
-                    h="auto"
-                    bg="orange.100"
+                ) : (
+                  <Box
                     borderRadius={15}
-                    columns={2}
-                    spacingX="40px"
-                    spacingY="20px"
+                    height={100}
+                    width="auto"
+                    bg={"orange.100"}
+                    display="flex"
+                    justifyContent={"center"}
+                    alignItems={"center"}
                   >
-                    {benchmarkValues.map((benchmark) => {
-                      return (
-                        <Stat>
-                          <StatLabel>
-                            {benchmarkMetric.toUpperCase()} Score
-                          </StatLabel>
-                          <StatNumber>{benchmark["value"]}</StatNumber>
-                          <StatHelpText>{benchmark["language"]}</StatHelpText>
-                        </Stat>
-                      );
-                    })}
-                  </SimpleGrid>
-                </Stack>
+                    <Text fontWeight={"bold"}>No Benchmarks Found.</Text>
+                  </Box>
+                )}
               </Stack>
             </GridItem>
           </Grid>

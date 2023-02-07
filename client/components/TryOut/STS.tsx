@@ -49,8 +49,17 @@ export default function STSTry({ ...props }) {
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
-    recorder.record();
-    console.log("Recording started");
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      setAudioStream(stream);
+      var AudioContext = window.AudioContext;
+      var audioContext = new AudioContext();
+      var input = audioContext.createMediaStreamSource(stream);
+      var Recorder = (window as any).Recorder;
+      var newRecorder = new Recorder(input, { numChannels: 1 });
+      setRecorder(newRecorder);
+      newRecorder.record();
+      console.log("Recording started");
+    });
   };
 
   const getASROutput = (asrInput: string) => {
@@ -111,18 +120,6 @@ export default function STSTry({ ...props }) {
     setFetching(false);
     setFetched(true);
   };
-
-  useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setAudioStream(stream);
-      var AudioContext = window.AudioContext;
-      var audioContext = new AudioContext();
-      var input = audioContext.createMediaStreamSource(stream);
-      var Recorder = (window as any).Recorder;
-      var newRecorder = new Recorder(input, { numChannels: 1 });
-      setRecorder(newRecorder);
-    });
-  }, []);
 
   return (
     <>

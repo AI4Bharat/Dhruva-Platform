@@ -9,7 +9,6 @@ import "../styles/global.css";
 import "../components/indic-transliterate/dist/index.css";
 import Navbar from "../components/Navigation/Navbar";
 import NavbarMobile from "../components/Navigation/NavbarMobile";
-import Head from "next/head";
 import Script from "next/script";
 
 interface ContentLayoutProps {
