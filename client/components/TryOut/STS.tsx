@@ -232,6 +232,10 @@ export default function STSTry({ ...props }) {
                     setFetching(true);
                     var base64Data: string =
                       selectedAudioReader.result as string;
+                    var audio = new Audio(
+                      "data:audio/wav;base64," + base64Data.split(",")[1]
+                    );
+                    audio.play();
                     getASROutput(base64Data.split(",")[1]);
                     setFetching(false);
                     setFetched(true);
