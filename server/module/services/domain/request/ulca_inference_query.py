@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class _ULCABaseInferenceRequest(BaseModel):
+class ULCAInferenceQuery(BaseModel):
     serviceId: str

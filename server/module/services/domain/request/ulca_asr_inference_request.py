@@ -1,6 +1,7 @@
-from ..common import _ULCABaseInferenceRequest, _ULCAAudio, _ULCABaseAudioConfig
+from ..common import _ULCAAudio, _ULCABaseAudioConfig
+from pydantic import BaseModel
 
 
-class ULCAAsrInferenceRequest(_ULCABaseInferenceRequest):
+class ULCAAsrInferenceRequest(BaseModel):
     audio: list[_ULCAAudio]
     config: _ULCABaseAudioConfig

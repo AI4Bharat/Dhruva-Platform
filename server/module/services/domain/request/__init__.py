@@ -1,3 +1,4 @@
+from .ulca_inference_query import ULCAInferenceQuery
 from .service_view_request import ServiceViewRequest
 from .ulca_generic_inference_request import ULCAGenericInferenceRequest
 from .ulca_translation_inference_request import ULCATranslationInferenceRequest

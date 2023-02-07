@@ -1,6 +1,7 @@
-from ..common import _ULCAText, _ULCABaseInferenceRequest, _ULCATtsInferenceConfig
+from ..common import _ULCAText, _ULCATtsInferenceConfig
+from pydantic import BaseModel
 
 
-class ULCATtsInferenceRequest(_ULCABaseInferenceRequest):
+class ULCATtsInferenceRequest(BaseModel):
     input: list[_ULCAText]
     config: _ULCATtsInferenceConfig
