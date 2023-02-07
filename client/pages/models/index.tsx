@@ -15,6 +15,7 @@ import {
   Th,
   Thead,
   Tr,
+  VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
@@ -163,9 +164,9 @@ export default function Models() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          <Stack
-            direction={["column", "row"]}
-            spacing="0.5rem"
+          {smallscreen?          
+          <VStack
+            width="90vw"
             background={"gray.50"}
           >
             <InputGroup
@@ -252,7 +253,97 @@ export default function Models() {
             >
               Clear Filters
             </Button>
-          </Stack>
+          </VStack>:          
+          <HStack
+            background={"gray.50"}
+          >
+            <InputGroup
+              width={smallscreen ? "90vw" : "30rem"}
+              background={"white"}
+            >
+              <InputLeftElement
+                color="gray.300"
+                pointerEvents="none"
+                children={<IoSearchOutline />}
+              />
+              <Input
+                borderRadius={0}
+                onChange={searchToggler}
+                placeholder="Search for Services"
+              />
+            </InputGroup>
+            <Select
+              width={smallscreen ? "90vw" : "20rem"}
+              background={"white"}
+              borderRadius={0}
+              color="gray.300"
+              onChange={taskToggler}
+            >
+              <option defaultChecked hidden>
+                Select Task Type
+              </option>
+              <option onClick={()=>{setHideTarget(false)}} value="translation">Translation</option>
+              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="tts">TTS</option>
+              <option onClick={()=>{setHideTarget(true); setTargetLanguage("")}} value="asr">ASR</option>
+            </Select>
+            <InputGroup
+              width={smallscreen ? "90vw" : "30rem"}
+              background={"white"}
+            >
+              <Select
+                background={"white"}
+                borderRadius={0}
+                color="gray.300"
+                onChange={sourceLangToggler}
+              >
+                <option hidden defaultChecked>
+                  Source Language
+                </option>
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="as">Assamese</option>
+                <option value="bn">Bengali</option>
+                <option value="gu">Gujarati</option>
+                <option value="kn">Kannada</option>
+                <option value="ml">Malayalam</option>
+                <option value="mr">Marathi</option>
+                <option value="or">Oriya</option>
+                <option value="pa">Punjabi</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+              </Select>
+              <Select
+                background={"white"}
+                borderRadius={0}
+                display={hideTarget?"none":"block"}
+                onChange={targetLangToggler}
+                color="gray.300"
+              >
+                <option hidden defaultChecked>
+                  Target Language
+                </option>
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="as">Assamese</option>
+                <option value="bn">Bengali</option>
+                <option value="gu">Gujarati</option>
+                <option value="kn">Kannada</option>
+                <option value="ml">Malayalam</option>
+                <option value="mr">Marathi</option>
+                <option value="or">Oriya</option>
+                <option value="pa">Punjabi</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+              </Select>
+            </InputGroup>
+            <Button
+              width={smallscreen ? "90vw" : "8rem"}
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </Button>
+          </HStack>}
+
         </Box>
         <br />
         {smallscreen ? (

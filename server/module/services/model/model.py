@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any, List, Optional
 from pydantic import BaseModel
+from ..domain.common import _ULCALanguagePair
 
 
 class _Task(BaseModel):
@@ -41,6 +43,26 @@ class _InferenceEndPoint(BaseModel):
     schema_: _Schema
 
 
+class _LanguagePair(BaseModel):
+    sourceLanguage: str
+    targetLanguage: Optional[str]
+
+
+class _BenchmarkMetric(BaseModel):
+    metricName: str
+    score: str
+
+
+class _Benchmark(BaseModel):
+    benchmarkId: Optional[str]
+    name: str
+    description: str
+    domain: str
+    createdOn: Optional[datetime]
+    languages: Optional[_LanguagePair]
+    score: List[_BenchmarkMetric]
+
+
 class Model(BaseModel):
     _id: Optional[Any]
     modelId: str
@@ -55,4 +77,5 @@ class Model(BaseModel):
     license: str
     domain: List[str]
     inferenceEndPoint: _InferenceEndPoint
+    benchmarks: Optional[List[_Benchmark]]
     submitter: _Submitter

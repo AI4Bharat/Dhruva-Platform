@@ -16,15 +16,15 @@ class Database:
             return
 
         base_path = os.path.dirname(__file__)
-        with open(base_path + "/fixtures/models_registry.json") as fhand:
+        with open(base_path + "/fixtures/models_registry.json", encoding='utf8') as fhand:
             models_registry = json.loads(fhand.read())
             self.__db["model"] = models_registry
 
-        with open(base_path + "/fixtures/services_registry.json") as fhand:
+        with open(base_path + "/fixtures/services_registry.json", encoding='utf8') as fhand:
             services_registry = json.loads(fhand.read())
             self.__db["service"] = services_registry
 
-        with open(base_path + "/fixtures/api_key_registry.json") as fhand:
+        with open(base_path + "/fixtures/api_key_registry.json", encoding='utf8') as fhand:
             api_key_registry = json.loads(fhand.read())
             self.__db["api_key"] = api_key_registry
 

@@ -15,6 +15,7 @@ import {
   Th,
   Thead,
   Tr,
+  VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
@@ -166,100 +167,235 @@ export default function Services() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          <Stack
-            direction={["column", "row"]}
-            spacing="0.5rem"
-            background={"gray.50"}
-          >
-            <InputGroup
-              width={smallscreen ? "90vw" : "30rem"}
-              background={"white"}
-            >
-              <InputLeftElement
-                color="gray.600"
-                pointerEvents="none"
-                children={<IoSearchOutline />}
-              />
-              <Input
-                borderRadius={0}
-                onChange={searchToggler}
-                placeholder="Search for Services"
-              />
-            </InputGroup>
-            <Select
-              value={task}
-              width={smallscreen ? "90vw" : "20rem"}
-              background={"white"}
-              borderRadius={0}
-              color="gray.600"
-              onChange={taskToggler}
-            >
-              <option hidden defaultChecked>
-                Select Task Type
-              </option>
-              <option value="translation">Translation</option>
-              <option value="tts">TTS</option>
-              <option value="asr">ASR</option>
-            </Select>
-            <InputGroup
-              width={smallscreen ? "90vw" : "30rem"}
-              background={"white"}
-            >
+          {smallscreen ? (
+            <VStack width={"90vw"} background={"gray.50"}>
+              <InputGroup
+                width={smallscreen ? "90vw" : "30rem"}
+                background={"white"}
+              >
+                <InputLeftElement
+                  color="gray.300"
+                  pointerEvents="none"
+                  children={<IoSearchOutline />}
+                />
+                <Input
+                  borderRadius={0}
+                  onChange={searchToggler}
+                  placeholder="Search for Services"
+                />
+              </InputGroup>
               <Select
-                value={sourceLang}
+                value={task}
+                width={smallscreen ? "90vw" : "20rem"}
                 background={"white"}
                 borderRadius={0}
-                color="gray.600"
-                onChange={sourceLangToggler}
+                color="gray.300"
+                onChange={taskToggler}
               >
                 <option hidden defaultChecked>
-                  Source Language
+                  Select Task Type
                 </option>
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-                <option value="as">Assamese</option>
-                <option value="bn">Bengali</option>
-                <option value="gu">Gujarati</option>
-                <option value="kn">Kannada</option>
-                <option value="ml">Malayalam</option>
-                <option value="mr">Marathi</option>
-                <option value="or">Oriya</option>
-                <option value="pa">Punjabi</option>
-                <option value="ta">Tamil</option>
-                <option value="te">Telugu</option>
+                <option
+                  onClick={() => {
+                    setHideTarget(false);
+                  }}
+                  value="translation"
+                >
+                  Translation
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="tts"
+                >
+                  TTS
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="asr"
+                >
+                  ASR
+                </option>
               </Select>
+              <InputGroup
+                width={smallscreen ? "90vw" : "30rem"}
+                background={"white"}
+              >
+                <Select
+                  value={sourceLang}
+                  background={"white"}
+                  borderRadius={0}
+                  color="gray.300"
+                  onChange={sourceLangToggler}
+                >
+                  <option hidden defaultChecked>
+                    Source Language
+                  </option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="as">Assamese</option>
+                  <option value="bn">Bengali</option>
+                  <option value="gu">Gujarati</option>
+                  <option value="kn">Kannada</option>
+                  <option value="ml">Malayalam</option>
+                  <option value="mr">Marathi</option>
+                  <option value="or">Oriya</option>
+                  <option value="pa">Punjabi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="te">Telugu</option>
+                </Select>
+                <Select
+                  value={targetLang}
+                  background={"white"}
+                  borderRadius={0}
+                  color="gray.300"
+                  onChange={targetLangToggler}
+                  display={hideTarget ? "none" : "block"}
+                >
+                  <option hidden defaultChecked>
+                    Target Language
+                  </option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="as">Assamese</option>
+                  <option value="bn">Bengali</option>
+                  <option value="gu">Gujarati</option>
+                  <option value="kn">Kannada</option>
+                  <option value="ml">Malayalam</option>
+                  <option value="mr">Marathi</option>
+                  <option value="or">Oriya</option>
+                  <option value="pa">Punjabi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="te">Telugu</option>
+                </Select>
+              </InputGroup>
+              <Button
+                width={smallscreen ? "90vw" : "8rem"}
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </VStack>
+          ) : (
+            <HStack background={"gray.50"}>
+              <InputGroup
+                width={smallscreen ? "90vw" : "30rem"}
+                background={"white"}
+              >
+                <InputLeftElement
+                  color="gray.300"
+                  pointerEvents="none"
+                  children={<IoSearchOutline />}
+                />
+                <Input
+                  borderRadius={0}
+                  onChange={searchToggler}
+                  placeholder="Search for Services"
+                />
+              </InputGroup>
               <Select
-                value={targetLang}
+                value={task}
+                width={smallscreen ? "90vw" : "20rem"}
                 background={"white"}
                 borderRadius={0}
-                color="gray.600"
-                onChange={targetLangToggler}
-                display={hideTarget ? "none" : "block"}
+                color="gray.300"
+                onChange={taskToggler}
               >
                 <option hidden defaultChecked>
-                  Target Language
+                  Select Task Type
                 </option>
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-                <option value="as">Assamese</option>
-                <option value="bn">Bengali</option>
-                <option value="gu">Gujarati</option>
-                <option value="kn">Kannada</option>
-                <option value="ml">Malayalam</option>
-                <option value="mr">Marathi</option>
-                <option value="or">Oriya</option>
-                <option value="pa">Punjabi</option>
-                <option value="ta">Tamil</option>
-                <option value="te">Telugu</option>
+                <option
+                  onClick={() => {
+                    setHideTarget(false);
+                  }}
+                  value="translation"
+                >
+                  Translation
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="tts"
+                >
+                  TTS
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="asr"
+                >
+                  ASR
+                </option>
               </Select>
-            </InputGroup>
-            <Button
-              width={smallscreen ? "90vw" : "8rem"}
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
-          </Stack>
+              <InputGroup
+                width={smallscreen ? "90vw" : "30rem"}
+                background={"white"}
+              >
+                <Select
+                  value={sourceLang}
+                  background={"white"}
+                  borderRadius={0}
+                  color="gray.300"
+                  onChange={sourceLangToggler}
+                >
+                  <option hidden defaultChecked>
+                    Source Language
+                  </option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="as">Assamese</option>
+                  <option value="bn">Bengali</option>
+                  <option value="gu">Gujarati</option>
+                  <option value="kn">Kannada</option>
+                  <option value="ml">Malayalam</option>
+                  <option value="mr">Marathi</option>
+                  <option value="or">Oriya</option>
+                  <option value="pa">Punjabi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="te">Telugu</option>
+                </Select>
+                <Select
+                  value={targetLang}
+                  background={"white"}
+                  borderRadius={0}
+                  color="gray.300"
+                  onChange={targetLangToggler}
+                  display={hideTarget ? "none" : "block"}
+                >
+                  <option hidden defaultChecked>
+                    Target Language
+                  </option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="as">Assamese</option>
+                  <option value="bn">Bengali</option>
+                  <option value="gu">Gujarati</option>
+                  <option value="kn">Kannada</option>
+                  <option value="ml">Malayalam</option>
+                  <option value="mr">Marathi</option>
+                  <option value="or">Oriya</option>
+                  <option value="pa">Punjabi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="te">Telugu</option>
+                </Select>
+              </InputGroup>
+              <Button
+                width={smallscreen ? "90vw" : "8rem"}
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </HStack>
+          )}
         </Box>
         <br />
         {smallscreen ? (
