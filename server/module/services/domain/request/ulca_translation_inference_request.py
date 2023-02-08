@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from ..common import _ULCAText, _ULCALanguagePair, _ULCABaseInferenceRequest
+from ..common import _ULCAText, _ULCALanguagePair
 
 
 class _ULCATranslationInferenceConfig(BaseModel):
     language: _ULCALanguagePair
 
 
-class ULCATranslationInferenceRequest(_ULCABaseInferenceRequest):
+class ULCATranslationInferenceRequest(BaseModel):
     input: list[_ULCAText]
     config: _ULCATranslationInferenceConfig
