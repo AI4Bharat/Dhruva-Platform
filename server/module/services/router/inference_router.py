@@ -76,7 +76,7 @@ async def _run_inference_tts(
 
 
 @router.post("/s2s", response_model=ULCAS2SInferenceResponse)
-async def _run_inference_asr(
+async def _run_inference_sts(
     request: ULCAS2SInferenceRequest,
     inference_service: InferenceService = Depends(InferenceService),
 ):

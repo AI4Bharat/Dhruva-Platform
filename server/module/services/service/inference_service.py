@@ -2,6 +2,18 @@ import traceback
 from typing import Union
 from fastapi import Depends
 from exception.base_error import BaseError
+import requests
+import numpy as np
+import tritonclient.http as http_client
+import soundfile as sf
+from scipy.io import wavfile
+import scipy.signal as sps
+import io
+import tritonclient.http as http_client
+from tritonclient.utils import np_to_triton_dtype
+import base64
+from urllib.request import urlopen
+
 from ..domain.request.ulca_generic_inference_request import ULCAGenericInferenceRequest
 from ..domain.request.ulca_asr_inference_request import ULCAAsrInferenceRequest
 from ..domain.request.ulca_translation_inference_request import (
@@ -14,22 +26,8 @@ from ..domain.response.ulca_translation_inference_response import (
 )
 from ..domain.response.ulca_tts_inference_response import ULCATtsInferenceResponse
 from ..error.errors import Errors
-from ..domain.constants import (
-    DEFAULT_ULCA_INDIC_TO_INDIC_MODEL_ID,
-    LANG_TRANS_MODEL_CODES,
-)
 from ..gateway import InferenceGateway
 from ..repository import ServiceRepository, ModelRepository
-import requests
-import numpy as np
-import tritonclient.http as http_client
-from scipy.io.wavfile import write as scipy_wav_write
-import io
-import tritonclient.http as http_client
-from tritonclient.utils import np_to_triton_dtype
-import base64
-import soundfile as sf
-from urllib.request import urlopen
 
 from indictrans import Transliterator
 ISO_639_v2_to_v3 = {
@@ -104,9 +102,21 @@ class InferenceService:
                 file_bytes = urlopen(input.audioUri).read()
             else:
                 file_bytes = base64.b64decode(input.audioContent)
-            data, _ = sf.read(io.BytesIO(file_bytes))
+            
+            file_handle = io.BytesIO(file_bytes)
+            data, sampling_rate = sf.read(file_handle)
             data = data.tolist()
             raw_audio = np.array(data)
+            
+            # sampling_rate, raw_audio = wavfile.read(file_handle)
+            if len(raw_audio.shape) > 1: # Stereo to mono
+                raw_audio = raw_audio.sum(axis=1) / 2
+
+            standard_rate = 16000
+            if sampling_rate != standard_rate:
+                number_of_samples = round(len(raw_audio) * float(standard_rate) / sampling_rate)
+                raw_audio = sps.resample(raw_audio, number_of_samples)
+
             o = self.__pad_batch([raw_audio])
             input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
             input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
@@ -175,7 +185,7 @@ class InferenceService:
     ) -> ULCATtsInferenceResponse:
         results = []
         for input in request_body.input:
-            input_string = input.source
+            input_string = input.source.replace('।', '.')
             ip_language = request_body.config.language.sourceLanguage
             ip_gender = request_body.config.gender
             inputs = [
@@ -195,7 +205,7 @@ class InferenceService:
             )
             wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
             byte_io = io.BytesIO()
-            scipy_wav_write(byte_io, 22050, wav)
+            wavfile.write(byte_io, 22050, wav)
             encoded_bytes = base64.b64encode(byte_io.read())
             encoded_string = encoded_bytes.decode()
             results.append({"audioContent": encoded_string})
@@ -209,14 +219,6 @@ class InferenceService:
             "audio": results,
         }
         return res
-
-    def _add_model_id_to_request(self, request_body: dict) -> None:
-        lang_pair = request_body["config"]["language"]
-        lang_pair = lang_pair["sourceLanguage"] + "-" + lang_pair["targetLanguage"]
-
-        request_body["config"]["modelId"] = LANG_TRANS_MODEL_CODES.get(
-            lang_pair, DEFAULT_ULCA_INDIC_TO_INDIC_MODEL_ID
-        )
 
     def __pad_batch(self, batch_data):
         batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
