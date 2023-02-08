@@ -1,4 +1,3 @@
-from .ulca_base_inference import _ULCABaseInferenceRequest
 from .ulca_language_pair import _ULCALanguagePair
 from .ulca_language import _ULCALanguage
 from .ulca_text_pair import _ULCATextPair
