@@ -62,8 +62,9 @@ async def _run_inference_tts(
 # Temporary endpoint; will be removed/standardized soon
 
 @router.post("/s2s", response_model=ULCAS2SInferenceResponse)
-async def _run_inference_asr(
-    request: ULCAS2SInferenceRequest, inference_service: InferenceService = Depends(InferenceService)
+async def _run_inference_sts(
+    request: ULCAS2SInferenceRequest,
+    inference_service: InferenceService = Depends(InferenceService),
 ):
 
     if request.config.language.sourceLanguage == "en":
