@@ -42,7 +42,7 @@ export default function TTSTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.ttsInference,
+        dhruvaConfig.ttsInference + `?serviceId=${props.serviceId}`,
         {
           serviceId: props.serviceId,
           input: [

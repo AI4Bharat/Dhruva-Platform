@@ -69,7 +69,7 @@ export default function ASRTry({ ...props }) {
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
-        dhruvaConfig.asrInference,
+        dhruvaConfig.asrInference + `?serviceId=${props.serviceId}`,
         {
           serviceId: props.serviceId,
           audio: [

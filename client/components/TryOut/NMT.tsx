@@ -44,7 +44,7 @@ export default function NMTTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.translationInference,
+        dhruvaConfig.translationInference  + `?serviceId=${props.serviceId}`,
         {
           serviceId: props.serviceId,
           input: [
