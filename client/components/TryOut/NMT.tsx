@@ -13,8 +13,7 @@ import {
   StatHelpText,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { useState } from "react";
-// import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
+import { useEffect, useState } from "react";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
@@ -44,9 +43,8 @@ export default function NMTTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.translationInference  + `?serviceId=${props.serviceId}`,
+        dhruvaConfig.translationInference + `?serviceId=${props.serviceId}`,
         {
-          serviceId: props.serviceId,
           input: [
             {
               source: source,
@@ -100,6 +98,11 @@ export default function NMTTry({ ...props }) {
       />
     );
   };
+
+  useEffect(() => {
+    const initialLanguageConfig = props.languages[0]
+    setLanguage(JSON.stringify(initialLanguageConfig))
+  }, [])
 
   return (
     <Grid templateRows="repeat(3)" gap={5}>

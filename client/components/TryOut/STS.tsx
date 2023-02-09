@@ -17,6 +17,7 @@ import {
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { getWordCount } from "../../utils/utils";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -43,6 +44,10 @@ export default function STSTry({ ...props }) {
   const [sourceText, setSourceText] = useState("");
   const [targetText, setTargetText] = useState("");
   const [audioContent, setAudioContent] = useState("");
+  const [requestWordCount, setRequestWordCount] = useState(0);
+  const [responseWordCount, setResponseWordCount] = useState(0);
+  const [sourceAudioDuration, setSourceAudioDuration] = useState(0);
+  const [targetAudioDuration, setTargetAudioDuration] = useState(0);
 
   const startRecording = () => {
     setRecording(!recording);
@@ -65,9 +70,8 @@ export default function STSTry({ ...props }) {
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
-        dhruvaConfig.stsInference,
+        dhruvaConfig.stsInference + `?serviceId=${props.serviceId}`,
         {
-          serviceId: "lol",
           audio: [
             {
               audioContent: asrInput,
@@ -91,9 +95,16 @@ export default function STSTry({ ...props }) {
         const data = response.data;
         setSourceText(data["output"][0]["source"]);
         setTargetText(data["output"][0]["target"]);
+        setRequestWordCount(getWordCount(data["output"][0]["source"]));
+        setResponseWordCount(getWordCount(data["output"][0]["target"]));
         setAudioContent(
           "data:audio/wav;base64," + data["audio"][0]["audioContent"]
         );
+        var audio = "data:audio/wav;base64," + data["audio"][0]["audioContent"];
+        var audioObject = new Audio(audio);
+        audioObject.addEventListener("loadedmetadata", () => {
+          setTargetAudioDuration(audioObject.duration);
+        });
         setRequestTime(response.headers["request-duration"]);
       });
   };
@@ -105,6 +116,9 @@ export default function STSTry({ ...props }) {
       var result = reader.result as string;
       var base64Data = result.split(",")[1];
       var audio = new Audio("data:audio/wav;base64," + base64Data);
+      audio.addEventListener("loadedmetadata", () => {
+        setSourceAudioDuration(audio.duration);
+      });
       audio.play();
       getASROutput(base64Data);
     };
@@ -119,6 +133,11 @@ export default function STSTry({ ...props }) {
     setFetching(false);
     setFetched(true);
   };
+
+  useEffect(() => {
+    const initialLanguageConfig = props.languages[0]
+    setLanguage(JSON.stringify(initialLanguageConfig))
+  }, [])
 
   return (
     <>
@@ -181,6 +200,26 @@ export default function STSTry({ ...props }) {
                 <StatNumber>{Number(requestTime) / 1000}</StatNumber>
                 <StatHelpText>seconds</StatHelpText>
               </Stat>
+              <Stat>
+                <StatLabel>Word Count</StatLabel>
+                <StatNumber>{requestWordCount}</StatNumber>
+                <StatHelpText>Request</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Word Count</StatLabel>
+                <StatNumber>{responseWordCount}</StatNumber>
+                <StatHelpText>Response</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Source Audio Duration</StatLabel>
+                <StatNumber>{sourceAudioDuration}</StatNumber>
+                <StatHelpText>seconds</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Target Audio Duration</StatLabel>
+                <StatNumber>{targetAudioDuration}</StatNumber>
+                <StatHelpText>seconds</StatHelpText>
+              </Stat>
             </SimpleGrid>
           </GridItem>
         ) : (
@@ -234,6 +273,9 @@ export default function STSTry({ ...props }) {
                     var audio = new Audio(
                       "data:audio/wav;base64," + base64Data.split(",")[1]
                     );
+                    audio.addEventListener("loadedmetadata", () => {
+                      setSourceAudioDuration(audio.duration);
+                    });
                     audio.play();
                     getASROutput(base64Data.split(",")[1]);
                     setFetching(false);

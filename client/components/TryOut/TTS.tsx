@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
-// import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
@@ -44,7 +43,6 @@ export default function TTSTry({ ...props }) {
       .post(
         dhruvaConfig.ttsInference + `?serviceId=${props.serviceId}`,
         {
-          serviceId: props.serviceId,
           input: [
             {
               source: source,
@@ -108,6 +106,7 @@ export default function TTSTry({ ...props }) {
         onChange={undefined}
         onBlur={undefined}
         onKeyDown={undefined}
+        enabled={language !== "en"}
       />
     );
   };
