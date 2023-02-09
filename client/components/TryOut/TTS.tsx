@@ -44,7 +44,6 @@ export default function TTSTry({ ...props }) {
       .post(
         dhruvaConfig.ttsInference + `?serviceId=${props.serviceId}`,
         {
-          serviceId: props.serviceId,
           input: [
             {
               source: source,
