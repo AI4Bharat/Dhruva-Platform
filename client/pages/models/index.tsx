@@ -261,7 +261,7 @@ export default function Models() {
                 background={"white"}
               >
                 <InputLeftElement
-                  color="gray.300"
+                  color="gray.600"
                   pointerEvents="none"
                   children={<IoSearchOutline />}
                 />
@@ -275,7 +275,7 @@ export default function Models() {
                 width={smallscreen ? "90vw" : "20rem"}
                 background={"white"}
                 borderRadius={0}
-                color="gray.300"
+                color="gray.600"
                 onChange={taskToggler}
               >
                 <option defaultChecked hidden>
@@ -292,7 +292,7 @@ export default function Models() {
                 <Select
                   background={"white"}
                   borderRadius={0}
-                  color="gray.300"
+                  color="gray.600"
                   onChange={sourceLangToggler}
                 >
                   <option hidden defaultChecked>
@@ -316,7 +316,7 @@ export default function Models() {
                   borderRadius={0}
                   display={hideTarget ? "none" : "block"}
                   onChange={targetLangToggler}
-                  color="gray.300"
+                  color="gray.600"
                 >
                   <option hidden defaultChecked>
                     Target Language
