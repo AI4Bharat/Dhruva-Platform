@@ -107,6 +107,7 @@ export default function TTSTry({ ...props }) {
         onChange={undefined}
         onBlur={undefined}
         onKeyDown={undefined}
+        enabled={language !== "en"}
       />
     );
   };
