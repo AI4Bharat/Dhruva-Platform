@@ -119,6 +119,11 @@ export default function STSTry({ ...props }) {
     setFetched(true);
   };
 
+  useEffect(() => {
+    const initialLanguageConfig = props.languages[0]
+    setLanguage(JSON.stringify(initialLanguageConfig))
+  }, [])
+
   return (
     <>
       <Grid templateRows="repeat(3)" gap={5}>
