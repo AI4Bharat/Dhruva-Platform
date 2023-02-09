@@ -61,7 +61,7 @@ class StreamingServerASR:
 
         # Construct ULCA request payload
         request_json = {
-            "serviceId": self.client_states[sid].service_id,
+            # "serviceId": self.client_states[sid].service_id,
             "audio": [
                 {
                     "audioContent": encoded_string
@@ -79,7 +79,7 @@ class StreamingServerASR:
         
         # Run inference via Dhruva REST API
         response = requests.post(
-            "https://api.dhruva.ai4bharat.org/services/inference/asr",
+            "https://api.dhruva.ai4bharat.org/services/inference/asr?serviceId=" + self.client_states[sid].service_id,
             json=request_json,
             headers={"authorization": self.client_states[sid].api_key},
             # timeout=1
