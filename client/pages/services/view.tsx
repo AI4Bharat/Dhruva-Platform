@@ -17,6 +17,7 @@ import ASRTry from "../../components/TryOut/ASR";
 import TTSTry from "../../components/TryOut/TTS";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
+import NERTry from "../../components/TryOut/NER";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { dhruvaConfig } from "../../config/config";
 import { useState, useEffect } from "react";
@@ -95,6 +96,8 @@ export default function ViewService() {
         return <NMTTry languages={languages} serviceId={serviceId} />;
       case "sts":
         return <STSTry languages={languages} serviceId={serviceId} />;
+      case "ner":
+        return <NERTry languages={languages} serviceId={serviceId} />;
     }
   };
 
