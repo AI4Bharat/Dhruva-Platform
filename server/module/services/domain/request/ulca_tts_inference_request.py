@@ -1,5 +1,5 @@
-from ..common import _ULCAText, _ULCATtsInferenceConfig
 from pydantic import BaseModel
+from ..common import _ULCAText, _ULCATtsInferenceConfig
 
 
 class ULCATtsInferenceRequest(BaseModel):

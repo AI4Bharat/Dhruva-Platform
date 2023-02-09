@@ -7,6 +7,7 @@ from ..domain.response import (
     ULCAAsrInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
+    ULCANerInferenceResponse,
     ULCAS2SInferenceResponse,
 )
 from ..service.inference_service import InferenceService
@@ -16,6 +17,7 @@ from ..domain.request import (
     ULCAAsrInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
+    ULCANerInferenceRequest,
     ULCAS2SInferenceRequest,
 )
 
@@ -71,6 +73,14 @@ async def _run_inference_tts(
 ):
     return await inference_service.run_tts_triton_inference(request, params.serviceId)
 
+
+@router.post("/ner", response_model=ULCANerInferenceResponse)
+async def _run_inference_ner(
+    request: ULCANerInferenceRequest,
+    params: ULCAInferenceQuery = Depends(),
+    inference_service: InferenceService = Depends(InferenceService),
+):
+    return await inference_service.run_ner_triton_inference(request, params.serviceId)
 
 # Temporary endpoint; will be removed/standardized soon
 

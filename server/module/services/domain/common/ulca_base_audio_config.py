@@ -1,10 +1,8 @@
 from typing import Optional
-from pydantic import BaseModel
-from .ulca_language import _ULCALanguage
+from .ulca_base_monolingual_config import _ULCABaseMonolingualTaskConfig
 
 
-class _ULCABaseAudioConfig(BaseModel):
-    language: _ULCALanguage
+class _ULCABaseAudioConfig(_ULCABaseMonolingualTaskConfig):
     audioFormat: Optional[str]
     encoding: Optional[str]
     samplingRate: Optional[int]

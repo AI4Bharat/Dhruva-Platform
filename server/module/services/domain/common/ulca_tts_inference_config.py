@@ -1,8 +1,6 @@
 from typing import Literal
-from pydantic import BaseModel
-from .ulca_language import _ULCALanguage
+from .ulca_base_monolingual_config import _ULCABaseMonolingualTaskConfig
 
 
-class _ULCATtsInferenceConfig(BaseModel):
-    language: _ULCALanguage
+class _ULCATtsInferenceConfig(_ULCABaseMonolingualTaskConfig):
     gender: Literal['male', 'female']
