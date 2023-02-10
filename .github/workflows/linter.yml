@@ -1,48 +1,49 @@
 ---
-#################################
-#################################
-## Super Linter GitHub Actions ##
-#################################
-#################################
-name: Lint Code Base
+##############################
+name: Lint and Format Code Base
 
-#############################
-# Start the job on all push #
-#############################
+
 on:
   push:
-    branches-ignore: [master, main]
-    # Remove the line above to run when pushing to master
-  pull_request:
-    branches: [master, main]
+    branches-ignore: master
 
-###############
-# Set the Job #
-###############
+  pull_request:
+    branches: master
+
+
 jobs:
-  build:
-    # Name the Job
-    name: Lint Code Base
-    # Set the agent to run on
+  name: Format Code Base
+  format:
     runs-on: ubuntu-latest
 
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+
+      - name: Prettify code
+        uses: creyD/prettier_action@v4.2
+        with:
+          # This part is also where you can pass other options, for example:
+          prettier_options: --write **/*.{js,ts,tsx}
+  build:
+
+    name: Lint Code Base
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          # Full git history is needed to get a proper
-          # list of changed files within `super-linter`
+
           fetch-depth: 0
 
-      ################################
-      # Run Linter against code base #
-      ################################
+
       - name: Lint Code Base
         uses: github/super-linter@v4
         env:
