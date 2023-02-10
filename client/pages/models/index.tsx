@@ -36,7 +36,7 @@ interface Model {
 }
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
-  const [hide, togglehide] = useState<boolean>(true)
+  const [hide, togglehide] = useState<boolean>(true);
   const [sourceLang, setSourceLanguage] = useState<String>("");
   const [targetLang, setTargetLanguage] = useState<String>("");
   const [task, setTask] = useState<String>("");
@@ -130,7 +130,7 @@ export default function Models() {
     if (event.target.value === "translation") setHideTarget(false);
     else {
       setHideTarget(true);
-      setTargetLanguage("")
+      setTargetLanguage("");
     }
     setTask(event.target.value);
   };
@@ -163,20 +163,15 @@ export default function Models() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          {smallscreen ?
-            <VStack
-              width="90vw"
-              background={"gray.50"}
-            >
+          {smallscreen ? (
+            <VStack width="90vw" background={"gray.50"}>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-
-                ><IoSearchOutline /></InputLeftElement>
+                <InputLeftElement color="gray.600" pointerEvents="none">
+                  <IoSearchOutline />
+                </InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
@@ -223,28 +218,32 @@ export default function Models() {
                   <option value="ta">Tamil</option>
                   <option value="te">Telugu</option>
                 </Select>
-                {hideTarget ? (<></>) : (<Select
-                  background={"white"}
-                  borderRadius={0}
-                  onChange={targetLangToggler}
-                  color="gray.600"
-                >
-                  <option hidden defaultChecked>
-                    Target Language
-                  </option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="as">Assamese</option>
-                  <option value="bn">Bengali</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="mr">Marathi</option>
-                  <option value="or">Oriya</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
-                </Select>)}
+                {hideTarget ? (
+                  <></>
+                ) : (
+                  <Select
+                    background={"white"}
+                    borderRadius={0}
+                    onChange={targetLangToggler}
+                    color="gray.600"
+                  >
+                    <option hidden defaultChecked>
+                      Target Language
+                    </option>
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="as">Assamese</option>
+                    <option value="bn">Bengali</option>
+                    <option value="gu">Gujarati</option>
+                    <option value="kn">Kannada</option>
+                    <option value="ml">Malayalam</option>
+                    <option value="mr">Marathi</option>
+                    <option value="or">Oriya</option>
+                    <option value="pa">Punjabi</option>
+                    <option value="ta">Tamil</option>
+                    <option value="te">Telugu</option>
+                  </Select>
+                )}
               </InputGroup>
               <Button
                 width={smallscreen ? "90vw" : "8rem"}
@@ -252,19 +251,16 @@ export default function Models() {
               >
                 Clear Filters
               </Button>
-            </VStack> :
-            <HStack
-              background={"gray.50"}
-            >
+            </VStack>
+          ) : (
+            <HStack background={"gray.50"}>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-
-                ><IoSearchOutline /></InputLeftElement>
+                <InputLeftElement color="gray.600" pointerEvents="none">
+                  <IoSearchOutline />
+                </InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
@@ -281,9 +277,32 @@ export default function Models() {
                 <option defaultChecked hidden>
                   Select Task Type
                 </option>
-                <option onClick={() => { setHideTarget(false) }} value="translation">Translation</option>
-                <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="tts">TTS</option>
-                <option onClick={() => { setHideTarget(true); setTargetLanguage("") }} value="asr">ASR</option>
+                <option
+                  onClick={() => {
+                    setHideTarget(false);
+                  }}
+                  value="translation"
+                >
+                  Translation
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="tts"
+                >
+                  TTS
+                </option>
+                <option
+                  onClick={() => {
+                    setHideTarget(true);
+                    setTargetLanguage("");
+                  }}
+                  value="asr"
+                >
+                  ASR
+                </option>
               </Select>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
@@ -341,8 +360,8 @@ export default function Models() {
               >
                 Clear Filters
               </Button>
-            </HStack>}
-
+            </HStack>
+          )}
         </Box>
         <br />
         {smallscreen ? (

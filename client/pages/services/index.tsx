@@ -133,7 +133,7 @@ export default function Services() {
     if (event.target.value === "translation") setHideTarget(false);
     else {
       setHideTarget(true);
-      setTargetLanguage("")
+      setTargetLanguage("");
     }
     setTask(event.target.value);
   };
@@ -172,11 +172,9 @@ export default function Services() {
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-
-                ><IoSearchOutline /></InputLeftElement>
+                <InputLeftElement color="gray.600" pointerEvents="none">
+                  <IoSearchOutline />
+                </InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
@@ -286,11 +284,9 @@ export default function Services() {
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-
-                ><IoSearchOutline /></InputLeftElement>
+                <InputLeftElement color="gray.600" pointerEvents="none">
+                  <IoSearchOutline />
+                </InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
