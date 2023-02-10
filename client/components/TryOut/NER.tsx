@@ -35,7 +35,7 @@ export default function NERTry({ ...props }) {
   const [tltText, setTltText] = useState("");
   const [fetched, setFetched] = useState(false);
   const [requestTime, setRequestTime] = useState("");
-  const [nerTokens, setNERTokens] = useState<{ [key: string]: string }>({});
+  const [nerTokens, setNERTokens] = useState([]);
 
   const getNEROutput = (source: string) => {
     setFetched(false);
@@ -65,17 +65,8 @@ export default function NERTry({ ...props }) {
       )
       .then((response) => {
         const tokens = response.data["output"][0]["nerPrediction"];
-        const tokenDictionary = {};
-        const currentTokens = tltText.trim().split(" ");
-        currentTokens.forEach((token) => {
-          tokenDictionary[token] = "O"
-        })
-        tokens.forEach((token) => {
-          tokenDictionary[token["token"]] = token["tag"]
-        })
-        console.log(tokenDictionary);
         setRequestTime(response.headers["request-duration"]);
-        setNERTokens(tokenDictionary);
+        setNERTokens(tokens);
         setFetching(false);
         setFetched(true);
       });
@@ -112,7 +103,6 @@ export default function NERTry({ ...props }) {
       />
     );
   };
-
 
   return (
     <Grid templateRows="repeat(3)" gap={5}>
@@ -171,28 +161,28 @@ export default function NERTry({ ...props }) {
             resize="none"
             minH={200}
           >
-            {Object.entries(nerTokens).map(([token, tag]) => {
+            {Object.entries(nerTokens).map(([idx, element]) => {
               return (
                 <span
-                  key={token}
+                  key={idx}
                   style={{
                     padding: 3,
-                    backgroundColor: tag2Color[tag][0],
+                    backgroundColor: tag2Color[element["tag"]][0],
                     borderRadius: 15,
                     lineHeight: 1.8,
                     marginRight: 3,
                   }}
                 >
-                  {token}{" "}
+                  {element["token"]}{" "}
                   <span
                     style={{
                       padding: 3,
-                      backgroundColor: tag2Color[tag][1],
+                      backgroundColor: tag2Color[element["tag"]][1],
                       borderRadius: 15,
                       color: "white",
                     }}
                   >
-                    {tag}
+                    {element["tag"]}
                   </span>
                 </span>
               );
