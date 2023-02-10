@@ -386,7 +386,7 @@ export default function ViewModel({ ...props }) {
                       spacingX="40px"
                       spacingY="20px"
                     >
-                      {benchmarkValues.map((idx, benchmark) => {
+                      {benchmarkValues.map((benchmark, idx) => {
                         return (
                           <Stat key={idx}>
                             <StatLabel>
