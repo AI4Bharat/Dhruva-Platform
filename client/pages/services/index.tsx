@@ -175,8 +175,8 @@ export default function Services() {
                 <InputLeftElement
                   color="gray.600"
                   pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
+
+                ><IoSearchOutline /></InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
@@ -289,8 +289,8 @@ export default function Services() {
                 <InputLeftElement
                   color="gray.600"
                   pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
+
+                ><IoSearchOutline /></InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}

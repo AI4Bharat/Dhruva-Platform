@@ -175,8 +175,8 @@ export default function Models() {
                 <InputLeftElement
                   color="gray.600"
                   pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
+
+                ><IoSearchOutline /></InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
@@ -263,8 +263,8 @@ export default function Models() {
                 <InputLeftElement
                   color="gray.600"
                   pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
+
+                ><IoSearchOutline /></InputLeftElement>
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}

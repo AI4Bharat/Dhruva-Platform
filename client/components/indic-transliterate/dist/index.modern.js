@@ -1,12 +1,12 @@
-import {jsx as $eSIqy$jsx, jsxs as $eSIqy$jsxs} from "react/jsx-runtime";
-import {useState as $eSIqy$useState, useRef as $eSIqy$useRef, useMemo as $eSIqy$useMemo, useEffect as $eSIqy$useEffect} from "react";
+import { jsx as $eSIqy$jsx, jsxs as $eSIqy$jsxs } from "react/jsx-runtime";
+import { useState as $eSIqy$useState, useRef as $eSIqy$useRef, useMemo as $eSIqy$useMemo, useEffect as $eSIqy$useEffect } from "react";
 import $eSIqy$textareacaret from "textarea-caret";
 
 function $parcel$interopDefault(a) {
-  return a && a.__esModule ? a.default : a;
+    return a && a.__esModule ? a.default : a;
 }
 function $parcel$export(e, n, v, s) {
-  Object.defineProperty(e, n, {get: v, set: s, enumerable: true, configurable: true});
+    Object.defineProperty(e, n, { get: v, set: s, enumerable: true, configurable: true });
 }
 
 
@@ -66,8 +66,8 @@ const $5ac81081e5c28bfa$export$24b0ea3375909d37 = {
 const $b9b628447857a10a$export$ca6dda5263526f75 = "https://xlit-api.ai4bharat.org/";
 
 
-const $69c8f257da8dc8b1$export$27f30d10c00bcc6c = async (word, config)=>{
-    const { showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion , lang: lang  } = config || {
+const $69c8f257da8dc8b1$export$27f30d10c00bcc6c = async (word, config) => {
+    const { showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion, lang: lang } = config || {
         numOptions: 5,
         showCurrentWordAsLastSuggestion: true,
         lang: "hi"
@@ -104,7 +104,7 @@ const $69c8f257da8dc8b1$export$27f30d10c00bcc6c = async (word, config)=>{
 
 
 
-const $d8161b358c525845$export$58f2e270169de9d3 = async ()=>{
+const $d8161b358c525845$export$58f2e270169de9d3 = async () => {
     if (sessionStorage.getItem("indic_transliterate__supported_languages")) return JSON.parse(sessionStorage.getItem("indic_transliterate__supported_languages") || "");
     else {
         const apiURL = `${$b9b628447857a10a$export$ca6dda5263526f75}languages`;
@@ -131,17 +131,17 @@ const $41d49c8a6078fe3c$var$KEY_DOWN = "ArrowDown";
 const $41d49c8a6078fe3c$var$KEY_ESCAPE = "Escape";
 const $41d49c8a6078fe3c$var$OPTION_LIST_Y_OFFSET = 10;
 const $41d49c8a6078fe3c$var$OPTION_LIST_MIN_WIDTH = 100;
-const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComponent = (props)=>/*#__PURE__*/ $eSIqy$jsx("input", {
-        ...props
-    })
- , lang: lang = "hi" , offsetX: offsetX = 0 , offsetY: offsetY = 10 , onChange: onChange , onChangeText: onChangeText , onBlur: onBlur , value: value , onKeyDown: onKeyDown , containerClassName: containerClassName = "" , containerStyles: containerStyles = {
-} , activeItemStyles: activeItemStyles = {
-} , maxOptions: maxOptions = 5 , hideSuggestionBoxOnMobileDevices: hideSuggestionBoxOnMobileDevices = false , hideSuggestionBoxBreakpoint: hideSuggestionBoxBreakpoint = 450 , triggerKeys: triggerKeys = [
-    $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_SPACE,
-    $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_ENTER,
-    $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_RETURN,
-    $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_TAB, 
-] , insertCurrentSelectionOnBlur: insertCurrentSelectionOnBlur = true , showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion = true , enabled: enabled = true , ...rest })=>{
+const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComponent = (props) =>/*#__PURE__*/ $eSIqy$jsx("input", {
+    ...props
+})
+    , lang: lang = "hi", offsetX: offsetX = 0, offsetY: offsetY = 10, onChange: onChange, onChangeText: onChangeText, onBlur: onBlur, value: value, onKeyDown: onKeyDown, containerClassName: containerClassName = "", containerStyles: containerStyles = {
+    }, activeItemStyles: activeItemStyles = {
+    }, maxOptions: maxOptions = 5, hideSuggestionBoxOnMobileDevices: hideSuggestionBoxOnMobileDevices = false, hideSuggestionBoxBreakpoint: hideSuggestionBoxBreakpoint = 450, triggerKeys: triggerKeys = [
+        $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_SPACE,
+        $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_ENTER,
+        $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_RETURN,
+        $5ac81081e5c28bfa$export$24b0ea3375909d37.KEY_TAB,
+    ], insertCurrentSelectionOnBlur: insertCurrentSelectionOnBlur = true, showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion = true, enabled: enabled = true, ...rest }) => {
     const [options, setOptions] = $eSIqy$useState([]);
     const [left, setLeft] = $eSIqy$useState(0);
     const [top, setTop] = $eSIqy$useState(0);
@@ -155,18 +155,18 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
     });
     const [direction, setDirection] = $eSIqy$useState("ltr");
     const [googleFont, setGoogleFont] = $eSIqy$useState(null);
-    const shouldRenderSuggestions = $eSIqy$useMemo(()=>hideSuggestionBoxOnMobileDevices ? windowSize.width > hideSuggestionBoxBreakpoint : true
-    , [
-        windowSize,
-        hideSuggestionBoxBreakpoint,
-        hideSuggestionBoxOnMobileDevices
-    ]);
-    const reset = ()=>{
+    const shouldRenderSuggestions = $eSIqy$useMemo(() => hideSuggestionBoxOnMobileDevices ? windowSize.width > hideSuggestionBoxBreakpoint : true
+        , [
+            windowSize,
+            hideSuggestionBoxBreakpoint,
+            hideSuggestionBoxOnMobileDevices
+        ]);
+    const reset = () => {
         // reset the component
         setSelection(0);
         setOptions([]);
     };
-    const handleSelection = (index, triggerKey = " ")=>{
+    const handleSelection = (index, triggerKey = " ") => {
         var ref;
         const currentString = value;
         // create a new string with the currently typed word
@@ -174,9 +174,9 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
         const newValue = currentString.substring(0, matchStart) + options[index] + " " + currentString.substring(matchEnd + 1, currentString.length);
         // set the position of the caret (cursor) one character after the
         // the position of the new word
-        setTimeout(()=>{
-            $2f5cf912a7dc4b84$export$97ab23b40042f8af(// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            inputRef.current, triggerKey === "Enter" ? matchStart + options[index].length : matchStart + options[index].length + 1);
+        setTimeout(() => {
+            $2f5cf912a7dc4b84$export$97ab23b40042f8af(
+                inputRef.current, triggerKey === "Enter" ? matchStart + options[index].length : matchStart + options[index].length + 1);
         }, 1);
         // bubble up event to the parent component
         const e = {
@@ -189,7 +189,7 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
         reset();
         return (ref = inputRef.current) === null || ref === void 0 ? void 0 : ref.focus();
     };
-    const renderSuggestions = async (lastWord)=>{
+    const renderSuggestions = async (lastWord) => {
         if (!shouldRenderSuggestions) return;
         // fetch suggestion from api
         // const url = `https://www.google.com/inputtools/request?ime=transliteration_en_${lang}&num=5&cp=0&cs=0&ie=utf-8&oe=utf-8&app=jsapi&text=${lastWord}`;
@@ -201,18 +201,18 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
         });
         setOptions(data !== null && data !== void 0 ? data : []);
     };
-    const getDirectionAndFont = async (lang)=>{
+    const getDirectionAndFont = async (lang) => {
         const langList = await $d8161b358c525845$export$58f2e270169de9d3();
-        const langObj = langList === null || langList === void 0 ? void 0 : langList.find((l)=>l.LangCode === lang
+        const langObj = langList === null || langList === void 0 ? void 0 : langList.find((l) => l.LangCode === lang
         );
         var ref;
         return [
             (ref = langObj === null || langObj === void 0 ? void 0 : langObj.Direction) !== null && ref !== void 0 ? ref : "ltr",
             langObj === null || langObj === void 0 ? void 0 : langObj.GoogleFont,
-            langObj === null || langObj === void 0 ? void 0 : langObj.FallbackFont, 
+            langObj === null || langObj === void 0 ? void 0 : langObj.FallbackFont,
         ];
     };
-    const handleChange = (e)=>{
+    const handleChange = (e) => {
         const value = e.currentTarget.value;
         // bubble up event to the parent component
         onChange && onChange(e);
@@ -249,13 +249,13 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
             setLeft(left);
         } else reset();
     };
-    const handleKeyDown = (event)=>{
+    const handleKeyDown = (event) => {
         const helperVisible = options.length > 0;
         if (helperVisible) {
             if (triggerKeys.includes(event.key)) {
                 event.preventDefault();
                 handleSelection(selection, event.key);
-            } else switch(event.key){
+            } else switch (event.key) {
                 case $41d49c8a6078fe3c$var$KEY_ESCAPE:
                     event.preventDefault();
                     reset();
@@ -274,14 +274,14 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
             }
         } else onKeyDown && onKeyDown(event);
     };
-    const handleBlur = (event)=>{
+    const handleBlur = (event) => {
         if (!$19eb910254214610$export$e27e3030245d4c9b()) {
             if (insertCurrentSelectionOnBlur && options[selection]) handleSelection(selection);
             else reset();
         }
         onBlur && onBlur(event);
     };
-    const handleResize = ()=>{
+    const handleResize = () => {
         // TODO implement the resize function to resize
         // the helper on screen size change
         const width = window.innerWidth;
@@ -291,7 +291,7 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
             height: height
         });
     };
-    $eSIqy$useEffect(()=>{
+    $eSIqy$useEffect(() => {
         window.addEventListener("resize", handleResize);
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -299,12 +299,12 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
             width: width,
             height: height
         });
-        return ()=>{
+        return () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    $eSIqy$useEffect(()=>{
-        getDirectionAndFont(lang).then(([direction, googleFont, fallbackFont])=>{
+    $eSIqy$useEffect(() => {
+        getDirectionAndFont(lang).then(([direction, googleFont, fallbackFont]) => {
             setDirection(direction);
             // import google font if not already imported
             if (googleFont) {
@@ -321,7 +321,7 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
     }, [
         lang
     ]);
-    return(/*#__PURE__*/ $eSIqy$jsxs("div", {
+    return (/*#__PURE__*/ $eSIqy$jsxs("div", {
         // position relative is required to show the component
         // in the correct position
         style: {
@@ -359,18 +359,18 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
                 className: (/*@__PURE__*/$parcel$interopDefault($f366c4b63b3a5b2d$exports)).ReactTransliterate,
                 "data-testid": "rt-suggestions-list",
                 lang: lang,
-                children: Array.from(new Set(options)).map((item, index)=>/*#__PURE__*/ $eSIqy$jsx("li", {
-                        className: index === selection ? (/*@__PURE__*/$parcel$interopDefault($f366c4b63b3a5b2d$exports)).Active : undefined,
-                        style: index === selection ? activeItemStyles || {
-                        } : {
-                        },
-                        onMouseEnter: ()=>{
-                            setSelection(index);
-                        },
-                        onClick: ()=>handleSelection(index)
-                        ,
-                        children: item
-                    }, item)
+                children: Array.from(new Set(options)).map((item, index) =>/*#__PURE__*/ $eSIqy$jsx("li", {
+                    className: index === selection ? (/*@__PURE__*/$parcel$interopDefault($f366c4b63b3a5b2d$exports)).Active : undefined,
+                    style: index === selection ? activeItemStyles || {
+                    } : {
+                    },
+                    onMouseEnter: () => {
+                        setSelection(index);
+                    },
+                    onClick: () => handleSelection(index)
+                    ,
+                    children: item
+                }, item)
                 )
             })
         ]
@@ -378,5 +378,5 @@ const $41d49c8a6078fe3c$export$a62758b764e9e41d = ({ renderComponent: renderComp
 };
 
 
-export {$41d49c8a6078fe3c$export$a62758b764e9e41d as IndicTransliterate, $5ac81081e5c28bfa$export$24b0ea3375909d37 as TriggerKeys, $69c8f257da8dc8b1$export$27f30d10c00bcc6c as getTransliterateSuggestions, $d8161b358c525845$export$58f2e270169de9d3 as getTransliterationLanguages};
+export { $41d49c8a6078fe3c$export$a62758b764e9e41d as IndicTransliterate, $5ac81081e5c28bfa$export$24b0ea3375909d37 as TriggerKeys, $69c8f257da8dc8b1$export$27f30d10c00bcc6c as getTransliterateSuggestions, $d8161b358c525845$export$58f2e270169de9d3 as getTransliterationLanguages };
 //# sourceMappingURL=index.modern.js.map

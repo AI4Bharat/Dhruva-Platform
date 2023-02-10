@@ -3,10 +3,10 @@ var $dWhh5$react = require("react");
 var $dWhh5$textareacaret = require("textarea-caret");
 
 function $parcel$interopDefault(a) {
-  return a && a.__esModule ? a.default : a;
+    return a && a.__esModule ? a.default : a;
 }
 function $parcel$export(e, n, v, s) {
-  Object.defineProperty(e, n, {get: v, set: s, enumerable: true, configurable: true});
+    Object.defineProperty(e, n, { get: v, set: s, enumerable: true, configurable: true });
 }
 
 $parcel$export(module.exports, "IndicTransliterate", () => $3f93eb6d5bf69cb7$export$a62758b764e9e41d);
@@ -71,8 +71,8 @@ const $9090cd5fdacb9284$export$24b0ea3375909d37 = {
 const $905ee54827307cc1$export$ca6dda5263526f75 = "https://xlit-api.ai4bharat.org/";
 
 
-const $ad7f01abe8daa1b6$export$27f30d10c00bcc6c = async (word, config)=>{
-    const { showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion , lang: lang  } = config || {
+const $ad7f01abe8daa1b6$export$27f30d10c00bcc6c = async (word, config) => {
+    const { showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion, lang: lang } = config || {
         numOptions: 5,
         showCurrentWordAsLastSuggestion: true,
         lang: "hi"
@@ -109,7 +109,7 @@ const $ad7f01abe8daa1b6$export$27f30d10c00bcc6c = async (word, config)=>{
 
 
 
-const $bb5a013037ca2153$export$58f2e270169de9d3 = async ()=>{
+const $bb5a013037ca2153$export$58f2e270169de9d3 = async () => {
     if (sessionStorage.getItem("indic_transliterate__supported_languages")) return JSON.parse(sessionStorage.getItem("indic_transliterate__supported_languages") || "");
     else {
         const apiURL = `${$905ee54827307cc1$export$ca6dda5263526f75}languages`;
@@ -136,17 +136,17 @@ const $3f93eb6d5bf69cb7$var$KEY_DOWN = "ArrowDown";
 const $3f93eb6d5bf69cb7$var$KEY_ESCAPE = "Escape";
 const $3f93eb6d5bf69cb7$var$OPTION_LIST_Y_OFFSET = 10;
 const $3f93eb6d5bf69cb7$var$OPTION_LIST_MIN_WIDTH = 100;
-const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComponent = (props)=>/*#__PURE__*/ $dWhh5$reactjsxruntime.jsx("input", {
-        ...props
-    })
- , lang: lang = "hi" , offsetX: offsetX = 0 , offsetY: offsetY = 10 , onChange: onChange , onChangeText: onChangeText , onBlur: onBlur , value: value , onKeyDown: onKeyDown , containerClassName: containerClassName = "" , containerStyles: containerStyles = {
-} , activeItemStyles: activeItemStyles = {
-} , maxOptions: maxOptions = 5 , hideSuggestionBoxOnMobileDevices: hideSuggestionBoxOnMobileDevices = false , hideSuggestionBoxBreakpoint: hideSuggestionBoxBreakpoint = 450 , triggerKeys: triggerKeys = [
-    $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_SPACE,
-    $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_ENTER,
-    $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_RETURN,
-    $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_TAB, 
-] , insertCurrentSelectionOnBlur: insertCurrentSelectionOnBlur = true , showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion = true , enabled: enabled = true , ...rest })=>{
+const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComponent = (props) =>/*#__PURE__*/ $dWhh5$reactjsxruntime.jsx("input", {
+    ...props
+})
+    , lang: lang = "hi", offsetX: offsetX = 0, offsetY: offsetY = 10, onChange: onChange, onChangeText: onChangeText, onBlur: onBlur, value: value, onKeyDown: onKeyDown, containerClassName: containerClassName = "", containerStyles: containerStyles = {
+    }, activeItemStyles: activeItemStyles = {
+    }, maxOptions: maxOptions = 5, hideSuggestionBoxOnMobileDevices: hideSuggestionBoxOnMobileDevices = false, hideSuggestionBoxBreakpoint: hideSuggestionBoxBreakpoint = 450, triggerKeys: triggerKeys = [
+        $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_SPACE,
+        $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_ENTER,
+        $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_RETURN,
+        $9090cd5fdacb9284$export$24b0ea3375909d37.KEY_TAB,
+    ], insertCurrentSelectionOnBlur: insertCurrentSelectionOnBlur = true, showCurrentWordAsLastSuggestion: showCurrentWordAsLastSuggestion = true, enabled: enabled = true, ...rest }) => {
     const [options, setOptions] = $dWhh5$react.useState([]);
     const [left, setLeft] = $dWhh5$react.useState(0);
     const [top, setTop] = $dWhh5$react.useState(0);
@@ -160,18 +160,18 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
     });
     const [direction, setDirection] = $dWhh5$react.useState("ltr");
     const [googleFont, setGoogleFont] = $dWhh5$react.useState(null);
-    const shouldRenderSuggestions = $dWhh5$react.useMemo(()=>hideSuggestionBoxOnMobileDevices ? windowSize.width > hideSuggestionBoxBreakpoint : true
-    , [
-        windowSize,
-        hideSuggestionBoxBreakpoint,
-        hideSuggestionBoxOnMobileDevices
-    ]);
-    const reset = ()=>{
+    const shouldRenderSuggestions = $dWhh5$react.useMemo(() => hideSuggestionBoxOnMobileDevices ? windowSize.width > hideSuggestionBoxBreakpoint : true
+        , [
+            windowSize,
+            hideSuggestionBoxBreakpoint,
+            hideSuggestionBoxOnMobileDevices
+        ]);
+    const reset = () => {
         // reset the component
         setSelection(0);
         setOptions([]);
     };
-    const handleSelection = (index, triggerKey = " ")=>{
+    const handleSelection = (index, triggerKey = " ") => {
         var ref;
         const currentString = value;
         // create a new string with the currently typed word
@@ -179,9 +179,9 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
         const newValue = currentString.substring(0, matchStart) + options[index] + " " + currentString.substring(matchEnd + 1, currentString.length);
         // set the position of the caret (cursor) one character after the
         // the position of the new word
-        setTimeout(()=>{
-            $94c75e1d9a9e24f0$export$97ab23b40042f8af(// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            inputRef.current, triggerKey === "Enter" ? matchStart + options[index].length : matchStart + options[index].length + 1);
+        setTimeout(() => {
+            $94c75e1d9a9e24f0$export$97ab23b40042f8af(
+                inputRef.current, triggerKey === "Enter" ? matchStart + options[index].length : matchStart + options[index].length + 1);
         }, 1);
         // bubble up event to the parent component
         const e = {
@@ -194,7 +194,7 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
         reset();
         return (ref = inputRef.current) === null || ref === void 0 ? void 0 : ref.focus();
     };
-    const renderSuggestions = async (lastWord)=>{
+    const renderSuggestions = async (lastWord) => {
         if (!shouldRenderSuggestions) return;
         // fetch suggestion from api
         // const url = `https://www.google.com/inputtools/request?ime=transliteration_en_${lang}&num=5&cp=0&cs=0&ie=utf-8&oe=utf-8&app=jsapi&text=${lastWord}`;
@@ -206,18 +206,18 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
         });
         setOptions(data !== null && data !== void 0 ? data : []);
     };
-    const getDirectionAndFont = async (lang)=>{
+    const getDirectionAndFont = async (lang) => {
         const langList = await $bb5a013037ca2153$export$58f2e270169de9d3();
-        const langObj = langList === null || langList === void 0 ? void 0 : langList.find((l)=>l.LangCode === lang
+        const langObj = langList === null || langList === void 0 ? void 0 : langList.find((l) => l.LangCode === lang
         );
         var ref;
         return [
             (ref = langObj === null || langObj === void 0 ? void 0 : langObj.Direction) !== null && ref !== void 0 ? ref : "ltr",
             langObj === null || langObj === void 0 ? void 0 : langObj.GoogleFont,
-            langObj === null || langObj === void 0 ? void 0 : langObj.FallbackFont, 
+            langObj === null || langObj === void 0 ? void 0 : langObj.FallbackFont,
         ];
     };
-    const handleChange = (e)=>{
+    const handleChange = (e) => {
         const value = e.currentTarget.value;
         // bubble up event to the parent component
         onChange && onChange(e);
@@ -254,13 +254,13 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
             setLeft(left);
         } else reset();
     };
-    const handleKeyDown = (event)=>{
+    const handleKeyDown = (event) => {
         const helperVisible = options.length > 0;
         if (helperVisible) {
             if (triggerKeys.includes(event.key)) {
                 event.preventDefault();
                 handleSelection(selection, event.key);
-            } else switch(event.key){
+            } else switch (event.key) {
                 case $3f93eb6d5bf69cb7$var$KEY_ESCAPE:
                     event.preventDefault();
                     reset();
@@ -279,14 +279,14 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
             }
         } else onKeyDown && onKeyDown(event);
     };
-    const handleBlur = (event)=>{
+    const handleBlur = (event) => {
         if (!$6a2317d46b969b19$export$e27e3030245d4c9b()) {
             if (insertCurrentSelectionOnBlur && options[selection]) handleSelection(selection);
             else reset();
         }
         onBlur && onBlur(event);
     };
-    const handleResize = ()=>{
+    const handleResize = () => {
         // TODO implement the resize function to resize
         // the helper on screen size change
         const width = window.innerWidth;
@@ -296,7 +296,7 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
             height: height
         });
     };
-    $dWhh5$react.useEffect(()=>{
+    $dWhh5$react.useEffect(() => {
         window.addEventListener("resize", handleResize);
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -304,12 +304,12 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
             width: width,
             height: height
         });
-        return ()=>{
+        return () => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    $dWhh5$react.useEffect(()=>{
-        getDirectionAndFont(lang).then(([direction, googleFont, fallbackFont])=>{
+    $dWhh5$react.useEffect(() => {
+        getDirectionAndFont(lang).then(([direction, googleFont, fallbackFont]) => {
             setDirection(direction);
             // import google font if not already imported
             if (googleFont) {
@@ -326,7 +326,7 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
     }, [
         lang
     ]);
-    return(/*#__PURE__*/ $dWhh5$reactjsxruntime.jsxs("div", {
+    return (/*#__PURE__*/ $dWhh5$reactjsxruntime.jsxs("div", {
         // position relative is required to show the component
         // in the correct position
         style: {
@@ -364,18 +364,18 @@ const $3f93eb6d5bf69cb7$export$a62758b764e9e41d = ({ renderComponent: renderComp
                 className: (/*@__PURE__*/$parcel$interopDefault($479169a4406ef977$exports)).ReactTransliterate,
                 "data-testid": "rt-suggestions-list",
                 lang: lang,
-                children: Array.from(new Set(options)).map((item, index)=>/*#__PURE__*/ $dWhh5$reactjsxruntime.jsx("li", {
-                        className: index === selection ? (/*@__PURE__*/$parcel$interopDefault($479169a4406ef977$exports)).Active : undefined,
-                        style: index === selection ? activeItemStyles || {
-                        } : {
-                        },
-                        onMouseEnter: ()=>{
-                            setSelection(index);
-                        },
-                        onClick: ()=>handleSelection(index)
-                        ,
-                        children: item
-                    }, item)
+                children: Array.from(new Set(options)).map((item, index) =>/*#__PURE__*/ $dWhh5$reactjsxruntime.jsx("li", {
+                    className: index === selection ? (/*@__PURE__*/$parcel$interopDefault($479169a4406ef977$exports)).Active : undefined,
+                    style: index === selection ? activeItemStyles || {
+                    } : {
+                    },
+                    onMouseEnter: () => {
+                        setSelection(index);
+                    },
+                    onClick: () => handleSelection(index)
+                    ,
+                    children: item
+                }, item)
                 )
             })
         ]
