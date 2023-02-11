@@ -14,6 +14,7 @@ const dhruvaConfig: { [key: string]: string } = {
   asrInference: `${dhruvaRootURL}/services/inference/asr`,
   asrStreamingInference: `wss://api.dhruva.ai4bharat.org`,
   stsInference: `${dhruvaRootURL}/services/inference/s2s`,
+  nerInference: `${dhruvaRootURL}/services/inference/ner`,
 };
 
 const lang2label: { [key: string]: string } = {
@@ -36,6 +37,16 @@ const lang2label: { [key: string]: string } = {
   mni: "Manipuri",
 };
 
+const tag2Color = {
+  "B-LOC": ["#ffcccc", "#ff0000"],
+  "B-ORG": ["#cceeff", "#00aaff"],
+  "B-PER": ["#d6f5d6", "#33cc33"],
+  "I-LOC": ["#ffccdd", "#ff0055"],
+  "I-ORG": ["#ffffcc", "#ffff00"],
+  "I-PER": ["#e6ccff", "#8000ff"],
+  O: ["#ffe6cc", "#ff8000"],
+};
+
 const apiInstance = axios.create();
 
 apiInstance.interceptors.request.use((config: any) => {
@@ -50,4 +61,4 @@ apiInstance.interceptors.response.use((response: any) => {
   return response;
 });
 
-export { dhruvaConfig, lang2label, apiInstance };
+export { dhruvaConfig, lang2label, apiInstance, tag2Color };
