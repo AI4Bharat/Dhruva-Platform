@@ -130,11 +130,6 @@ export default function Services() {
   };
 
   const taskToggler = (event: any) => {
-    if (event.target.value === "translation") setHideTarget(false);
-    else {
-      setHideTarget(true);
-      setTargetLanguage("")
-    }
     setTask(event.target.value);
   };
 
@@ -152,6 +147,12 @@ export default function Services() {
 
   useEffect(() => {
     filterToggler();
+    if (task == "translation") {
+      setHideTarget(false);
+    } else {
+      setHideTarget(true);
+      setTargetLanguage("");
+    }
   }, [sourceLang, targetLang, task]);
 
   useEffect(() => {
@@ -179,6 +180,7 @@ export default function Services() {
                 />
                 <Input
                   borderRadius={0}
+                  color="gray.600"
                   onChange={searchToggler}
                   placeholder="Search for Services"
                 />
@@ -194,32 +196,11 @@ export default function Services() {
                 <option hidden defaultChecked>
                   Select Task Type
                 </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(false);
-                  }}
-                  value="translation"
-                >
-                  Translation
-                </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(true);
-                    setTargetLanguage("");
-                  }}
-                  value="tts"
-                >
-                  TTS
-                </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(true);
-                    setTargetLanguage("");
-                  }}
-                  value="asr"
-                >
-                  ASR
-                </option>
+                <option value="translation">Translation</option>
+                <option value="tts">TTS</option>
+                <option value="asr">ASR</option>
+                <option value="ner">NER</option>
+                <option value="sts">STS</option>
               </Select>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
@@ -308,32 +289,11 @@ export default function Services() {
                 <option hidden defaultChecked>
                   Select Task Type
                 </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(false);
-                  }}
-                  value="translation"
-                >
-                  Translation
-                </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(true);
-                    setTargetLanguage("");
-                  }}
-                  value="tts"
-                >
-                  TTS
-                </option>
-                <option
-                  onClick={() => {
-                    setHideTarget(true);
-                    setTargetLanguage("");
-                  }}
-                  value="asr"
-                >
-                  ASR
-                </option>
+                <option value="translation">Translation</option>
+                <option value="tts">TTS</option>
+                <option value="asr">ASR</option>
+                <option value="ner">NER</option>
+                <option value="sts">STS</option>
               </Select>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}

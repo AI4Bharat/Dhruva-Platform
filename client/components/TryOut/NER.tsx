@@ -35,7 +35,7 @@ export default function NERTry({ ...props }) {
   const [tltText, setTltText] = useState("");
   const [fetched, setFetched] = useState(false);
   const [requestTime, setRequestTime] = useState("");
-  const [nerTokens, setNERTokens] = useState([]);
+  const [nerTokens, setNERTokens] = useState<{ [key: string]: string }>({});
 
   const getNEROutput = (source: string) => {
     setFetched(false);
@@ -65,8 +65,16 @@ export default function NERTry({ ...props }) {
       )
       .then((response) => {
         const tokens = response.data["output"][0]["nerPrediction"];
+        const tokenDictionary = {};
+        const currentTokens = tltText.split(" ");
+        currentTokens.forEach((token: any) => {
+          tokenDictionary[token] = "O";
+        });
+        tokens.forEach((token: any) => {
+          tokenDictionary[token["token"]] = token["tag"];
+        });
         setRequestTime(response.headers["request-duration"]);
-        setNERTokens(tokens);
+        setNERTokens(tokenDictionary);
         setFetching(false);
         setFetched(true);
       });
@@ -161,28 +169,28 @@ export default function NERTry({ ...props }) {
             resize="none"
             minH={200}
           >
-            {Object.entries(nerTokens).map(([idx, element]) => {
+            {Object.entries(nerTokens).map(([token, tag], idx) => {
               return (
                 <span
                   key={idx}
                   style={{
                     padding: 3,
-                    backgroundColor: tag2Color[element["tag"]][0],
+                    backgroundColor: tag2Color[tag][0],
                     borderRadius: 15,
                     lineHeight: 1.8,
                     marginRight: 3,
                   }}
                 >
-                  {element["token"]}{" "}
+                  {token}{" "}
                   <span
                     style={{
                       padding: 3,
-                      backgroundColor: tag2Color[element["tag"]][1],
+                      backgroundColor: tag2Color[tag][1],
                       borderRadius: 15,
                       color: "white",
                     }}
                   >
-                    {element["tag"]}
+                    {tag}
                   </span>
                 </span>
               );
