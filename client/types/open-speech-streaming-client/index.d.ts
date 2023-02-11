@@ -1,1 +1,1 @@
-declare module '@project-sunbird/open-speech-streaming-client';
+declare module "@project-sunbird/open-speech-streaming-client";

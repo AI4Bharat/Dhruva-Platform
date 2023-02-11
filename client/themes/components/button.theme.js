@@ -1,7 +1,7 @@
 export const Button = {
-    baseStyle: {
-      _focus: {
-        boxShadow: "none",
-      },
+  baseStyle: {
+    _focus: {
+      boxShadow: "none",
     },
-  };
+  },
+};

@@ -100,9 +100,9 @@ export default function NMTTry({ ...props }) {
   };
 
   useEffect(() => {
-    const initialLanguageConfig = props.languages[0]
-    setLanguage(JSON.stringify(initialLanguageConfig))
-  }, [])
+    const initialLanguageConfig = props.languages[0];
+    setLanguage(JSON.stringify(initialLanguageConfig));
+  }, []);
 
   return (
     <Grid templateRows="repeat(3)" gap={5}>

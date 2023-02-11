@@ -135,9 +135,9 @@ export default function STSTry({ ...props }) {
   };
 
   useEffect(() => {
-    const initialLanguageConfig = props.languages[0]
-    setLanguage(JSON.stringify(initialLanguageConfig))
-  }, [])
+    const initialLanguageConfig = props.languages[0];
+    setLanguage(JSON.stringify(initialLanguageConfig));
+  }, []);
 
   return (
     <>

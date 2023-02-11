@@ -28,9 +28,9 @@ export default function Login() {
 
   return (
     <>
-    <Head>
-      <title>Login into Dhruva</title>
-    </Head>
+      <Head>
+        <title>Login into Dhruva</title>
+      </Head>
       {isMobile ? (
         <Grid templateColumns="repeat(1, 1fr)">
           <GridItem className="centered-column" w="100%" h="100vh">

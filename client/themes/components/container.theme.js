@@ -1,6 +1,6 @@
 export const Container = {
-    baseStyle: {
-      maxW:'container.lg',
-      fontSize:'lg'
-    },
-  };
+  baseStyle: {
+    maxW: "container.lg",
+    fontSize: "lg",
+  },
+};
