@@ -3,14 +3,6 @@ from fastapi import APIRouter, Depends
 from auth import ApiKeyProvider
 from exception.response_models import NotAuthenticatedResponse
 from ..service.inference_service import InferenceService
-from schema.services.response import (
-    ULCAGenericInferenceResponse,
-    ULCAAsrInferenceResponse,
-    ULCATranslationInferenceResponse,
-    ULCATtsInferenceResponse,
-    ULCANerInferenceResponse,
-    ULCAS2SInferenceResponse,
-)
 from schema.services.request import (
     ULCAInferenceQuery,
     ULCAGenericInferenceRequest,
@@ -19,6 +11,16 @@ from schema.services.request import (
     ULCATtsInferenceRequest,
     ULCANerInferenceRequest,
     ULCAS2SInferenceRequest,
+    ULCAPipelineInferenceRequest,
+)
+from schema.services.response import (
+    ULCAGenericInferenceResponse,
+    ULCAAsrInferenceResponse,
+    ULCATranslationInferenceResponse,
+    ULCATtsInferenceResponse,
+    ULCANerInferenceResponse,
+    ULCAS2SInferenceResponse,
+    ULCAPipelineInferenceResponse,
 )
 
 
@@ -146,3 +148,10 @@ async def _run_inference_sts(
     )
 
     return response
+
+@router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
+async def _run_inference_pipeline(
+    request: ULCAPipelineInferenceRequest,
+    inference_service: InferenceService = Depends(InferenceService),
+):
+    return await inference_service.run_pipeline_inference(request)

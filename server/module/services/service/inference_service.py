@@ -20,12 +20,20 @@ from schema.services.request import (
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
     ULCANerInferenceRequest,
+    ULCAPipelineInferenceRequest,
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
     ULCANerInferenceResponse,
+    ULCAPipelineInferenceResponse,
+)
+from schema.services.common import (
+    ASR_TASK_TYPE,
+    TRANSLATION_TASK_TYPE,
+    TTS_TASK_TYPE,
+    NER_TASK_TYPE,
 )
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -86,16 +94,16 @@ class InferenceService:
 
         if task_type == "translation":
             request_obj = ULCATranslationInferenceRequest(**request_body)
-            return await self.run_translation_triton_inference(request_obj)
+            return await self.run_translation_triton_inference(request_obj, serviceId)
         elif task_type == "asr":
             request_obj = ULCAAsrInferenceRequest(**request_body)
-            return await self.run_asr_triton_inference(request_obj)
+            return await self.run_asr_triton_inference(request_obj, serviceId)
         elif task_type == "tts":
             request_obj = ULCATtsInferenceRequest(**request_body)
-            return await self.run_tts_triton_inference(request_obj)
+            return await self.run_tts_triton_inference(request_obj, serviceId)
         elif task_type == "ner":
             request_obj = ULCANerInferenceRequest(**request_body)
-            return await self.run_ner_triton_inference(request_obj)
+            return await self.run_ner_triton_inference(request_obj, serviceId)
         else:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
@@ -266,3 +274,51 @@ class InferenceService:
         )
         input_obj.set_data_from_numpy(string_obj)
         return input_obj
+    
+    async def run_pipeline_inference(
+        self, request_body: ULCAPipelineInferenceRequest
+    ) -> ULCAPipelineInferenceResponse:
+
+        results = []
+
+        # Check if the pipeline construction is valid
+        is_pipeline_valid = True
+        for i in range(len(request_body.taskSequence)-1):
+            current_task_type, next_task_type = request_body.taskSequence[i].task.type, request_body.taskSequence[i+1].task.type
+            if current_task_type == ASR_TASK_TYPE:
+                if next_task_type not in {TRANSLATION_TASK_TYPE}:
+                    is_pipeline_valid = False
+                    break
+            elif current_task_type == TRANSLATION_TASK_TYPE:
+                if next_task_type not in {TTS_TASK_TYPE}:
+                    is_pipeline_valid = False
+                    break
+            else:
+                is_pipeline_valid = False
+                break
+
+        if not is_pipeline_valid:
+            # TODO: Return proper error messages once standardized
+            return {
+                "results": results
+            }
+        
+        previous_output_json = request_body.entryData.dict()
+        for pipeline_task in request_body.taskSequence:
+            previous_output_json = await self.run_inference(
+                request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
+                serviceId=pipeline_task.serviceId
+            )
+            results.append(dict(previous_output_json))
+            
+            # Output of previous will be input for next
+            previous_output_json.pop("config", None)
+            if "output" in previous_output_json:
+                previous_output_json["input"] = previous_output_json["output"]
+                del previous_output_json["output"]
+            else:
+                # This will ideally happen only for TTS, which is the final task supported *as of now*
+                pass
+        return {
+            "results": results
+        }
