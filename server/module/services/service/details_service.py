@@ -3,8 +3,8 @@ from fastapi import Depends
 
 from exception.base_error import BaseError
 from ..error.errors import Errors
-from ..domain.request import ServiceViewRequest
-from ..domain.response import ServiceViewResponse, ServiceListResponse, ServiceListResponse
+from schema.services.request import ServiceViewRequest
+from schema.services.response import ServiceViewResponse, ServiceListResponse, ServiceListResponse
 from ..repository import ModelRepository, ServiceRepository
 
 
