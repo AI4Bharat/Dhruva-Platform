@@ -14,14 +14,14 @@ from tritonclient.utils import np_to_triton_dtype
 import base64
 from urllib.request import urlopen
 
-from ..domain.request import (
+from schema.services.request import (
     ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
     ULCANerInferenceRequest,
 )
-from ..domain.response import (
+from schema.services.response import (
     ULCAAsrInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,

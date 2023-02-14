@@ -2,7 +2,8 @@ from typing import Union
 from fastapi import APIRouter, Depends
 from auth import ApiKeyProvider
 from exception.response_models import NotAuthenticatedResponse
-from ..domain.response import (
+from ..service.inference_service import InferenceService
+from schema.services.response import (
     ULCAGenericInferenceResponse,
     ULCAAsrInferenceResponse,
     ULCATranslationInferenceResponse,
@@ -10,8 +11,7 @@ from ..domain.response import (
     ULCANerInferenceResponse,
     ULCAS2SInferenceResponse,
 )
-from ..service.inference_service import InferenceService
-from ..domain.request import (
+from schema.services.request import (
     ULCAInferenceQuery,
     ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,

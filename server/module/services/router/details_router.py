@@ -5,8 +5,8 @@ from ..repository.model_repository import ModelRepository
 from ..model.model import Model
 from ..error import Errors
 from ..service import DetailsService
-from ..domain.response import ServiceListResponse, ServiceViewResponse
-from ..domain.request import ServiceViewRequest, ModelViewRequest
+from schema.services.response import ServiceListResponse, ServiceViewResponse
+from schema.services.request import ServiceViewRequest, ModelViewRequest
 from ..repository import ServiceRepository
 import traceback
 

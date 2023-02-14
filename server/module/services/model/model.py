@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Any, List, Optional
 from pydantic import BaseModel
-from ..domain.common import _ULCALanguagePair
-
+from schema.services.common import _ULCALanguagePair
 
 class _Task(BaseModel):
     type: str
