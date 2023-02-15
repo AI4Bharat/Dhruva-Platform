@@ -3,6 +3,7 @@ from typing import Union
 from fastapi import Depends
 from exception.base_error import BaseError
 import requests
+from copy import deepcopy
 import numpy as np
 import tritonclient.http as http_client
 import soundfile as sf
@@ -309,13 +310,18 @@ class InferenceService:
                 request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
                 serviceId=pipeline_task.serviceId
             )
-            results.append(dict(previous_output_json))
+            results.append(deepcopy(previous_output_json))
             
             # Output of previous will be input for next
             previous_output_json.pop("config", None)
             if "output" in previous_output_json:
                 previous_output_json["input"] = previous_output_json["output"]
                 del previous_output_json["output"]
+
+                if pipeline_task.task.type == TRANSLATION_TASK_TYPE:
+                    # The output (target) of translation should be input to next
+                    for i in range(len(previous_output_json["input"])):
+                        previous_output_json["input"][i]["target"], previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["source"], previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
                 pass
