@@ -22,8 +22,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 4,
-  "iteration": 1676003302320,
+  "id": 10,
   "links": [],
   "panels": [
     {
@@ -56,7 +55,9 @@
       "id": 53,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -78,7 +79,9 @@
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -90,13 +93,13 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "process_start_time_seconds{namespace=\"$namespace\", service=\"$service\"} * 1000",
+          "expr": "sum(rate(starlette_requests_total[1m]))",
           "interval": "",
-          "legendFormat": "{{ pod }}",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Pod start time ",
+      "title": "RPS (Current)",
       "type": "gauge"
     },
     {
@@ -129,7 +132,9 @@
       "id": 58,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -144,14 +149,17 @@
                   "value": 80
                 }
               ]
-            }
+            },
+            "unit": "ms"
           },
           "overrides": [],
           "values": false
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -163,13 +171,13 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "process_start_time_seconds{namespace=\"$namespace\", service=\"$service\"} * 1000",
+          "expr": "histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket[1m])) by (le)) * 1000",
           "interval": "",
           "legendFormat": "{{ pod }}",
           "refId": "A"
         }
       ],
-      "title": "Pod start time ",
+      "title": "Request Processing Time",
       "type": "gauge"
     },
     {
@@ -202,7 +210,9 @@
       "id": 59,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -224,7 +234,9 @@
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -236,13 +248,13 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "process_start_time_seconds{namespace=\"$namespace\", service=\"$service\"} * 1000",
+          "expr": "sum(starlette_requests_in_progress) by(app_name)",
           "interval": "",
-          "legendFormat": "{{ pod }}",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Pod start time ",
+      "title": "Requests Currently Being Processed",
       "type": "gauge"
     },
     {
@@ -355,101 +367,6 @@
         "y": 5
       },
       "hiddenSeries": false,
-      "id": 56,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true,
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "sum(rate(starlette_requests_total{path!=\"/metrics\", inference_service!=\"None\"}[24h])) by(path)",
-          "interval": "",
-          "legendFormat": "{{path}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "RPS for Inference Services",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:321",
-          "format": "reqps",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:322",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 13
-      },
-      "hiddenSeries": false,
       "id": 40,
       "legend": {
         "avg": false,
@@ -479,14 +396,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{path!=\"/metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "0.95",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{path!=\"/metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket[5m])) by (le))",
           "hide": false,
           "interval": "",
           "legendFormat": "0.9",
@@ -494,7 +411,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{path!=\"/metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket[5m])) by (le))",
           "hide": false,
           "interval": "",
           "legendFormat": "0.5",
@@ -502,7 +419,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{path!=\"/metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket[5m])) by (le))",
           "hide": false,
           "interval": "",
           "legendFormat": "0.1",
@@ -513,7 +430,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Histogram of requests processing time",
+      "title": "Histogram of Requests Processing Time",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -563,17 +480,17 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 13
       },
       "hiddenSeries": false,
-      "id": 57,
+      "id": 44,
       "legend": {
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
-        "show": true,
+        "show": false,
         "total": false,
         "values": false
       },
@@ -596,41 +513,18 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\"}[5m])) by (le))",
+          "expr": "sum(starlette_requests_in_progress) by(app_name)",
+          "hide": false,
           "interval": "",
-          "legendFormat": "0.95",
+          "legendFormat": "Count",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\"}[5m])) by (le))",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.9",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\"}[5m])) by (le))",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.5",
-          "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\"}[5m])) by (le))",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.1",
-          "refId": "D"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Histogram of requests processing time",
+      "title": "Requests Currently Being Processed",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -646,8 +540,8 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:969",
-          "format": "s",
+          "$$hashKey": "object:1015",
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -655,7 +549,7 @@
           "show": true
         },
         {
-          "$$hashKey": "object:970",
+          "$$hashKey": "object:1016",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -680,8 +574,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 21
+        "x": 12,
+        "y": 13
       },
       "hiddenSeries": false,
       "id": 32,
@@ -764,100 +658,6 @@
       }
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 44,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true,
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "sum(starlette_requests_in_progress) by(app_name)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "Count",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Requests currently being processed",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:1015",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:1016",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
       "datasource": null,
       "description": "Total user and system CPU time spent in seconds",
       "fieldConfig": {
@@ -916,7 +716,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 29
+        "y": 21
       },
       "id": 34,
       "options": {
@@ -943,6 +743,101 @@
       "timeShift": null,
       "title": "CPU usage",
       "type": "timeseries"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "hiddenSeries": false,
+      "id": 56,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.2.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(rate(starlette_requests_total{path!=\"/metrics\", inference_service!=\"None\"}[24h])) by(path)",
+          "interval": "",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "RPS for Inference Services",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:321",
+          "format": "reqps",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:322",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "datasource": null,
@@ -974,7 +869,9 @@
       "id": 46,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -996,7 +893,9 @@
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -1053,7 +952,9 @@
       "id": 38,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -1075,7 +976,9 @@
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -1130,7 +1033,9 @@
       "id": 55,
       "options": {
         "fieldOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "mean"
+          ],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -1152,7 +1057,9 @@
         },
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -2012,36 +1919,7 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": [
-      {
-        "allValue": null,
-        "current": {
-          "text": "ai4bharat/indictrans-fairseq-all-gpu--t4",
-          "value": "ai4bharat/indictrans-fairseq-all-gpu--t4"
-        },
-        "datasource": "Prometheus",
-        "definition": "[object Object]",
-        "description": null,
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
-        "index": -1,
-        "label": "inferenceServiceId",
-        "multi": false,
-        "name": "inferenceServiceId",
-        "options": [],
-        "query": "",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      }
-    ]
+    "list": []
   },
   "time": {
     "from": "2023-02-09T19:20:46.385Z",
