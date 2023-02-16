@@ -24,66 +24,29 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
+import { useQuery } from "@tanstack/react-query";
+import { getService } from "../../api/serviceAPI";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-interface Service {
-  name: string;
-  serviceDescription: string;
-  hardwareDescription: string;
-  publishedOn: number;
-  modelId: string;
-  model: {
-    version: string;
-    task: { type: string };
-    languages: LanguageConfig[];
-    inferenceEndPoint: {
-      schema: {
-        request: any;
-        response: any;
-      };
-    };
-  };
-}
-
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-
-  const [serviceInfo, setServiceInfo] = useState<Service>({
-    name: "",
-    serviceDescription: "",
-    hardwareDescription: "",
-    publishedOn: 1,
-    modelId: "",
-    model: {
-      version: "",
-      task: { type: "" },
-      languages: [],
-      inferenceEndPoint: { schema: { request: {}, response: {} } },
-    },
-  });
+  const { data: serviceInfo, isLoading } = useQuery(
+    ["service", router.query["serviceId"]],
+    () => getService(router.query["serviceId"] as string)
+  );
 
   const [languages, setLanguages] = useState<LanguageConfig[]>([]);
 
   useEffect(() => {
-    if (router.isReady) {
-      const serviceId = router.query["serviceId"];
-      axios({
-        method: "POST",
-        url: dhruvaConfig.viewService,
-        data: {
-          serviceId: serviceId,
-        },
-      }).then((response) => {
-        setServiceInfo(response.data);
-        setLanguages(response.data["model"]["languages"]);
-      });
+    if (serviceInfo) {
+      setLanguages(serviceInfo["model"]["languages"]);
     }
-  }, [router.isReady]);
+  }, [serviceInfo]);
 
   const renderTryIt = (taskType: string) => {
     const serviceId = router.query["serviceId"];
@@ -100,6 +63,8 @@ export default function ViewService() {
         return <NERTry languages={languages} serviceId={serviceId} />;
     }
   };
+
+  if (isLoading || !serviceInfo) return <div>Loading...</div>;
 
   return (
     <>
@@ -166,7 +131,7 @@ export default function ViewService() {
                     Try it out here!
                   </Heading>
                 </Box>
-                {renderTryIt(serviceInfo["model"]["task"]["type"])}
+                {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
               </Stack>
             </GridItem>
           </Grid>

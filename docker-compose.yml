@@ -26,8 +26,8 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/usr/app
-    # env_file:
-    #   - .env
+    env_file:
+      - .env.example
 
   prometheus:
     container_name: prometheus
@@ -57,8 +57,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: unless-stopped
-    expose:
-      - 3000
+    ports:
+      - "3030:3000"
 volumes:
   grafana_data: {}
   prometheus_data: {}
