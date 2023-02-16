@@ -11,6 +11,7 @@ import {
   Text,
   Grid,
   GridItem,
+  Spacer,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -24,6 +25,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
+import Feedback from "../../components/Feedback/Feedback";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -52,7 +54,6 @@ interface Service {
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-
   const [serviceInfo, setServiceInfo] = useState<Service>({
     name: "",
     serviceDescription: "",
@@ -112,11 +113,11 @@ export default function ViewService() {
             ml="1rem"
             mr="1rem"
             mb="1rem"
-            pl="1rem"
-            pr="1rem"
-            pt="1rem"
-            pb="1rem"
-            minH={"10vh"}
+            // pl="1rem"
+            // pr="1rem"
+            // pt="1rem"
+            // pb="1rem"
+            // minH={"10vh"}
             minW={"90vw"}
             maxW={"90vw"}
             gap={10}
@@ -129,6 +130,7 @@ export default function ViewService() {
                 <TabList aria-orientation="vertical" mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -155,6 +157,9 @@ export default function ViewService() {
                   </TabPanel>
                   <TabPanel>
                     <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                  <TabPanel>
+                      <Feedback serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"}/>
                   </TabPanel>
                 </TabPanels>
               </Tabs>
@@ -178,13 +183,14 @@ export default function ViewService() {
             bg="light.100"
           >
             <GridItem>
-              <Stack spacing={10} direction={"row"}>
+              <Stack spacing={10} direction={"row"} mb="1rem">
                 <Heading>{serviceInfo["name"]}</Heading>
               </Stack>
               <Tabs isFitted>
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -210,7 +216,10 @@ export default function ViewService() {
                     </Stack>
                   </TabPanel>
                   <TabPanel>
-                    <Documentation serviceInfo={serviceInfo} />
+                    <Documentation serviceInfo={serviceInfo} userID={"john_doe_dummy_id"} />
+                  </TabPanel>
+                  <TabPanel>
+                      <Feedback serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"}/>
                   </TabPanel>
                 </TabPanels>
               </Tabs>
