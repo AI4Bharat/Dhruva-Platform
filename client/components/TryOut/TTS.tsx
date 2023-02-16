@@ -15,7 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
+// import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 

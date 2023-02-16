@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai4bharat/indic-transliterate": "file:.\\components\\indic-transliterate\\",
+    "@ai4bharat/indic-transliterate": "^1.2.15",
     "@chakra-ui/react": "^2.4.6",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
