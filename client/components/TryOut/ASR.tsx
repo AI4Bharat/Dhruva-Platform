@@ -13,8 +13,11 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  Box,
+  HStack,
+  Spacer,
 } from "@chakra-ui/react";
-import { FaMicrophone } from "react-icons/fa";
+import {FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
@@ -22,6 +25,7 @@ import {
   StreamingClient,
   SocketStatus,
 } from "@project-sunbird/open-speech-streaming-client";
+import { CloseIcon } from "@chakra-ui/icons";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -47,6 +51,8 @@ export default function ASRTry({ ...props }) {
   const [requestTime, setRequestTime] = useState("");
 
   const [inferenceMode, setInferenceMode] = useState("streaming");
+
+  const [modal, setModal] = useState(<></>);
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -136,7 +142,14 @@ export default function ASRTry({ ...props }) {
               setStreamingText(transcript);
             },
             (e: any) => {
-              console.log("Encountered an error: ", e);
+              setModal(
+                <Box mt="1rem" width={"100%"} minH={"3rem"} border={"1px"} borderColor={"gray.300"} background={"red.50"} >
+                <HStack  ml="1rem" mr="1rem" mt="0.6rem" >
+                <Text color={"red.600"}>Required Permissions Denied</Text>
+                <Spacer/>
+                <CloseIcon onClick={()=>setModal(<></>)} color={"red.600"} fontSize={"xs"}/>
+                </HStack>
+                </Box>)
             }
           );
         } else if (action === SocketStatus.TERMINATED) {
@@ -157,6 +170,7 @@ export default function ASRTry({ ...props }) {
   };
 
   useEffect(() => {
+
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
       setAudioStream(stream);
       var AudioContext = window.AudioContext;
@@ -165,6 +179,17 @@ export default function ASRTry({ ...props }) {
       var Recorder = (window as any).Recorder;
       var newRecorder = new Recorder(input, { numChannels: 1 });
       setRecorder(newRecorder);
+    })
+    .catch((e)=>{
+      setModal(
+      <Box mt="1rem" width={"100%"} minH={"3rem"} border={"1px"} borderColor={"gray.300"} background={"red.50"} >
+      <HStack  ml="1rem" mr="1rem" mt="0.6rem" >
+      <Text color={"red.600"}>Required Permissions Denied</Text>
+      <Spacer/>
+      <CloseIcon onClick={()=>setModal(<></>)} color={"red.600"} fontSize={"xs"}/>
+      </HStack>
+      </Box>)
+      // console.log((e as Error).message);
     });
 
     const uniqueSourceLanguages: any = Array.from(
@@ -348,6 +373,7 @@ export default function ASRTry({ ...props }) {
           </GridItem>
         )}
       </Grid>
+      {modal}
     </>
   );
 }
