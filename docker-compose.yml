@@ -57,8 +57,20 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: unless-stopped
-    expose:
-      - 3000
+    ports:
+      - "3030:3000"
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb:/data/db
+    env_file:
+      - .env.dev
+    restart: unless-stopped
+
 volumes:
   grafana_data: {}
   prometheus_data: {}
