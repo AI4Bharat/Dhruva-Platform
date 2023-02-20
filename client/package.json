@@ -15,8 +15,6 @@
     "@emotion/styled": "^11.10.5",
     "@next/font": "13.1.1",
     "@project-sunbird/open-speech-streaming-client": "https://github.com/AI4Bharat/speech-recognition-open-api-client.git#dhruva",
-    "@tanstack/react-query": "^4.24.6",
-    "@tanstack/react-query-devtools": "^4.24.6",
     "@types/node": "18.11.18",
     "@types/react": "18.0.26",
     "@types/react-dom": "18.0.10",

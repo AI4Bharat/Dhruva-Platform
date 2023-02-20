@@ -21,22 +21,29 @@ import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
+import axios from "axios";
 import ModelCard from "../../components/Mobile/Models/ModelCard";
+import { dhruvaConfig } from "../../config/config";
 import Image from "next/image";
 import Head from "next/head";
-import { listModels } from "../../api/modelAPI";
-import { useQuery } from "@tanstack/react-query";
 
+interface Model {
+  name: string;
+  version: string;
+  modelId: string;
+  task: any;
+  languages: any;
+}
 export default function Models() {
-  const { data: models } = useQuery(["models"], listModels);
+  const [models, setModels] = useState<Model[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const [sourceLang, setSourceLanguage] = useState<String>("");
   const [targetLang, setTargetLanguage] = useState<String>("");
   const [task, setTask] = useState<string>("");
   const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const [filteredModels, setFilteredModels] = useState<ModelList[]>(models);
-  const [searchedModels, setSearchedModels] = useState<ModelList[]>([]);
+  const [filteredModels, setFilteredModels] = useState<Model[]>(models);
+  const [searchedModels, setSearchedModels] = useState<Model[]>([]);
   const [seed, setSeed] = useState<number>(0);
 
   const clearFilters = () => {
@@ -138,12 +145,16 @@ export default function Models() {
   }, [filteredModels]);
 
   useEffect(() => {
-    if (models) {
-      setFilteredModels(models);
-      setSearchedModels(models);
+    axios({
+      method: "GET",
+      url: dhruvaConfig.listModels,
+    }).then((response) => {
+      setModels(response.data);
+      setFilteredModels(response.data);
+      setSearchedModels(response.data);
       togglehide(false);
-    }
-  }, [models]);
+    });
+  }, []);
 
   return (
     <>
@@ -169,7 +180,8 @@ export default function Models() {
                   onChange={searchToggler}
                   placeholder="Search for Services"
                 />
-              </InputGroup>{" "}
+              </InputGroup>
+              {" "}
               <Select
                 value={task}
                 width={smallscreen ? "90vw" : "20rem"}
@@ -340,7 +352,7 @@ export default function Models() {
         <br />
         {smallscreen ? (
           // Mobile View
-          searchedModels ? (
+          searchedModels.length > 0 ? (
             <Box>
               {Object.entries(searchedModels).map(([id, modelData]) => (
                 <ModelCard
@@ -374,7 +386,7 @@ export default function Models() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedModels? (
+            {searchedModels.length > 0 ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>

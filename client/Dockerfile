@@ -6,12 +6,7 @@ EXPOSE 3000
 
 RUN apk update \
     && apk upgrade \
-    && apk add --no-cache --upgrade bash \
-    && apk add git
-
-
-
-RUN chmod +x /usr/app
+    && apk add --no-cache --upgrade bash
 
 CMD yarn install \
     && yarn run dev

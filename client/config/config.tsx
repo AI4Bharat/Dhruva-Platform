@@ -50,7 +50,6 @@ const tag2Color = {
 const apiInstance = axios.create();
 
 apiInstance.interceptors.request.use((config: any) => {
-    
   config.headers["request-startTime"] = new Date().getTime();
   return config;
 });
