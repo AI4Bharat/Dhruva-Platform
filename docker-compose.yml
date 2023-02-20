@@ -26,8 +26,8 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/usr/app
-    env_file:
-      - .env.example
+    # env_file:
+    #   - .env
 
   prometheus:
     container_name: prometheus
