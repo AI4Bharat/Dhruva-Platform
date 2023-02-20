@@ -103,7 +103,6 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-
         service = self.service_repository.find_by_id(serviceId)
         headers = {"Authorization": "Bearer " + service.key}
 
