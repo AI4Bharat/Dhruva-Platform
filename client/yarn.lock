@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@ai4bharat/indic-transliterate@file:./components/indic-transliterate/":
+"@ai4bharat/indic-transliterate@file:components/indic-transliterate":
   version "1.2.14"
   dependencies:
     textarea-caret "^3.1.0"
