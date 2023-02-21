@@ -40,7 +40,7 @@ export default function ViewService() {
     () => getService(router.query["serviceId"] as string)
   );
 
-  const [languages, setLanguages] = useState<LanguageConfig[]>([]);
+  const [languages, setLanguages] = useState<LanguageConfig[]>();
 
   useEffect(() => {
     if (serviceInfo) {
@@ -187,7 +187,7 @@ export default function ViewService() {
                     Try it out here!
                   </Heading>
                 </Box>
-                {renderTryIt(serviceInfo["model"]["task"]["type"])}
+                {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
               </Stack>
             </GridItem>
           </Grid>
