@@ -8,9 +8,9 @@ class BaseRepository:
         self.db = db
         self.collection = db[collection_name]
 
-    def find_by_id(self, id : str) -> object:
+    def find_by_id(self, id: str) -> object:
         return self.collection.find_one({"_id": id})
-    
+
     def find_one(self, query: dict) -> object:
         return self.collection.find_one(query)
 
@@ -26,3 +26,6 @@ class BaseRepository:
 
     def insert_one(self, data: object) -> object:
         self.collection.insert_one(data)
+
+    def find_all(self):
+        return self.collection.find()
