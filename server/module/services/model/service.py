@@ -1,9 +1,6 @@
-from typing import Any, Optional
-from pydantic import BaseModel
+from db.MongoBaseModel import MongoBaseModel
 
-
-class Service(BaseModel):
-    _id: Optional[Any]
+class Service(MongoBaseModel):
     serviceId: str
     name: str
     serviceDescription: str
