@@ -22,26 +22,17 @@ class DetailsService:
             service = self.service_repository.find_by_id(request.serviceId)
         except:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        try:
-            model = self.model_repository.find_by_id(service.modelId)
-        except:
-            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-
-        return ServiceViewResponse(**service.dict(), model=model)
-  
-    def list_services(self):
+        if service:
             try:
-                services = self.service_repository.find_all()
-                services_list = []
-
-                for k in services.keys():
-                    try:
-                        model = self.model_repository.find_by_id(services[k].modelId)
-                    except:
-                        raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-                    temp = ServiceListResponse(**services[k].dict(), languages=model.languages, task=model.task)
-                    services_list.append(temp)
+                model = self.model_repository.find_by_id(service.modelId)
             except:
-                raise BaseError(Errors.DHRUVA103.value, traceback.format_exc())
-            return services_list
+                raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+            if service and model:
+                return ServiceViewResponse(**service.dict(), model=model)
+
+    def list_services(self):
+        try:
+            services_list = self.service_repository.find_all()
+        except:
+            raise BaseError(Errors.DHRUVA103.value, traceback.format_exc())
+        return services_list
