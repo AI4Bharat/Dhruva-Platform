@@ -1,6 +1,9 @@
-from typing import Union
+import time
+from typing import Union, Callable
 from fastapi import APIRouter, Depends
 from auth import AuthProvider
+from fastapi.routing import APIRoute, Response, Request
+from db.database import setup_db_data
 from exception.response_models import NotAuthenticatedResponse
 from ..service.inference_service import InferenceService
 from schema.services.response import (
@@ -20,15 +23,51 @@ from schema.services.request import (
     ULCANerInferenceRequest,
     ULCAS2SInferenceRequest,
 )
+# from ..repository import ServiceRepository, ModelRepository
+from celery_backend.tasks import log_data
+
+
+class InferenceLoggingRoute(APIRoute):
+    def get_route_handler(self) -> Callable:
+        original_route_handler = super().get_route_handler()
+
+        async def logging_route_handler(request: Request) -> Response:
+            req_body = await request.body()
+            start_time = time.time()
+            print("before route handler")
+            response: Response = await original_route_handler(request)
+            print("after route handler")
+            print("request: ", request)
+            res_body = response.body
+            if request.url._url.split("/")[-1].split("?")[0] in ("asr", "translation", "tts"):
+                print(request.state.__dict__, request.state.api_key_name)
+                log_data.apply_async(
+                    (
+                        request.url._url,
+                        request.state.api_key_name,
+                        req_body.decode("utf-8"),
+                        res_body.decode("utf-8"),
+                        time.time() - start_time
+                    ),
+                    queue="data_log"
+                )
+            return response
+        return logging_route_handler
 
 
 router = APIRouter(
     prefix="/inference",
+    route_class=InferenceLoggingRoute,
     dependencies=[
         Depends(AuthProvider),
     ],
     responses={"401": {"model": NotAuthenticatedResponse}},
 )
+
+
+@router.post("/setup")
+async def _run_inference_generic():
+    return await setup_db_data()
 
 
 @router.post("", response_model=ULCAGenericInferenceResponse)
@@ -51,6 +90,7 @@ async def _run_inference_translation(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
+    print("inference")
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )

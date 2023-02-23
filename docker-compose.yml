@@ -5,6 +5,7 @@ services:
     container_name: server
     build:
       context: ./server
+    image: server_image
     stdin_open: true
     tty: true
     working_dir: /src
@@ -81,6 +82,66 @@ services:
     env_file:
       - .env.dev
     restart: unless-stopped
+    # expose:
+    #   - 3000
+
+  rabbitmq_server:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbithost
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=dhruva_host
+      - RABBITMQ_ERLANG_COOKIE=COOKIE
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  celery:
+    container_name: celery
+    image: server_image
+    working_dir: /src
+    volumes:
+      - ./server:/src
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
+      server:
+        condition: service_started
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+
+  celery-flower:
+    container_name: celery-flower
+    image: server_image
+    working_dir: /src
+    environment:
+      - AMQP_USERNAME=user
+      - AMQP_PASSWORD=user
+      - AMQP_ADMIN_USERNAME=admin
+      - AMQP_ADMIN_PASSWORD=admin
+      - AMQP_HOST=dhruva_host
+      - AMQP_PORT=5672
+      - AMQP_ADMIN_HOST=dhruva_host
+      - AMQP_ADMIN_PORT=15672
+      - FLOWER_BASIC_AUTH=user:user
+    volumes:
+      - ./server:/src
+    ports:
+      - "5555:5555"
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
+      server:
+        condition: service_started
+    command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
+
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: dhruva-mongo
+  #   hostname: dhruva-mongo-host
+  #   ports:
+  #     - "27017:27017"
 
 volumes:
   grafana_data: {}

@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from db.app_db import AppDatabase
 from fastapi import Request
 
@@ -27,3 +28,5 @@ def fetch_session(credentials: str, db: AppDatabase):
     del user["password"]
 
     return user
+
+# request.state.api_key_name = api_key["name"]
