@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 
-from db.database import Database
+from db.app_db import AppDatabase
 
 
 class ApiKeyProvider:
@@ -13,7 +13,7 @@ class ApiKeyProvider:
         ),
 
         # this will be replaced with an api_key repository when it is created
-        db: Database = Depends(Database)
+        db: AppDatabase = Depends(AppDatabase)
     ) -> None:
         self.db = db
 

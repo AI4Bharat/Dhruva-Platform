@@ -15,6 +15,12 @@ router = APIRouter(
     prefix="/details",
 )
 
+@router.get("/test")
+async def _test(service_repository: ServiceRepository = Depends(ServiceRepository)):
+    service_repository.insert_one({"name": "test"})
+    return {"message": "test"}
+    
+
 
 @router.get("/list_services", response_model=List[ServiceListResponse])
 async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository), details_service: DetailsService = Depends(DetailsService)):
@@ -30,6 +36,8 @@ async def _view_service_details(
 ):
     response = details_service.get_service_details(request)
     return response
+
+
 
 
 @router.get("/list_models", response_model=List[Model])

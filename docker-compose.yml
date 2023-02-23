@@ -26,8 +26,8 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/usr/app
-    # env_file:
-    #   - .env
+    env_file:
+      - .env.dev
 
   prometheus:
     container_name: prometheus
@@ -60,13 +60,24 @@ services:
     ports:
       - "3030:3000"
 
-  mongodb:
+  app_db:
     image: mongo
-    container_name: mongodb
+    container_name: app_db
     ports:
       - "27017:27017"
     volumes:
-      - ./mongodb:/data/db
+      - ./appdb:/data/db
+    env_file:
+      - .env.dev
+    restart: unless-stopped
+
+  log_db:
+    image: mongo
+    container_name: log_db
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./logdb:/data/db
     env_file:
       - .env.dev
     restart: unless-stopped
