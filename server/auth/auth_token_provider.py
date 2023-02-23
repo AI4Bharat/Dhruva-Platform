@@ -1,11 +1,29 @@
-# from typing import Optional
-# from fastapi import Depends, HTTPException
-# from fastapi.security import HTTPBasic, HTTPBasicCredentials, APIKeyHeader
+from typing import Optional
+
+import jwt
+from fastapi import Depends
+
+from db.app_db import AppDatabase
 
 
-# class AuthTokenProvider():
-#     def __init__(self, credentials: Optional[str] = Depends(APIKeyHeader(name="authorization"))) -> None:
-#         if not credentials:
-#             raise HTTPException(
-#                 # status_code=status., detail="Not authenticated"
-#             )
+def validate_credentials(
+    credentials: Optional[str], db: AppDatabase = Depends(AppDatabase)
+) -> bool:
+    if not credentials:
+        return False
+
+    token_collection = db["token"]
+    token = token_collection.find_one({"key": credentials})
+
+    if not token:
+        return False
+
+    if token["key"] != credentials:
+        return False
+
+    try:
+        jwt.decode(credentials)
+    except Exception:
+        return False
+
+    return True
