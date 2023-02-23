@@ -8,4 +8,5 @@ class ServiceRepository(BaseRepository[Service]):
     __collection_name__ = "service"
 
     def __init__(self, db: AppDatabase = Depends(AppDatabase)) -> None:
+        super().__init__(db, self.__collection_name__)
         self.collection = db[self.__collection_name__]

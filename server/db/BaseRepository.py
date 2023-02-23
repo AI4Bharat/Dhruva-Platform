@@ -11,10 +11,20 @@ class BaseRepository(Generic[T]):
         super().__init__()
         self.db = db
         self.collection = db[collection_name]
-        self.__document_class = self.__orig_bases__[0].__args__[0]  # type: ignore
+        self.__document_class = self.__orig_bases__[0].__args__[0]
+        self.__validate()
+
+    def __validate(self):
+        if not issubclass(self.__document_class, BaseModel):
+            raise Exception("Document class should inherit BaseModel")
+        if "id" not in self.__document_class.__fields__:
+            raise Exception("Document class should have id field")
+        if self.collection is None:
+            raise Exception("Meta should contain collection name")
 
     def __map_to_model(self, data: dict) -> T:
         if "_id" in data:
+            print(data)
             data["id"] = data.pop("_id")
         return self.__document_class.parse_obj(data)
 

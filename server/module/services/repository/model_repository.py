@@ -6,4 +6,5 @@ class ModelRepository(BaseRepository[Model]):
     __collection_name__ = "model"
 
     def __init__(self, db: AppDatabase = Depends(AppDatabase)) -> None:
-        self.collection = db[self.__collection_name__]
+        super().__init__(db, self.__collection_name__)
+        
