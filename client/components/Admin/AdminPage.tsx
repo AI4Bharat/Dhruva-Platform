@@ -14,9 +14,9 @@ const AdminPage = () => {
   if(render == 0)
     renderme =
     <Box ml="1rem" mr="1rem">
-        <Box background={"orange.100"} height="3rem" width="90vw" onClick={()=>setRender(1)}>
+        <Box background={"orange.500"} height="3rem" width="90vw" onClick={()=>setRender(1)}>
             <Center ml="1rem" mr="1rem">
-                <Text  mt="0.5rem" fontSize={"large"} fontWeight={"bold"}>API Keys</Text>
+                <Text color={"white"} mt="0.5rem" fontSize={"large"} fontWeight={"bold"}>API Keys</Text>
             </Center>
         </Box>
     </Box>
