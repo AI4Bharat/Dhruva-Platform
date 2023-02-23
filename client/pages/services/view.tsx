@@ -19,9 +19,7 @@ import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import NERTry from "../../components/TryOut/NER";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaConfig } from "../../config/config";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
@@ -97,6 +95,7 @@ export default function ViewService() {
                 <TabList aria-orientation="vertical" mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Benchmarks</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -123,6 +122,9 @@ export default function ViewService() {
                   </TabPanel>
                   <TabPanel>
                     <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                  <TabPanel>
+                    <ServiceBenchmark benchmarks={serviceInfo["benchmarks"]} />
                   </TabPanel>
                 </TabPanels>
               </Tabs>
