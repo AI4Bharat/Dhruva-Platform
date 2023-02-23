@@ -11,7 +11,7 @@ class BaseRepository(Generic[T]):
         super().__init__()
         self.db = db
         self.collection = db[collection_name]
-        self.__document_class = self.__orig_bases__[0].__args__[0]
+        self.__document_class = self.__orig_bases__[0].__args__[0] # type: ignore
         self.__validate()
 
     def __validate(self):
@@ -24,7 +24,6 @@ class BaseRepository(Generic[T]):
 
     def __map_to_model(self, data: dict) -> T:
         if "_id" in data:
-            print(data)
             data["id"] = data.pop("_id")
         return self.__document_class.parse_obj(data)
 
@@ -41,15 +40,15 @@ class BaseRepository(Generic[T]):
         results = self.collection.find_one({"_id": id})
         return self.__map_to_model(results) if results else None
 
-    def find_one(self, query: dict):
+    def find_one(self, query: dict) -> Optional[T]:
         results = self.collection.find_one(query)
         return self.__map_to_model(results) if results else None
 
-    def find(self, query: dict) -> object:
+    def find(self, query: dict) -> Optional[List[T]]:
         results = self.collection.find(query)
         return self.__map_to_model_list(results) if results else None
 
-    def find_all(self):
+    def find_all(self) -> Optional[List[T]]:
         results = self.collection.find()
         return self.__map_to_model_list(results) if results else None
 

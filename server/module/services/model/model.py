@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from schema.services.common import _ULCALanguagePair
 from db.MongoBaseModel import MongoBaseModel
 
-class _Task(BaseModel):
+class Task(BaseModel):
     type: str
 
 
@@ -71,7 +71,7 @@ class Model(MongoBaseModel):
     name: str
     description: str
     refUrl: str
-    task: _Task
+    task: Task
     languages: List[dict]
     license: str
     domain: List[str]
