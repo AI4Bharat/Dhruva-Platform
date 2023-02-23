@@ -24,6 +24,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
+import ServiceBenchmark from "../../components/Benchmark/ServiceBenchmark";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -36,6 +37,7 @@ interface Service {
   hardwareDescription: string;
   publishedOn: number;
   modelId: string;
+  benchmarks: any;
   model: {
     version: string;
     task: { type: string };
@@ -59,6 +61,7 @@ export default function ViewService() {
     hardwareDescription: "",
     publishedOn: 1,
     modelId: "",
+    benchmarks: [],
     model: {
       version: "",
       task: { type: "" },
@@ -187,6 +190,7 @@ export default function ViewService() {
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Benchmarks</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -213,6 +217,9 @@ export default function ViewService() {
                   </TabPanel>
                   <TabPanel>
                     <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                  <TabPanel>
+                    <ServiceBenchmark benchmarks={serviceInfo["benchmarks"]} />
                   </TabPanel>
                 </TabPanels>
               </Tabs>
