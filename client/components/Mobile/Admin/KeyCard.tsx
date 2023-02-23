@@ -1,11 +1,8 @@
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
-import Link from "next/link";
 import React from "react";
-
-const ModelCard = (props: any) => {
+const KeyCard = (props) => {
   return (
     <Box
-      ml="1rem"
       mr="1rem"
       mb="1rem"
       pl="1rem"
@@ -19,41 +16,28 @@ const ModelCard = (props: any) => {
       maxW={"90vw"}
     >
       <Text fontSize={"xl"} fontWeight={"extrabold"}>
-        {props.name}
+        {props.alias}
       </Text>
       <hr></hr>
       <Box mt="1rem" fontSize={"md"}>
-        <Text fontWeight={"bold"}>Model ID :</Text>
-        <Text>{props.modelID}</Text>
-      </Box>
-      <Box fontSize={"md"}>
         <HStack>
-          <Text fontWeight={"bold"}>Version :</Text>
-          <Text>{props.version}</Text>
+          <Text fontWeight={"bold"}>Used By :</Text>
+          <Text>{props.usedBy}</Text>
         </HStack>
       </Box>
       <Box fontSize={"md"}>
         <HStack>
-          <Text fontWeight={"bold"}>Task Type :</Text>
-          <Text>{props.taskType}</Text>
+          <Text fontWeight={"bold"}>Created On:</Text>
+          <Text>{props.createdOn}</Text>
         </HStack>
       </Box>
-      <Link
-        href={{
-          pathname: `/models/view`,
-          query: {
-            modelId: props.modelId,
-          },
-        }}
-      >
         <Button float="right" size={"sm"} variant={"outline"}>
           View
         </Button>
-      </Link>
       <br></br>
       <br></br>
     </Box>
-  );
-};
+  )
+}
 
-export default ModelCard;
+export default KeyCard

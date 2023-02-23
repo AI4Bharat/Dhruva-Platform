@@ -56,7 +56,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/models/view",
     "/billing",
     "/profile",
-    "/analyze",
+    "/admin",
   ].includes(appProps.router.pathname);
 
   const LayoutComponent = isLayoutNeeded ? Layout : React.Fragment;
