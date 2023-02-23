@@ -6,7 +6,7 @@ from exception.base_error import BaseError
 from ..error.errors import Errors
 from schema.services.request import ServiceViewRequest
 from schema.services.response import ServiceViewResponse, ServiceListResponse, ServiceListResponse
-from ..repository import ModelRepository, ServiceRepository
+from ..repository import ModelRepository, ServiceRepository 
 
 
 class DetailsService:

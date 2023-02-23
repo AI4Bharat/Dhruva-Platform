@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from pydantic import BaseModel, Field
 from schema.services.common import _ULCALanguagePair
 from db.MongoBaseModel import MongoBaseModel
-
+from schema.services.common import _ULCATask
 class Task(BaseModel):
     type: str
 
@@ -71,7 +71,7 @@ class Model(MongoBaseModel):
     name: str
     description: str
     refUrl: str
-    task: Task
+    task: _ULCATask
     languages: List[dict]
     license: str
     domain: List[str]
