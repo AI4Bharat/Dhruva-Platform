@@ -8,6 +8,8 @@ import {
   import { Button } from "./components/button.theme";
   import { Container } from "./components/container.theme";
   import { Select } from "./components/select.theme";
+  import { Modal } from "./components/modal.theme";
+
   export const customTheme = extendTheme(
     {
       colors: {
@@ -36,7 +38,8 @@ import {
         Input,
         Button,
         Container,
-        Select
+        Select,
+        Modal
       },
     },
     withDefaultColorScheme({ colorScheme: "orange" })
