@@ -1,9 +1,13 @@
+from typing import Any
+
 import pymongo
 from fastapi.logger import logger
+from pymongo.collection import Collection
+from pymongo.database import Database
+
 
 class AppDatabase:
-
-    __db = dict()
+    __db: Database = None  # type: ignore
 
     def __init__(self) -> None:
         if self.__db != {}:
@@ -14,5 +18,5 @@ class AppDatabase:
         logger.info("Connected to app database")
         self.__db = mongo_db
 
-    def __getitem__(self,collection_name):
-        return self.__db[collection_name]
+    def __getitem__(self, collection_name) -> Collection[Any]:
+        return self.__db.get_collection(collection_name)

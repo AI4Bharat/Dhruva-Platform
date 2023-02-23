@@ -4,7 +4,7 @@ from db.app_db import AppDatabase
 from ..model import Service
 
 
-class ServiceRepository(BaseRepository[Service]):
+class ServiceRepository(BaseRepository[Service])(BaseRepository[Service]):
     __collection_name__ = "service"
 
     def __init__(self, db: AppDatabase = Depends(AppDatabase)) -> None:

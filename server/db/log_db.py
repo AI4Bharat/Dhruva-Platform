@@ -1,9 +1,13 @@
+from typing import Any
+
 import pymongo
 from fastapi.logger import logger
+from pymongo.collection import Collection
+from pymongo.database import Database
+
 
 class LogDatabase:
-
-    __db = dict()
+    __db: Database = None  # type: ignore
 
     def __init__(self) -> None:
         # currently loads registries from the file
@@ -13,15 +17,14 @@ class LogDatabase:
 
         if self.__db != {}:
             return
-        
+
         mongo_client = pymongo.MongoClient("mongodb://admin:admin@log_db:27017/")
         mongo_db = mongo_client["dhruva"]
         logger.info("Connected to log database")
         self.__db = mongo_db
-    
 
-    def __getitem__(self,collection_name):
-        return self.__db[collection_name]
+    def __getitem__(self, collection_name) -> Collection[Any]:
+        return self.__db.get_collection(collection_name)
 
     # def load_collections(self):
     #     from .BaseRepository import BaseRepository
