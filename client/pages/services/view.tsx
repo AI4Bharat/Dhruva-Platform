@@ -67,7 +67,7 @@ export default function ViewService() {
     },
   });
 
-  const [languages, setLanguages] = useState<LanguageConfig[]>([]);
+  const [languages, setLanguages] = useState<LanguageConfig[]>();
 
   useEffect(() => {
     if (router.isReady) {
@@ -86,18 +86,20 @@ export default function ViewService() {
   }, [router.isReady]);
 
   const renderTryIt = (taskType: string) => {
-    const serviceId = router.query["serviceId"];
-    switch (taskType) {
-      case "asr":
-        return <ASRTry languages={languages} serviceId={serviceId} />;
-      case "tts":
-        return <TTSTry languages={languages} serviceId={serviceId} />;
-      case "translation":
-        return <NMTTry languages={languages} serviceId={serviceId} />;
-      case "sts":
-        return <STSTry languages={languages} serviceId={serviceId} />;
-      case "ner":
-        return <NERTry languages={languages} serviceId={serviceId} />;
+    if (languages) {
+      const serviceId = router.query["serviceId"];
+      switch (taskType) {
+        case "asr":
+          return <ASRTry languages={languages} serviceId={serviceId} />;
+        case "tts":
+          return <TTSTry languages={languages} serviceId={serviceId} />;
+        case "translation":
+          return <NMTTry languages={languages} serviceId={serviceId} />;
+        case "sts":
+          return <STSTry languages={languages} serviceId={serviceId} />;
+        case "ner":
+          return <NERTry languages={languages} serviceId={serviceId} />;
+      }
     }
   };
 
@@ -222,7 +224,7 @@ export default function ViewService() {
                     Try it out here!
                   </Heading>
                 </Box>
-                {renderTryIt(serviceInfo["model"]["task"]["type"])}
+                {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
               </Stack>
             </GridItem>
           </Grid>
