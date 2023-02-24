@@ -9,9 +9,14 @@ class _PayloadObject(BaseModel):
     metricName:str
     metricValue:str
 
+class _GPUObject(BaseModel):
+    count:str
+    payloads:List[_PayloadObject]
+
 class _Benchmark(BaseModel):
     name:str
-    payloads:List[_PayloadObject]
+    gpuSettings:List[_GPUObject]
+    
 
 
 class Service(BaseModel):
