@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from exception.base_error import BaseError
 from ..repository.model_repository import ModelRepository
-from ..model.model import Model
+from ..model import Model
 from ..error import Errors
 from ..service import DetailsService
 from schema.services.response import ServiceListResponse, ServiceViewResponse
@@ -14,13 +14,6 @@ import traceback
 router = APIRouter(
     prefix="/details",
 )
-
-@router.get("/test")
-async def _test(service_repository: ServiceRepository = Depends(ServiceRepository)):
-    service_repository.insert_one({"name": "test"})
-    return {"message": "test"}
-    
-
 
 @router.get("/list_services", response_model=List[ServiceListResponse])
 async def _list_services(service_repository: ServiceRepository = Depends(ServiceRepository), details_service: DetailsService = Depends(DetailsService)):
@@ -43,10 +36,7 @@ async def _view_service_details(
 @router.get("/list_models", response_model=List[Model])
 async def _list_models(model_repository: ModelRepository = Depends(ModelRepository)):
     try:
-        models = model_repository.find_all()
-        models_list = []
-        for k in models.keys():
-            models_list.append(models[k])
+        models_list = model_repository.find_all()
     except:
         raise BaseError(Errors.DHRUVA106.value, traceback.format_exc())
 

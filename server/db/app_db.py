@@ -10,7 +10,7 @@ class AppDatabase:
     __db: Database = None  # type: ignore
 
     def __init__(self) -> None:
-        if self.__db != {}:
+        if self.__db is not None:
             return
 
         mongo_client = pymongo.MongoClient("mongodb://admin:admin@app_db:27017/")
@@ -19,4 +19,4 @@ class AppDatabase:
         self.__db = mongo_db
 
     def __getitem__(self, collection_name) -> Collection[Any]:
-        return self.__db.get_collection(collection_name)
+        return self.__db[collection_name]
