@@ -95,29 +95,43 @@ def calculate_ner_usage(data: List) -> int:
 
 
 def write_to_db(api_key_name: str, inference_units: int, service_id: str):
+    """
+    - Check doc presence or create
+    - Check subdocument presence or create
+    Currently no single method ot check for document as well as subdocument level upsert
+    """
     metering_db = get_db_client("dhruva")
-    user = metering_db.api_key.find_one({"api_key": api_key_name})
-    doc = metering_db.dhruva.find_one({"_id": user["user"]})
+    doc = metering_db.metering.find_one({"api_key_hash": api_key_name})
+    # Check for the document
+    if doc:
+        # Check for services
+        for service in doc["services"]:
+            if service["service_id"] == service_id:
+                service["usage"] += inference_units
+                break
+        else:
+            # Insert service sub document
+            doc["services"].append({"service_id": service_id, "usage": inference_units})
 
-    # Check field presence and then update
-    # Getting the whole dodument and doing one write
-    # Can check presence of nested doc in one read and can do 2 separate updates
-    # Adds a lot of write traffic to the db
-    # Keeping it simple for now
-    for d in doc["metering"]["api_keys"]:
-        if d["api_key_hash"] == api_key_name and d["service_id"] == service_id:
-            print("insinde")
-            d["usage"] += inference_units
-            doc["metering"]["total"] += inference_units
-
-    metering_db.dhruva.update_one(
-        {'_id': user["user"]},
-        {"$set":{'metering': doc["metering"]}},
-        False,
-        True
-    )
-    doc = metering_db.dhruva.find_one({"_id": user["user"]})
-    logging.debug(f"doc: {doc}")
+        doc["total"] += inference_units
+        metering_db.metering.replace_one(
+            {"api_key_hash": api_key_name},
+            doc
+        )
+    else:
+        # Create the document, serviceId and set usage
+        metering_db.metering.insert_one(
+            {
+                "api_key_hash": api_key_name,
+                "services": [
+                    {"service_id": service_id, "usage": inference_units},
+                ],
+                "total": inference_units
+            }
+        )
+    # doc = metering_db.metering.find_one({"api_key_hash": api_key_name})
+    # logging.debug(f"doc: {doc}")
+    # print(f"doc: {doc}")
 
 
 def meter_usage(api_key_name: str, input_data: List, usage_type: str, service_id: str):
@@ -131,5 +145,6 @@ def meter_usage(api_key_name: str, input_data: List, usage_type: str, service_id
     elif usage_type == "tts":
         inference_units = calculate_tts_usage(input_data)
 
-    logging.debug(f"inference units: {inference_units}")
+    # logging.debug(f"inference units: {inference_units}")
+    print(f"inference units: {inference_units}")
     write_to_db(api_key_name, inference_units, service_id)
