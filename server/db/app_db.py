@@ -10,10 +10,10 @@ class AppDatabase:
     __db: Database = None  # type: ignore
 
     def __init__(self) -> None:
-        if self.__db is not None:
+        if self.__db != None:
             return
 
-        mongo_client = pymongo.MongoClient("mongodb://admin:admin@app_db:27017/")
+        mongo_client = pymongo.MongoClient("mongodb://admin:admin@localhost:27017/")
         mongo_db = mongo_client["dhruva"]
         logger.info("Connected to app database")
         self.__db = mongo_db

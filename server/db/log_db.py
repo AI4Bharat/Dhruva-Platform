@@ -15,10 +15,12 @@ class LogDatabase:
         #   - connect to db and get database object
         #   - optionally create collections
 
-        if self.__db != {}:
+        if self.__db != None:
             return
 
-        mongo_client = pymongo.MongoClient("mongodb://admin:admin@log_db:27017/")
+        mongo_client = pymongo.MongoClient(
+            "mongodb://admin:adminlocalhost@log_db:27018/"
+        )
         mongo_db = mongo_client["dhruva"]
         logger.info("Connected to log database")
         self.__db = mongo_db

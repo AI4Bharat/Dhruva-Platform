@@ -1,7 +1,9 @@
 from typing import Optional
 from fastapi import Depends
-from db.BaseRepository import BaseRepository
+
 from db.app_db import AppDatabase
+from db.BaseRepository import BaseRepository
+
 from ..model import Service
 
 

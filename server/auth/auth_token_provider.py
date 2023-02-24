@@ -1,9 +1,13 @@
+import os
 from typing import Optional
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import Depends
 
 from db.app_db import AppDatabase
+
+load_dotenv()
 
 
 def validate_credentials(
@@ -22,8 +26,12 @@ def validate_credentials(
         return False
 
     try:
-        jwt.decode(credentials)
+        jwt.decode(credentials, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"])
     except Exception:
+        return False
+
+    headers = jwt.get_unverified_header(credentials)
+    if headers["tok"] != "access":
         return False
 
     return True

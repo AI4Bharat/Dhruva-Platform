@@ -1,33 +1,33 @@
 version: "3"
 
 services:
-  server:
-    container_name: server
-    build:
-      context: ./server
-    stdin_open: true
-    tty: true
-    working_dir: /src
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./server:/src
-    command: sh -c "uvicorn main:app --reload --host 0.0.0.0"
+  # server:
+  #   container_name: server
+  #   build:
+  #     context: ./server
+  #   stdin_open: true
+  #   tty: true
+  #   working_dir: /src
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./server:/src
+  #   command: sh -c "uvicorn main:app --reload --host 0.0.0.0"
     # env_file:
     #   - .env
 
-  client:
-    container_name: client
-    build:
-      context: ./client
-    stdin_open: true
-    tty: true
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./client:/usr/app
-    env_file:
-      - .env.dev
+  # client:
+  #   container_name: client
+  #   build:
+  #     context: ./client
+  #   stdin_open: true
+  #   tty: true
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./client:/usr/app
+  #   env_file:
+  #     - .env.dev
 
   prometheus:
     container_name: prometheus
