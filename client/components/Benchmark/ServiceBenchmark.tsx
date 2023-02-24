@@ -1,19 +1,10 @@
 import {
   Stack,
-  Text,
-  Select,
-  Button,
-  Textarea,
-  Progress,
   Grid,
-  GridItem,
   Stat,
   StatLabel,
   StatNumber,
-  StatHelpText,
-  SimpleGrid,
   CardHeader,
-  CardFooter,
   CardBody,
   Card,
   Heading,
@@ -25,14 +16,25 @@ import {
   AccordionIcon,
 } from "@chakra-ui/react";
 
-import { useState, useEffect } from "react";
-
 export default function ServiceBenchmark({ ...props }) {
+  const renderPayload = (payload: string, task: string) => {
+    switch (task) {
+      case "asr":
+        return (
+          <audio controls>
+            <source src={payload} />
+          </audio>
+        );
+      default:
+        return <Heading size="md">{payload}</Heading>;
+    }
+  };
+
   return (
     <Grid>
       {props.benchmarks.map((benchmark, idx) => {
         return (
-          <Accordion key={idx} allowToggle>
+          <Accordion outline={"none"} key={idx} allowToggle>
             <AccordionItem>
               <h2>
                 <AccordionButton>
@@ -43,58 +45,79 @@ export default function ServiceBenchmark({ ...props }) {
                 </AccordionButton>
               </h2>
               <AccordionPanel pb={4}>
-                {benchmark["payloads"].map((payload, idx) => {
+                {benchmark["gpuSettings"].map((object, idx) => {
                   return (
-                    <Card
-                      key={idx}
-                      p={3}
-                      mt={5}
-                      w="auto"
-                      borderRadius={15}
-                      bg={"orange.100"}
-                    >
+                    <Card key={idx}>
                       <CardHeader>
-                        <Heading size="md">{payload["payload"]}</Heading>
+                        <Heading fontSize={"xl"}>
+                          GPU Count : {object["count"]}
+                        </Heading>
                       </CardHeader>
                       <CardBody>
-                        <Stack direction={"row"}>
-                          <Stat
-                            p={3}
-                            w="fit-content"
-                            borderRadius={15}
-                            bg="white"
-                          >
-                            <StatLabel>Latency</StatLabel>
-                            <StatNumber>{payload["latency"]}</StatNumber>
-                          </Stat>
-                          <Stat
-                            p={3}
-                            w="fit-content"
-                            borderRadius={15}
-                            bg="white"
-                          >
-                            <StatLabel>Generated</StatLabel>
-                            <StatNumber>{payload["generated"]}</StatNumber>
-                          </Stat>
-                          <Stat
-                            p={3}
-                            w="fit-content"
-                            borderRadius={15}
-                            bg="white"
-                          >
-                            <StatLabel>Actual</StatLabel>
-                            <StatNumber>{payload["actual"]}</StatNumber>
-                          </Stat>
-                          <Stat
-                            p={3}
-                            w="fit-content"
-                            borderRadius={15}
-                            bg="white"
-                          >
-                            <StatLabel>{payload["metricName"]}</StatLabel>
-                            <StatNumber>{payload["metricValue"]}</StatNumber>
-                          </Stat>
-                        </Stack>
+                        {object["payloads"].map((payload, idx) => {
+                          return (
+                            <Card
+                              key={idx}
+                              p={3}
+                              mt={5}
+                              w="auto"
+                              borderRadius={15}
+                              bg={"orange.100"}
+                            >
+                              <CardHeader>
+                                {renderPayload(payload["payload"], props.task)}
+                              </CardHeader>
+                              <CardBody>
+                                <Stack direction={"row"}>
+                                  <Stat
+                                    p={3}
+                                    w="fit-content"
+                                    borderRadius={15}
+                                    bg="white"
+                                  >
+                                    <StatLabel>Latency</StatLabel>
+                                    <StatNumber>
+                                      {payload["latency"]}
+                                    </StatNumber>
+                                  </Stat>
+                                  <Stat
+                                    p={3}
+                                    w="fit-content"
+                                    borderRadius={15}
+                                    bg="white"
+                                  >
+                                    <StatLabel>Generated</StatLabel>
+                                    <StatNumber>
+                                      {payload["generated"]}
+                                    </StatNumber>
+                                  </Stat>
+                                  <Stat
+                                    p={3}
+                                    w="fit-content"
+                                    borderRadius={15}
+                                    bg="white"
+                                  >
+                                    <StatLabel>Actual</StatLabel>
+                                    <StatNumber>{payload["actual"]}</StatNumber>
+                                  </Stat>
+                                  <Stat
+                                    p={3}
+                                    w="fit-content"
+                                    borderRadius={15}
+                                    bg="white"
+                                  >
+                                    <StatLabel>
+                                      {payload["metricName"]}
+                                    </StatLabel>
+                                    <StatNumber>
+                                      {payload["metricValue"]}
+                                    </StatNumber>
+                                  </Stat>
+                                </Stack>
+                              </CardBody>
+                            </Card>
+                          );
+                        })}
                       </CardBody>
                     </Card>
                   );

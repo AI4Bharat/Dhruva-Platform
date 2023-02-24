@@ -124,7 +124,14 @@ export default function ViewService() {
                     <Documentation serviceInfo={serviceInfo} />
                   </TabPanel>
                   <TabPanel>
-                    <ServiceBenchmark benchmarks={serviceInfo["benchmarks"]} />
+                    {serviceInfo["benchmarks"] ? (
+                      <ServiceBenchmark
+                        task={serviceInfo["model"]["task"]["type"]}
+                        benchmarks={serviceInfo["benchmarks"]}
+                      />
+                    ) : (
+                      <></>
+                    )}
                   </TabPanel>
                 </TabPanels>
               </Tabs>
@@ -184,7 +191,14 @@ export default function ViewService() {
                     <Documentation serviceInfo={serviceInfo} />
                   </TabPanel>
                   <TabPanel>
-                    <ServiceBenchmark benchmarks={serviceInfo["benchmarks"]} />
+                    {serviceInfo["benchmarks"] ? (
+                      <ServiceBenchmark
+                        task={serviceInfo["model"]["task"]["type"]}
+                        benchmarks={serviceInfo["benchmarks"]}
+                      />
+                    ) : (
+                      <></>
+                    )}
                   </TabPanel>
                 </TabPanels>
               </Tabs>
