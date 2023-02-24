@@ -42,5 +42,5 @@ def log_data(
         raise ValueError(f"Invalid task type: {usage_type}")
 
     log_to_db(req_body, resp_body, api_key_name, service_id)
-    logging.debug(f"response_time: {response_time}")
+    logging.info(f"response_time: {response_time}")
     meter_usage(api_key_name, data_usage, usage_type, service_id)

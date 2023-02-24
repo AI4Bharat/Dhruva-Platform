@@ -66,17 +66,7 @@ async def setup_db_data():
         "username": "username1",
         "password": "password1",
         "metadata": {},
-        "metering": {
-            "api_keys": [
-                   {
-                    "api_key_hash": "ae66a0b6-69de-4aaf-8fd1-aa07f8ec961b",
-                    "service_id": "ai4bharat/indictrans-fairseq-all-gpu--t4",
-                    "usage": 5
-                    }
-                ],
-            "total": 5
-            },
-        }
+    }
     result = await db.dhruva.insert_one(document)
     print(result.inserted_id)
     # await db.dhruva.create_index([('metering.api_keys.0.api_key_hash', "text")], name='metering_index', default_language='english')
@@ -92,3 +82,17 @@ async def setup_db_data():
     result = await db.api_key.insert_one(api_document)
     x = await db.api_key.find_one({'api_key': "ae66a0b6-69de-4aaf-8fd1-aa07f8ec961b"})
     print(x)
+
+    metering_document = {
+        "api_key_hash": "ae66a0b6-69de-4aaf-8fd1-aa07f8ec961b",
+        "services": [
+            {
+                "service_id": "ai4bharat/indictrans-fairseq-all-gpu--t4",
+                "usage": 5
+            }
+        ],
+        "total": 5
+    }
+    # result = await db.metering.insert_one(metering_document)
+    # x = await db.metering.find_one({'api_key_hash': "ae66a0b6-69de-4aaf-8fd1-aa07f8ec961b"})
+    # print(x)
