@@ -1,5 +1,7 @@
 from typing import Optional
 
+from argon2 import PasswordHasher
+from bson.objectid import ObjectId
 from fastapi import Depends
 
 from db.app_db import AppDatabase
@@ -7,13 +9,20 @@ from db.app_db import AppDatabase
 
 # logic will be changed when the api_key repository is created
 def validate_credentials(credentials: str, db: AppDatabase) -> bool:
-    token_collection = db["token"]
-    token = token_collection.find_one({"key": credentials})
+    objectId = credentials[-24:]
 
-    if not token:
+    api_key_collection = db["api_key"]
+    api_key = api_key_collection.find_one({"_id": ObjectId(objectId)})
+
+    if not api_key or not api_key["active"]:
         return False
 
-    if token["key"] != credentials:
+    hashed_key = api_key["key"]
+    ph = PasswordHasher()
+
+    try:
+        ph.verify(hashed_key, credentials)
+    except Exception:
         return False
 
     return True
