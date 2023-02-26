@@ -46,7 +46,7 @@ export default function ASRTry({ ...props }) {
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
 
-  const [inferenceMode, setInferenceMode] = useState("streaming");
+  const [inferenceMode, setInferenceMode] = useState("rest");
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -192,8 +192,8 @@ export default function ASRTry({ ...props }) {
                   setInferenceMode(e.target.value);
                 }}
               >
-                <option value={"streaming"}>Streaming</option>
                 <option value={"rest"}>REST</option>
+                {/* <option value={"streaming"}>Streaming</option> */}
               </Select>
             </Stack>
             <Stack direction={"row"}>
