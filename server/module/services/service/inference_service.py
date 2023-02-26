@@ -276,6 +276,29 @@ class InferenceService:
         input_obj.set_data_from_numpy(string_obj)
         return input_obj
     
+    def auto_select_service_id(self, task_type: str, config: dict) -> str:
+        serviceId = None
+        if task_type == ASR_TASK_TYPE:
+            if config["language"]["sourceLanguage"] == "en":
+                serviceId = "ai4bharat/conformer-en-gpu--t4"
+            elif config["language"]["sourceLanguage"] == "hi":
+                serviceId = "ai4bharat/conformer-hi-gpu--t4"
+            elif config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
+                serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
+            else:
+                serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+        elif task_type == TRANSLATION_TASK_TYPE:
+            serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
+        elif task_type == TTS_TASK_TYPE:
+            if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
+                serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+            elif config["language"]["sourceLanguage"] in {"en", "brx", "mni"}:
+                serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
+            else:
+                serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
+        
+        return serviceId
+    
     async def run_pipeline_inference(
         self, request_body: ULCAPipelineInferenceRequest
     ) -> ULCAPipelineInferenceResponse:
@@ -306,9 +329,13 @@ class InferenceService:
         
         previous_output_json = request_body.entryData.dict()
         for pipeline_task in request_body.taskSequence:
+            serviceId = pipeline_task.serviceId
+            if not serviceId:
+                serviceId = self.auto_select_service_id(pipeline_task.task.type, pipeline_task.config)
+            
             previous_output_json = await self.run_inference(
                 request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
-                serviceId=pipeline_task.serviceId
+                serviceId=serviceId
             )
             results.append(deepcopy(previous_output_json))
             
@@ -319,9 +346,10 @@ class InferenceService:
                 del previous_output_json["output"]
 
                 if pipeline_task.task.type == TRANSLATION_TASK_TYPE:
-                    # The output (target) of translation should be input to next
+                    # The output (target) of translation should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
-                        previous_output_json["input"][i]["target"], previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["source"], previous_output_json["input"][i]["target"]
+                        previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["target"]
+                        del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
                 pass
