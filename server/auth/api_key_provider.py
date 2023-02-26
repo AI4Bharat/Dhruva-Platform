@@ -6,12 +6,7 @@ from db.app_db import AppDatabase
 
 
 # logic will be changed when the api_key repository is created
-def validate_credentials(
-    credentials: Optional[str], db: AppDatabase = Depends(AppDatabase)
-) -> bool:
-    if not credentials:
-        return False
-
+def validate_credentials(credentials: str, db: AppDatabase) -> bool:
     token_collection = db["token"]
     token = token_collection.find_one({"key": credentials})
 

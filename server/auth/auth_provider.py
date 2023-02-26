@@ -2,25 +2,27 @@ from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPBearer
+from fastapi.security.http import HTTPAuthorizationCredentials
 
 from auth import api_key_provider, auth_token_provider
 from auth.token_type import TokenType
+from db.app_db import AppDatabase
 
 
 def AuthProvider(
-    credentials: Optional[str] = Depends(HTTPBearer(auto_error=False)),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
     # This header specifies the origin of the request which
     # can either be API_KEY or AUTH_TOKEN
-    x_auth_source: TokenType = Header(),
+    x_auth_source: Optional[TokenType] = Header(default=TokenType.API_KEY),
+    db: AppDatabase = Depends(AppDatabase),
 ):
-    provider = None
-    if x_auth_source == TokenType.API_KEY:
-        provider = api_key_provider
+    match x_auth_source:
+        case TokenType.AUTH_TOKEN:
+            provider = auth_token_provider
+        case TokenType.API_KEY:
+            provider = api_key_provider
 
-    elif x_auth_source == TokenType.AUTH_TOKEN:
-        provider = auth_token_provider
-
-    if not provider.validate_credentials(credentials):
+    if not provider.validate_credentials(credentials.credentials, db):  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"message": "Not authenticated"},

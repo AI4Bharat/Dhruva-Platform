@@ -2,6 +2,7 @@ from typing import Generic, List, Optional, Type, TypeVar, Union
 
 from exception.null_value_error import NullValueError
 from pydantic import BaseModel
+from pymongo.collection import Collection
 
 from .app_db import AppDatabase
 from .log_db import LogDatabase
@@ -15,7 +16,7 @@ class BaseRepository(Generic[T]):
     ) -> None:
         super().__init__()
         self.db = db
-        self.collection = db[collection_name]
+        self.collection: Collection = db[collection_name]
         self.__document_class = self.__orig_bases__[0].__args__[0]  # type: ignore
         self.__validate()
 
