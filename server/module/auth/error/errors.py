@@ -8,3 +8,11 @@ class Errors(Enum):
         "kind": "DHRUVA-203",
         "message": "Failed to store auth token data in db",
     }
+    DHRUVA204 = {
+        "kind": "DHRUVA-204",
+        "message": "Failed to create api key",
+    }
+    DHRUVA205 = {
+        "kind": "DHRUVA-205",
+        "message": "Failed to get all api keys",
+    }

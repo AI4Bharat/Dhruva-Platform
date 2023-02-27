@@ -1,21 +1,24 @@
 import os
+import secrets
 import time
 import traceback
 from datetime import datetime
+from typing import List
 
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
-
 from exception.base_error import BaseError
+from fastapi import Depends, HTTPException, status
 from module.auth.model import Session
-from schema.auth.request import RefreshRequest, SignInRequest
+from pydantic import EmailStr
+from schema.auth.request import CreateApiKeyRequest, RefreshRequest, SignInRequest
 from schema.auth.response import SignInResponse
 
 from ..error import Errors
-from ..repository import SessionRepository, UserRepository
+from ..model.api_key import ApiKey
+from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
 load_dotenv()
 
@@ -25,9 +28,11 @@ class AuthService:
         self,
         user_repository: UserRepository = Depends(UserRepository),
         session_repository: SessionRepository = Depends(SessionRepository),
+        api_key_repository: ApiKeyRepository = Depends(ApiKeyRepository),
     ) -> None:
         self.user_repository = user_repository
         self.session_repository = session_repository
+        self.api_key_repository = api_key_repository
 
     def validate_user(self, request: SignInRequest):
         try:
@@ -126,3 +131,30 @@ class AuthService:
         )
 
         return token
+
+    def create_api_key(self, request: CreateApiKeyRequest, email: EmailStr):
+        key = secrets.token_urlsafe(24)
+        api_key = ApiKey(
+            _id=None,
+            name=request.name,
+            key=key,
+            masked_key=((len(key) - 4) * "*") + key[-4:],
+            active=True,
+            user=email,
+            type=request.type.value,
+        )
+
+        try:
+            self.api_key_repository.insert_one(api_key)
+        except Exception:
+            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+
+        return key
+
+    def get_all_api_keys(self, email: EmailStr):
+        try:
+            keys: List[ApiKey] = self.api_key_repository.find({"user": email})  # type: ignore
+        except Exception:
+            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+
+        return keys

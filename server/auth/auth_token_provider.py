@@ -1,12 +1,11 @@
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import jwt
 from bson.objectid import ObjectId
+from db.app_db import AppDatabase
 from dotenv import load_dotenv
 from fastapi import Depends
-
-from db.app_db import AppDatabase
 
 load_dotenv()
 
@@ -30,3 +29,25 @@ def validate_credentials(credentials: str, db: AppDatabase) -> bool:
         return False
 
     return True
+
+
+def fetch_session(credentials: str, db: AppDatabase):
+    # This cannot fail, since this was already checked during auth verification
+    claims = jwt.decode(
+        credentials, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"]
+    )
+
+    session_collection = db["session"]
+    user_collection = db["user"]
+
+    # Session has to exist since it was already checked during auth verification
+    session: Dict[str, Any] = session_collection.find_one(  # type: ignore
+        {"_id": ObjectId(claims["id"])}
+    )
+
+    email = session["email"]
+
+    user: Dict[str, Any] = user_collection.find_one({"email": email})  # type: ignore
+    del user["password"]
+
+    return user
