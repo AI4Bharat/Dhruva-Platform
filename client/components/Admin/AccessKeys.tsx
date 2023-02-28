@@ -29,6 +29,7 @@ const AccessKeys = () => {
     createdOn: string;
     usedBy: string;
     validity: string;
+    total : number;
     key: string;
   }
 
@@ -45,6 +46,7 @@ const AccessKeys = () => {
       usedBy: "Gokul",
       createdOn: "5 January 2023",
       validity: "9 January 2026",
+      total : 34,
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
     {
@@ -53,6 +55,7 @@ const AccessKeys = () => {
       usedBy: "Yash",
       createdOn: "7 January 2023",
       validity: "9 January 2026",
+      total : 34,
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
     {
@@ -60,6 +63,7 @@ const AccessKeys = () => {
       alias: "Rugved-Key",
       usedBy: "Rugved",
       createdOn: "7 January 2023",
+      total : 45,
       validity: "9 January 2026",
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
@@ -69,6 +73,7 @@ const AccessKeys = () => {
       usedBy: "Umashankar",
       createdOn: "9 January 2023",
       validity: "9 January 2026",
+      total : 54,
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
     {
@@ -77,6 +82,7 @@ const AccessKeys = () => {
       usedBy: "Ashwin",
       createdOn: "10 January 2023",
       validity: "9 January 2026",
+      total : 44,
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
     {
@@ -85,6 +91,7 @@ const AccessKeys = () => {
       usedBy: "Nikhil",
       createdOn: "10 January 2023",
       validity: "11 January 2026",
+      total : 67,
       key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
     },
   ];
@@ -159,6 +166,7 @@ const AccessKeys = () => {
                       <Th>Key Alias</Th>
                       <Th>Used by</Th>
                       <Th>Created On</Th>
+                      <Th>Total Usage</Th>
                       <Th>Actions</Th>
                     </Tr>
                   </Thead>
@@ -169,6 +177,7 @@ const AccessKeys = () => {
                           <Td>{keysData.alias}</Td>
                           <Td>{keysData.usedBy}</Td>
                           <Td>{keysData.createdOn}</Td>
+                          <Td>{keysData.total}</Td>
                           <Td>
                             <Button
                               onClick={() => {
