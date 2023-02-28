@@ -1,13 +1,18 @@
+from typing import Generic, List, Optional, Type, TypeVar, Union
+
+from exception.null_value_error import NullValueError
+from pydantic import BaseModel
+
 from .app_db import AppDatabase
 from .log_db import LogDatabase
-from typing import List, Optional, Union, Generic, TypeVar, Type
-from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(self, db: Union[AppDatabase, LogDatabase], collection_name: str) -> None:
+    def __init__(
+        self, db: Union[AppDatabase, LogDatabase], collection_name: str
+    ) -> None:
         super().__init__()
         self.db = db
         self.collection = db[collection_name]
@@ -34,43 +39,40 @@ class BaseRepository(Generic[T]):
         results = self.collection.find_one({"_id": id})
         if results:
             return self.__map_to_model(results)
-        raise Exception
+
+    def get_by_id(self, id: str) -> T:
+        results = self.collection.find_one({"_id": id})
+        if results:
+            return self.__map_to_model(results)
+        raise NullValueError
 
     def find_one(self, query: dict) -> Optional[T]:
         results = self.collection.find_one(query)
         if results:
             return self.__map_to_model(results)
-        raise Exception
+
+    def get_one(self, query: dict) -> T:
+        results = self.collection.find_one(query)
+        if results:
+            return self.__map_to_model(results)
+        raise NullValueError
 
     def find(self, query: dict) -> Optional[List[T]]:
         results = self.collection.find(query)
-        if results:
-            return self.__map_to_model_list(results)
-        raise Exception
+        return self.__map_to_model_list(results)
 
-    def find_all(self) -> Optional[List[T]]:
+    def find_all(self) -> List[T]:
         results = self.collection.find()
-        if results:
-            return self.__map_to_model_list(results)
-        raise Exception
+        return self.__map_to_model_list(results)
 
     def delete_one(self, query: dict):
-        try:
-            self.collection.delete_one(query)
-        except:
-            raise Exception
+        self.collection.delete_one(query)
 
     def delete_many(self, query: dict) -> int:
-        try:
-            count = self.collection.delete_many(query)
-            return count.deleted_count
-        except:
-            raise Exception
+        count = self.collection.delete_many(query)
+        return count.deleted_count
 
     def insert_one(self, data: T) -> object:
-        try:
-            document = self.__map_to_document(data)
-            result = self.collection.insert_one(document)
-            return result.inserted_id
-        except Exception as e:
-            raise e
+        document = self.__map_to_document(data)
+        result = self.collection.insert_one(document)
+        return result.inserted_id

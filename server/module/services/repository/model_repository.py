@@ -1,7 +1,9 @@
 from typing import Optional
-from fastapi import Depends
-from db.BaseRepository import BaseRepository
+
 from db.app_db import AppDatabase
+from db.BaseRepository import BaseRepository
+from fastapi import Depends
+
 from ..model import Model
 
 
@@ -13,3 +15,6 @@ class ModelRepository(BaseRepository[Model]):
 
     def find_by_id(self, id: str) -> Optional[Model]:
         return super().find_one({"modelId": id})
+
+    def get_by_id(self, id: str) -> Model:
+        return super().get_one({"modelId": id})
