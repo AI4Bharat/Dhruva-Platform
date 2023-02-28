@@ -4,5 +4,5 @@
 server/venv
 .DS_Store
 __pycache__
-logdb
 appdb
+logdb

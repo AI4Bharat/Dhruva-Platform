@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import APIRouter, Depends
-from auth import ApiKeyProvider
+from auth import AuthProvider
 from exception.response_models import NotAuthenticatedResponse
 from ..service.inference_service import InferenceService
 from schema.services.response import (
@@ -25,7 +25,7 @@ from schema.services.request import (
 router = APIRouter(
     prefix="/inference",
     dependencies=[
-        Depends(ApiKeyProvider),
+        Depends(AuthProvider),
     ],
     responses={"401": {"model": NotAuthenticatedResponse}},
 )
