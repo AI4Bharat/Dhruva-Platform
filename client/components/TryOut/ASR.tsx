@@ -193,7 +193,7 @@ export default function ASRTry({ ...props }) {
                 }}
               >
                 <option value={"rest"}>REST</option>
-                {/* <option value={"streaming"}>Streaming</option> */}
+                <option value={"streaming"}>Streaming</option>
               </Select>
             </Stack>
             <Stack direction={"row"}>
