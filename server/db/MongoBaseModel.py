@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import AbstractSet, Any, Dict, Mapping, Optional, Union
 
 import pydantic
 from bson import ObjectId
@@ -29,6 +29,31 @@ class MongoBaseModel(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
+    def dict(
+        self,
+        *,
+        include: Optional[
+            Union[AbstractSet[Union[int, str]], Mapping[Union[int, str], Any]]
+        ] = None,
+        exclude: Optional[
+            Union[AbstractSet[Union[int, str]], Mapping[Union[int, str], Any]]
+        ] = None,
+        by_alias: bool = True,
+        skip_defaults: Optional[bool] = None,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = True,
+    ) -> Dict[str, Any]:
+        return super().dict(
+            include=include,
+            exclude=exclude,
+            by_alias=by_alias,
+            skip_defaults=skip_defaults,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+        )
 
 
 pydantic.json.ENCODERS_BY_TYPE[ObjectId] = str  # type: ignore
