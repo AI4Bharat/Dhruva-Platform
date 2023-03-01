@@ -11,7 +11,11 @@ load_dotenv()
 
 
 def validate_credentials(credentials: str, db: AppDatabase) -> bool:
-    headers = jwt.get_unverified_header(credentials)
+    try:
+        headers = jwt.get_unverified_header(credentials)
+    except Exception:
+        return False
+
     if headers["tok"] != "access":
         return False
 
