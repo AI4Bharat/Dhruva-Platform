@@ -1,6 +1,8 @@
 import socketio
 import base64
 import io
+import os
+import sys
 from urllib.parse import parse_qs
 from dataclasses import dataclass
 import wave
@@ -22,16 +24,19 @@ class StreamingServerTaskSequence:
     This is a SocketIO server for simulating taskSequence inference.
     TODO: Generalize to different sequences. Currently it supports only ASR->Translation->TTS
     '''
-    def __init__(self, response_frequency_in_ms: int = 2000, bytes_per_sample: int = 2) -> None:
+    def __init__(self) -> None:
         self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
         self.app = socketio.ASGIApp(
             self.sio, socketio_path="",
             # other_asgi_app=app
         )
+        self.inference_url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+        if "BACKEND_PORT" in os.environ:
+            self.inference_url = f"http://localhost:{os.environ['BACKEND_PORT']}/services/inference/pipeline"
 
-        # Save config
-        self.input_audio__response_frequency_in_ms = response_frequency_in_ms
-        self.input_audio__bytes_per_sample = bytes_per_sample
+        # Constants. TODO: Should we allow changing this?
+        self.input_audio__response_frequency_in_ms = 2000
+        self.input_audio__bytes_per_sample = 2
         
         # Storage for state specific to each client (key will be socket connection-ID string, and value would be `UserStateForASR`)
         self.client_states = {}
@@ -42,9 +47,12 @@ class StreamingServerTaskSequence:
     def delete_user_states(self, sid: str) -> None:
         self.client_states.pop(sid, None)
     
-    def initialize_buffer(self, sid: str) -> None:
+    def initialize_buffer(self, sid: str, clear_history: bool = False) -> None:
         self.client_states[sid].input_audio__buffer = bytes()
         self.client_states[sid].input_audio__last_inference_position_in_bytes = 0
+
+        if clear_history:
+            pass
     
     def run_ulca_inference_from_stream(self, sid: str, stream: io.IOBase) -> str:
         # Convert the byte-stream into base64 string
@@ -64,7 +72,7 @@ class StreamingServerTaskSequence:
         
         # Run inference via Dhruva REST API
         response = requests.post(
-            "https://api.dhruva.ai4bharat.org/services/inference/pipeline",
+            self.inference_url,
             json=request_json,
             headers=self.client_states[sid].http_headers,
             # timeout=1
@@ -134,6 +142,12 @@ class StreamingServerTaskSequence:
 
             # print("Ready to start stream for:", sid)
             await self.sio.emit("ready", room=sid)
+        
+        @self.sio.on("stop")
+        async def stop(sid: str, disconnect_stream: bool):
+            self.initialize_buffer(sid, clear_history=True)
+            if disconnect_stream:
+                await self.sio.emit("terminate", room=sid)
         
         @self.sio.on("data")
         async def data(sid: str, input_data: dict, streaming_config: int, clear_server_state: bool, disconnect_stream: bool):
