@@ -7,9 +7,10 @@ from prometheus_fastapi_instrumentator.metrics import Info
 from prometheus_client import Counter
 from exception.base_error import BaseError
 from log.logger import LogConfig
-from module import *
 from fastapi.logger import logger
 from logging.config import dictConfig
+from module import *
+from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
 
@@ -17,6 +18,16 @@ app = FastAPI(
     title="Dhruva API",
     description="Backend API for communicating with the Dhruva platform",
 )
+
+streamer = StreamingServerTaskSequence()
+app.mount("/socket.io", streamer.app)
+
+# TODO: Depreciate this soon in-favor of above
+from asr_streamer import StreamingServerASR
+streamer_asr = StreamingServerASR()
+
+# Mount it at an alternative path. 
+app.mount("/socket_asr.io", streamer_asr.app)
 
 app.include_router(ServicesApiRouter)
 app.add_middleware(
@@ -63,7 +74,6 @@ async def base_error_handler(request: Request, exc: BaseError):
 @app.get("/")
 def read_root():
     return "Welcome to Dhruva API!"
-
 
 if __name__ == "__main__":
     import uvicorn
