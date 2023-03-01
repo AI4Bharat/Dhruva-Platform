@@ -239,25 +239,28 @@ class InferenceService:
         results = []
         for input in request_body.input:
             input_string = input.source.replace('\n', ' ').strip()
-            inputs = [
-                self.__get_string_tensor(input_string, "INPUT_TEXT"),
-                self.__get_string_tensor(
-                    request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"
-                ),
-                self.__get_string_tensor(
-                    request_body.config.language.targetLanguage, "OUTPUT_LANGUAGE_ID"
-                ),
-            ]
-            output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
-            response = await self.inference_gateway.send_triton_request(
-                url=service.endpoint,
-                model_name="nmt",
-                input_list=inputs,
-                output_list=[output0],
-                headers=headers,
-            )
-            encoded_result = response.as_numpy("OUTPUT_TEXT")
-            result = encoded_result.tolist()[0].decode("utf-8")
+            if input_string:
+                inputs = [
+                    self.__get_string_tensor(input_string, "INPUT_TEXT"),
+                    self.__get_string_tensor(
+                        request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"
+                    ),
+                    self.__get_string_tensor(
+                        request_body.config.language.targetLanguage, "OUTPUT_LANGUAGE_ID"
+                    ),
+                ]
+                output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="nmt",
+                    input_list=inputs,
+                    output_list=[output0],
+                    headers=headers,
+                )
+                encoded_result = response.as_numpy("OUTPUT_TEXT")
+                result = encoded_result.tolist()[0].decode("utf-8")
+            else:
+                result = input_string
             results.append({"source": input_string, "target": result})
         res = {"config": request_body.config, "output": results}
         return res
@@ -372,8 +375,8 @@ class InferenceService:
 
         # Check if the pipeline construction is valid
         is_pipeline_valid = True
-        for i in range(len(request_body.taskSequence)-1):
-            current_task_type, next_task_type = request_body.taskSequence[i].task.type, request_body.taskSequence[i+1].task.type
+        for i in range(len(request_body.pipelineTasks)-1):
+            current_task_type, next_task_type = request_body.pipelineTasks[i].task.type, request_body.pipelineTasks[i+1].task.type
             if current_task_type == ASR_TASK_TYPE:
                 if next_task_type not in {TRANSLATION_TASK_TYPE}:
                     is_pipeline_valid = False
@@ -389,11 +392,11 @@ class InferenceService:
         if not is_pipeline_valid:
             # TODO: Return proper error messages once standardized
             return {
-                "results": results
+                "pipelineResponse": results
             }
         
-        previous_output_json = request_body.entryData.dict()
-        for pipeline_task in request_body.taskSequence:
+        previous_output_json = request_body.inputData.dict()
+        for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.serviceId
             if not serviceId:
                 serviceId = self.auto_select_service_id(pipeline_task.task.type, pipeline_task.config)
@@ -419,5 +422,5 @@ class InferenceService:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
                 pass
         return {
-            "results": results
+            "pipelineResponse": results
         }

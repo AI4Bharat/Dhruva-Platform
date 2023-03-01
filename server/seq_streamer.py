@@ -8,6 +8,10 @@ from dataclasses import dataclass
 import wave
 import requests
 
+ASR_TASK_TYPE = "asr"
+TRANSLATION_TASK_TYPE = "translation"
+TTS_TASK_TYPE = "tts"
+
 @dataclass
 class UserState:
     input_audio__buffer: bytes
@@ -16,6 +20,7 @@ class UserState:
     input_audio__sampling_rate: int
 
     task_sequence: list
+    input_task_type: str
     sequence_depth_to_run: int
     http_headers: dict
 
@@ -66,8 +71,8 @@ class StreamingServerTaskSequence:
             }]
         }
         request_json = {
-            "entryData": input_data,
-            "taskSequence": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run]
+            "inputData": input_data,
+            "pipelineTasks": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run]
         }
         
         # Run inference via Dhruva REST API
@@ -120,6 +125,7 @@ class StreamingServerTaskSequence:
                 input_audio__sampling_rate=-1,
 
                 task_sequence=[],
+                input_task_type=None,
                 sequence_depth_to_run=1,
                 http_headers=auth,
             )
@@ -129,16 +135,19 @@ class StreamingServerTaskSequence:
         async def start(sid: str, task_sequence: list):
             self.initialize_buffer(sid)
 
-            # Compute the inference_frequency (once in how many bytes should we run inference)
-            sampling_rate = int(task_sequence[0]["config"]["samplingRate"])
-            run_inference_once_in_bytes = int(sampling_rate * (self.input_audio__response_frequency_in_ms / 1000) * self.input_audio__bytes_per_sample)
-
-            self.client_states[sid].input_audio__run_inference_once_in_bytes = run_inference_once_in_bytes
-            self.client_states[sid].task_sequence = task_sequence
-            self.client_states[sid].input_audio__sampling_rate = task_sequence[0]["config"]["samplingRate"]
-
             if False: # TODO: Validate the `task_sequence`
                 await self.sio.emit("abort", data=("Invalid `task_sequence`!"), room=sid)
+
+            self.client_states[sid].task_sequence = task_sequence
+            self.client_states[sid].input_task_type = task_sequence[0]["task"]["type"]
+
+            if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+                # Compute the inference_frequency (once in how many bytes should we run inference)
+                sampling_rate = int(task_sequence[0]["config"]["samplingRate"])
+                run_inference_once_in_bytes = int(sampling_rate * (self.input_audio__response_frequency_in_ms / 1000) * self.input_audio__bytes_per_sample)
+
+                self.client_states[sid].input_audio__run_inference_once_in_bytes = run_inference_once_in_bytes
+                self.client_states[sid].input_audio__sampling_rate = task_sequence[0]["config"]["samplingRate"]
 
             # print("Ready to start stream for:", sid)
             await self.sio.emit("ready", room=sid)
@@ -153,9 +162,14 @@ class StreamingServerTaskSequence:
         async def data(sid: str, input_data: dict, streaming_config: int, clear_server_state: bool, disconnect_stream: bool):
             if input_data:
                 # Update the user-state with the input_data
-                if input_data["audio"] and input_data["audio"][0]["audioContent"]:
-                    # For example, in the case of speech client, append audio payload to client buffer
-                    self.client_states[sid].input_audio__buffer += input_data["audio"][0]["audioContent"]
+                if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+                    if input_data["audio"] and input_data["audio"][0]["audioContent"]:
+                        # For example, in the case of speech client, append audio payload to client buffer
+                        audioContent = input_data["audio"][0]["audioContent"]
+                        if type(audioContent) is list:
+                            # Assume uint16 array, and pack it into bytes
+                            audioContent = b''.join([i.to_bytes(self.input_audio__bytes_per_sample, sys.byteorder) for i in audioContent])
+                        self.client_states[sid].input_audio__buffer += audioContent
             
             if streaming_config:
                 # Update the user-state with the latest streaming-config
@@ -172,9 +186,10 @@ class StreamingServerTaskSequence:
                     self.initialize_buffer(sid)
             else:
                 # For example, in the case of speech client, run inference once we have accumulated enough amount of audio since previous inference
-                if len(self.client_states[sid].input_audio__buffer) - self.client_states[sid].input_audio__last_inference_position_in_bytes >= self.client_states[sid].input_audio__run_inference_once_in_bytes:
-                    await self.run_inference_and_send(sid)
-                    self.client_states[sid].input_audio__last_inference_position_in_bytes = len(self.client_states[sid].input_audio__buffer)
+                if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+                    if len(self.client_states[sid].input_audio__buffer) - self.client_states[sid].input_audio__last_inference_position_in_bytes >= self.client_states[sid].input_audio__run_inference_once_in_bytes:
+                        await self.run_inference_and_send(sid)
+                        self.client_states[sid].input_audio__last_inference_position_in_bytes = len(self.client_states[sid].input_audio__buffer)
                 
             
             if disconnect_stream:
