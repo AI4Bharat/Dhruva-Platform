@@ -59,6 +59,66 @@ ISO_639_v2_to_v3 = {
     "ur": "urd",
 }
 
+class GoogleTranslator:
+  def __init__(self):
+    from translators import google, _google
+    self._translate = google
+
+    google("Testing...")
+    self.supported_languages = set(_google.language_map['en'])
+    self.custom_lang_map = {
+        "mni": "mni-Mtei",
+        "raj": "hi",
+    }
+
+  def translate(self, text, from_lang, to_lang):
+    if from_lang in self.custom_lang_map:
+      from_lang = self.custom_lang_map[from_lang]
+    elif from_lang not in self.supported_languages:
+      return text
+    
+    if to_lang in self.custom_lang_map:
+      to_lang = self.custom_lang_map[to_lang]
+    elif to_lang not in self.supported_languages:
+      return text
+    
+    return self._translate(text, from_language=from_lang, to_language=to_lang)
+  
+  def __call__(self, **kwargs):
+    return self.translate(**kwargs)
+
+import re
+num_str_regex = re.compile("\d{1,3}(?:(?:,\d{2,3}){1,3}|(?:\d{1,7}))?(?:\.\d+)?")
+def get_all_numbers_from_string(text):
+    return num_str_regex.findall(text)
+
+from indic_numtowords import num2words, supported_langs
+
+def convert_numbers_to_words(text, lang):
+    num_strs = get_all_numbers_from_string(text)
+    if not num_strs:
+      return text
+    
+    # TODO: If it is a large integer without commas (say >5 digits), spell it out numeral by numeral
+    # NOTE: partially handled by phones
+    numbers = [int(num_str.replace(',', '')) for num_str in num_strs]
+    
+    if lang in supported_langs:
+      num_words = [num2words(num, lang=lang) for num in numbers]
+    else: # Fallback, converting to Indian-English, followed by NMT
+      try:
+        num_words = [num2words(num, lang="en") for num in numbers]
+        translator = GoogleTranslator()
+        translated_num_words = [translator(text=num_word, from_lang="en", to_lang=lang) for num_word in num_words]
+        # TODO: Cache the results?
+        num_words = translated_num_words
+      except:
+        traceback.print_exc()
+    
+    for num_str, num_word in zip(num_strs, num_words):
+      text = text.replace(num_str, ' '+num_word+' ', 1)
+    return text.replace("  ", ' ')
+
 class InferenceService:
     def __init__(
         self,
@@ -215,24 +275,29 @@ class InferenceService:
             input_string = input.source.replace('।', '.')
             ip_language = request_body.config.language.sourceLanguage
             ip_gender = request_body.config.gender
-            inputs = [
-                self.__get_string_tensor(input_string, "INPUT_TEXT"),
-                self.__get_string_tensor(ip_gender, "INPUT_SPEAKER_ID"),
-                self.__get_string_tensor(ip_language, "INPUT_LANGUAGE_ID"),
-            ]
-            output0 = http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
-            response = await self.inference_gateway.send_triton_request(
-                url=service.endpoint,
-                model_name="tts",
-                input_list=inputs,
-                output_list=[output0],
-                headers=headers,
-            )
-            wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-            byte_io = io.BytesIO()
-            wavfile.write(byte_io, 22050, wav)
-            encoded_bytes = base64.b64encode(byte_io.read())
-            encoded_string = encoded_bytes.decode()
+
+            input_string = convert_numbers_to_words(input_string, ip_language).strip()
+            if input_string:
+                inputs = [
+                    self.__get_string_tensor(input_string, "INPUT_TEXT"),
+                    self.__get_string_tensor(ip_gender, "INPUT_SPEAKER_ID"),
+                    self.__get_string_tensor(ip_language, "INPUT_LANGUAGE_ID"),
+                ]
+                output0 = http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="tts",
+                    input_list=inputs,
+                    output_list=[output0],
+                    headers=headers,
+                )
+                wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
+                byte_io = io.BytesIO()
+                wavfile.write(byte_io, 22050, wav)
+                encoded_bytes = base64.b64encode(byte_io.read())
+                encoded_string = encoded_bytes.decode()
+            else:
+                encoded_string = ''
             results.append({"audioContent": encoded_string})
         res = {
             "config": {
