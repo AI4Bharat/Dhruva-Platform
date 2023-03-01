@@ -27,7 +27,7 @@ def validate_credentials(credentials: str, db: AppDatabase) -> bool:
         return False
 
     session_collection = db["session"]
-    session = session_collection.find_one({"_id": ObjectId(claims["id"])})
+    session = session_collection.find_one({"_id": ObjectId(claims["sess_id"])})
 
     if not session:
         return False
@@ -46,12 +46,12 @@ def fetch_session(credentials: str, db: AppDatabase):
 
     # Session has to exist since it was already checked during auth verification
     session: Dict[str, Any] = session_collection.find_one(  # type: ignore
-        {"_id": ObjectId(claims["id"])}
+        {"_id": ObjectId(claims["sess_id"])}
     )
 
-    email = session["email"]
+    user_id = session["user_id"]
 
-    user: Dict[str, Any] = user_collection.find_one({"email": email})  # type: ignore
+    user: Dict[str, Any] = user_collection.find_one({"_id": ObjectId(user_id)})  # type: ignore
     del user["password"]
 
     return user

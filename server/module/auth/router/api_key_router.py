@@ -22,7 +22,7 @@ async def _get_all_api_keys_for_user(
     auth_service: AuthService = Depends(AuthService),
     session: Session = Depends(InjectSession),
 ):
-    api_keys = auth_service.get_all_api_keys(session.email)
+    api_keys = auth_service.get_all_api_keys(session.id)
     return GetAllApiKeysResponse(api_keys=api_keys)  # type:ignore
 
 
@@ -32,5 +32,5 @@ async def _create_api_key(
     auth_service: AuthService = Depends(AuthService),
     session: Session = Depends(InjectSession),
 ):
-    api_key = auth_service.create_api_key(request, session.email)
+    api_key = auth_service.create_api_key(request, session.id)
     return CreateApiKeyResponse(api_key=api_key)

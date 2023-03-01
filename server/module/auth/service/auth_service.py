@@ -8,11 +8,13 @@ from typing import List
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from bson import ObjectId
 from dotenv import load_dotenv
-from exception.base_error import BaseError
 from fastapi import Depends, HTTPException, status
-from module.auth.model import Session
 from pydantic import EmailStr
+
+from exception.base_error import BaseError
+from module.auth.model import Session
 from schema.auth.request import CreateApiKeyRequest, RefreshRequest, SignInRequest
 from schema.auth.response import SignInResponse
 
@@ -60,8 +62,7 @@ class AuthService:
             raise BaseError(Errors.DHRUVA202.value, traceback.format_exc())
 
         session = Session(
-            _id=None,
-            email=user.email,
+            user_id=ObjectId(str(user.id)),
             type="refresh",
             timestamp=datetime.now(),
         )
@@ -73,11 +74,11 @@ class AuthService:
 
         token = jwt.encode(
             {
-                "sub": user.email,
+                "sub": str(user.id),
                 "name": user.name,
                 "exp": (time.time() + 31536000),
                 "iat": time.time(),
-                "id": str(id),
+                "sess_id": str(id),
             },
             os.environ["JWT_SECRET_KEY"],
             algorithm="HS256",
@@ -88,7 +89,14 @@ class AuthService:
         return SignInResponse(email=user.email, token=token, role=user.role)
 
     def get_refresh_token(self, request: RefreshRequest):
-        headers = jwt.get_unverified_header(request.token)
+        try:
+            headers = jwt.get_unverified_header(request.token)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid refresh token"},
+            )
+
         if headers.get("tok") != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -106,8 +114,7 @@ class AuthService:
             )
 
         session = Session(
-            _id=None,
-            email=claims["sub"],
+            user_id=ObjectId(claims["sub"]),
             type="access",
             timestamp=datetime.now(),
         )
@@ -123,7 +130,7 @@ class AuthService:
                 "name": claims["name"],
                 "exp": (time.time() + 2592000),
                 "iat": time.time(),
-                "id": str(id),
+                "sess_id": str(id),
             },
             os.environ["JWT_SECRET_KEY"],
             algorithm="HS256",
@@ -132,15 +139,24 @@ class AuthService:
 
         return token
 
-    def create_api_key(self, request: CreateApiKeyRequest, email: EmailStr):
-        key = secrets.token_urlsafe(24)
+    def create_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
+        existing_api_key = self.api_key_repository.find_one(
+            {"name": request.name, "user_id": id}
+        )
+
+        if existing_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="API Key name already exists",
+            )
+
+        key = secrets.token_urlsafe(48)
         api_key = ApiKey(
-            _id=None,
             name=request.name,
             key=key,
             masked_key=((len(key) - 4) * "*") + key[-4:],
             active=True,
-            user=email,
+            user_id=id,
             type=request.type.value,
         )
 
@@ -151,9 +167,9 @@ class AuthService:
 
         return key
 
-    def get_all_api_keys(self, email: EmailStr):
+    def get_all_api_keys(self, id: ObjectId):
         try:
-            keys: List[ApiKey] = self.api_key_repository.find({"user": email})  # type: ignore
+            keys = self.api_key_repository.find({"user_id": id})
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 

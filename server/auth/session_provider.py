@@ -1,18 +1,17 @@
-from typing import Optional
-
-from auth import TokenType, api_key_provider, auth_token_provider
-from db.app_db import AppDatabase
+from bson import ObjectId
 from fastapi import Depends, Header
 from fastapi.security import HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr, Field
+
+from auth import TokenType, api_key_provider, auth_token_provider
+from db.app_db import AppDatabase
+from db.MongoBaseModel import MongoBaseModel
 
 
 def InjectSession(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(
-        HTTPBearer(auto_error=False)
-    ),
-    x_auth_source: Optional[TokenType] = Header(default=TokenType.API_KEY),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
+    x_auth_source: TokenType = Header(default=TokenType.API_KEY),
     db: AppDatabase = Depends(AppDatabase),
 ):
     """
@@ -31,11 +30,11 @@ def InjectSession(
             provider = api_key_provider
 
     session = provider.fetch_session(credentials.credentials, db)  # type: ignore
-
     return Session(**session)
 
 
-class Session(BaseModel):
+class Session(MongoBaseModel):
+    id: ObjectId = Field(alias="_id")
     name: str
     email: EmailStr
     role: str

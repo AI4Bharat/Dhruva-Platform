@@ -58,7 +58,7 @@ class BaseRepository(Generic[T]):
             return self.__map_to_model(results)
         raise NullValueError
 
-    def find(self, query: dict) -> Optional[List[T]]:
+    def find(self, query: dict) -> List[T]:
         results = self.collection.find(query)
         return self.__map_to_model_list(results)
 
