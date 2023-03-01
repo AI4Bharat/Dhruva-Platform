@@ -3,9 +3,10 @@ from typing import Any, Dict, Optional
 
 import jwt
 from bson.objectid import ObjectId
-from db.app_db import AppDatabase
 from dotenv import load_dotenv
 from fastapi import Depends
+
+from db.app_db import AppDatabase
 
 load_dotenv()
 
@@ -51,7 +52,7 @@ def fetch_session(credentials: str, db: AppDatabase):
 
     user_id = session["user_id"]
 
-    user: Dict[str, Any] = user_collection.find_one({"_id": ObjectId(user_id)})  # type: ignore
+    user: Dict[str, Any] = user_collection.find_one({"_id": user_id})  # type: ignore
     del user["password"]
 
     return user

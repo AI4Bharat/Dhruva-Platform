@@ -1,7 +1,8 @@
+from fastapi import APIRouter, Depends
+
 from auth.auth_provider import AuthProvider
 from auth.session_provider import InjectSession, Session
 from exception.response_models import NotAuthenticatedResponse
-from fastapi import APIRouter, Depends
 from schema.auth.request import CreateApiKeyRequest, RefreshRequest, SignInRequest
 from schema.auth.response import CreateApiKeyResponse, SignInResponse
 from schema.auth.response.get_all_api_keys_response import GetAllApiKeysResponse
@@ -26,7 +27,7 @@ async def _get_all_api_keys_for_user(
     return GetAllApiKeysResponse(api_keys=api_keys)  # type:ignore
 
 
-@router.post("", response_model=CreateApiKeyResponse)
+@router.post("", response_model=CreateApiKeyResponse, status_code=201)
 async def _create_api_key(
     request: CreateApiKeyRequest,
     auth_service: AuthService = Depends(AuthService),

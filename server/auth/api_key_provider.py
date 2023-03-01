@@ -18,9 +18,9 @@ def fetch_session(credentials: str, db: AppDatabase):
     # Api key has to exist since it was already checked during auth verification
     api_key: Dict[str, Any] = api_key_collection.find_one({"key": credentials})  # type: ignore
 
-    email = api_key["user"]
+    user_id = api_key["user_id"]
 
-    user: Dict[str, Any] = user_collection.find_one({"email": email})  # type: ignore
+    user: Dict[str, Any] = user_collection.find_one({"_id": user_id})  # type: ignore
     del user["password"]
 
     return user
