@@ -114,12 +114,12 @@ class InferenceService:
                 file_bytes = urlopen(input.audioUri).read()
             else:
                 file_bytes = base64.b64decode(input.audioContent)
-            
+
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
             data = data.tolist()
             raw_audio = np.array(data)
-            
+
             # sampling_rate, raw_audio = wavfile.read(file_handle)
             if len(raw_audio.shape) > 1: # Stereo to mono
                 raw_audio = raw_audio.sum(axis=1) / 2
@@ -129,13 +129,29 @@ class InferenceService:
                 number_of_samples = round(len(raw_audio) * float(standard_rate) / sampling_rate)
                 raw_audio = sps.resample(raw_audio, number_of_samples)
 
-            o = self.__pad_batch([raw_audio])
+            # Chunk audio below 20 sec
+            CHUNK_LENGTH = 20
+            audio_chunks = []
+            num_audio_chunks = int(np.ceil(len(raw_audio) / standard_rate / CHUNK_LENGTH))
+
+            if num_audio_chunks > 1:
+                for i in range(num_audio_chunks):
+                    # Get CHUNK_LENGTH seconds
+                    # For mono audio
+                    temp = raw_audio[
+                        CHUNK_LENGTH * i * standard_rate: (i + 1) * CHUNK_LENGTH * standard_rate
+                    ]
+                    audio_chunks.append(temp)
+            else:
+                audio_chunks.append(raw_audio)
+
+            o = self.__pad_batch(audio_chunks)
             input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
             input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
             input0.set_data_from_numpy(o[0])
             input1.set_data_from_numpy(o[1].astype("int32"))
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
-            
+
             response = await self.inference_gateway.send_triton_request(
                 url=service.endpoint,
                 model_name="asr_am_ensemble",
@@ -144,9 +160,10 @@ class InferenceService:
                 headers=headers,
             )
             encoded_result = response.as_numpy("TRANSCRIPTS")
-            outputs = [result.decode("utf-8") for result in encoded_result.tolist()]
-            for output in outputs:
-                res["output"].append({"source": output})
+
+            # Combine all outputs
+            outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
+            res["output"].append({"source": outputs})
         
         # Temporary patch
         if language in {"kn", "ml", "te"}:
