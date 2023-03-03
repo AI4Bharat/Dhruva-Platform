@@ -6,3 +6,4 @@ server/venv
 __pycache__
 logdb
 appdb
+yarn.lock

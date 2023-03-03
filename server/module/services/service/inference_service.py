@@ -229,7 +229,6 @@ class InferenceService:
                 headers=headers,
             )
             encoded_result = response.as_numpy("TRANSCRIPTS")
-
             # Combine all outputs
             outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
             res["output"].append({"source": outputs})

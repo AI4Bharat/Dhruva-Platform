@@ -57,7 +57,6 @@ async def _run_inference_translation(
         request, params.serviceId
     )
 
-
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
     request: ULCAAsrInferenceRequest,

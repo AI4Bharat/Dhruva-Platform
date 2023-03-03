@@ -32,10 +32,10 @@ class InferenceGateway:
                 ssl_context_factory=gevent.ssl._create_default_https_context,
                 concurrency=20,
             )
-            health_ctx = triton_client.is_server_ready(headers=headers)
-            logger.info("Health ctx: {}".format(health_ctx))
-            if not health_ctx:
-                raise BaseError(Errors.DHRUVA107.value, "Triton server is not ready")
+            # health_ctx = triton_client.is_server_ready(headers=headers)
+            # logger.info("Health ctx: {}".format(health_ctx))
+            # if not health_ctx:
+            #     raise BaseError(Errors.DHRUVA107.value, "Triton server is not ready")
             response = triton_client.async_infer(
                 model_name, model_version="1", inputs=input_list, outputs=output_list, headers=headers
             )
