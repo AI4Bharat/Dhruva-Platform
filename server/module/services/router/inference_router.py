@@ -149,8 +149,8 @@ def _run_inference_sts(
     return response
 
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
-async def _run_inference_pipeline(
+def _run_inference_pipeline(
     request: ULCAPipelineInferenceRequest,
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_pipeline_inference(request)
+    return inference_service.run_pipeline_inference(request)

@@ -14,6 +14,8 @@ import tritonclient.http as http_client
 from tritonclient.utils import np_to_triton_dtype
 import base64
 from urllib.request import urlopen
+from pydub import AudioSegment
+from pydub.effects import normalize as pydub_normalize
 
 from schema.services.request import (
     ULCAGenericInferenceRequest,
@@ -130,6 +132,7 @@ class InferenceService:
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
 
+    # async def run_inference(
     def run_inference(
         self,
         request: Union[
@@ -155,16 +158,16 @@ class InferenceService:
 
         if task_type == "translation":
             request_obj = ULCATranslationInferenceRequest(**request_body)
-            return self.run_translation_triton_inference(request_obj)
+            return self.run_translation_triton_inference(request_obj, serviceId)
         elif task_type == "asr":
             request_obj = ULCAAsrInferenceRequest(**request_body)
-            return self.run_asr_triton_inference(request_obj)
+            return self.run_asr_triton_inference(request_obj, serviceId)
         elif task_type == "tts":
             request_obj = ULCATtsInferenceRequest(**request_body)
-            return self.run_tts_triton_inference(request_obj)
+            return self.run_tts_triton_inference(request_obj, serviceId)
         elif task_type == "ner":
             request_obj = ULCANerInferenceRequest(**request_body)
-            return self.run_ner_triton_inference(request_obj)
+            return self.run_ner_triton_inference(request_obj, serviceId)
         else:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
@@ -185,6 +188,7 @@ class InferenceService:
         #     # Shouldn't happen, unless the registry is not proper
         #     raise RuntimeError(f"Unknown task_type: {task_type}")
 
+    # async def run_asr_triton_inference(
     def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
@@ -203,7 +207,7 @@ class InferenceService:
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
             data = data.tolist()
-            raw_audio = np.array(data)
+            raw_audio = np.array(data) # in float64
 
             # sampling_rate, raw_audio = wavfile.read(file_handle)
             if len(raw_audio.shape) > 1: # Stereo to mono
@@ -213,6 +217,19 @@ class InferenceService:
             if sampling_rate != standard_rate:
                 number_of_samples = round(len(raw_audio) * float(standard_rate) / sampling_rate)
                 raw_audio = sps.resample(raw_audio, number_of_samples)
+
+            # Amplitude Equalization, assuming mono-streamed
+            # TODO-1: Normalize based on a reference audio from MUCS benchmark? Ref: https://stackoverflow.com/a/42496373
+            # TODO-2: Just implement it without pydub? Ref: https://stackoverflow.com/a/61254921
+            raw_audio *= 2**15 - 1 # Dequantize to int16
+            pydub_audio = AudioSegment(
+                data=raw_audio.astype('int16').tobytes(),
+                sample_width=2,
+                frame_rate=standard_rate,
+                channels=1
+            )
+            pydub_audio = pydub_normalize(pydub_audio)
+            raw_audio = np.array(pydub_audio.get_array_of_samples()).astype('float64') / (2**15 - 1)
 
             # Chunk audio below 20 sec
             CHUNK_LENGTH = 20
@@ -262,6 +279,7 @@ class InferenceService:
 
         return res
 
+    # async def run_translation_triton_inference(
     def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
@@ -299,6 +317,7 @@ class InferenceService:
         res = {"config": request_body.config, "output": results}
         return res
 
+    # async def run_tts_triton_inference(
     def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
@@ -403,7 +422,8 @@ class InferenceService:
         
         return serviceId
     
-    async def run_pipeline_inference(
+    # async def run_pipeline_inference(
+    def run_pipeline_inference(
         self, request_body: ULCAPipelineInferenceRequest
     ) -> ULCAPipelineInferenceResponse:
 
@@ -437,7 +457,8 @@ class InferenceService:
             if not serviceId:
                 serviceId = self.auto_select_service_id(pipeline_task.task.type, pipeline_task.config)
             
-            previous_output_json = await self.run_inference(
+            # previous_output_json = await self.run_inference(
+            previous_output_json = self.run_inference(
                 request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
                 serviceId=serviceId
             )
