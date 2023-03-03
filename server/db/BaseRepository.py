@@ -1,7 +1,10 @@
 from typing import Generic, List, Optional, Type, TypeVar, Union
 
-from exception.null_value_error import NullValueError
+from bson import ObjectId
 from pydantic import BaseModel
+from pymongo.collection import Collection
+
+from exception.null_value_error import NullValueError
 
 from .app_db import AppDatabase
 from .log_db import LogDatabase
@@ -15,7 +18,7 @@ class BaseRepository(Generic[T]):
     ) -> None:
         super().__init__()
         self.db = db
-        self.collection = db[collection_name]
+        self.collection: Collection = db[collection_name]
         self.__document_class = self.__orig_bases__[0].__args__[0]  # type: ignore
         self.__validate()
 
@@ -35,12 +38,12 @@ class BaseRepository(Generic[T]):
         data = data.dict()
         return data
 
-    def find_by_id(self, id: str) -> Optional[T]:
+    def find_by_id(self, id: ObjectId) -> Optional[T]:
         results = self.collection.find_one({"_id": id})
         if results:
             return self.__map_to_model(results)
 
-    def get_by_id(self, id: str) -> T:
+    def get_by_id(self, id: ObjectId) -> T:
         results = self.collection.find_one({"_id": id})
         if results:
             return self.__map_to_model(results)
@@ -57,7 +60,7 @@ class BaseRepository(Generic[T]):
             return self.__map_to_model(results)
         raise NullValueError
 
-    def find(self, query: dict) -> Optional[List[T]]:
+    def find(self, query: dict) -> List[T]:
         results = self.collection.find(query)
         return self.__map_to_model_list(results)
 

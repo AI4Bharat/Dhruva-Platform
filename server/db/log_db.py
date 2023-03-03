@@ -1,9 +1,13 @@
+import os
 from typing import Any
 
 import pymongo
+from dotenv import load_dotenv
 from fastapi.logger import logger
 from pymongo.collection import Collection
 from pymongo.database import Database
+
+load_dotenv()
 
 
 class LogDatabase:
@@ -15,10 +19,10 @@ class LogDatabase:
         #   - connect to db and get database object
         #   - optionally create collections
 
-        if self.__db != {}:
+        if self.__db != None:
             return
 
-        mongo_client = pymongo.MongoClient("mongodb://admin:admin@log_db:27017/")
+        mongo_client = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
         mongo_db = mongo_client["dhruva"]
         logger.info("Connected to log database")
         self.__db = mongo_db

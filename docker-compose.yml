@@ -13,8 +13,8 @@ services:
     volumes:
       - ./server:/src
     command: sh -c "uvicorn main:app --reload --host 0.0.0.0"
-    # env_file:
-    #   - .env
+    env_file:
+      - .env
 
   client:
     container_name: client
