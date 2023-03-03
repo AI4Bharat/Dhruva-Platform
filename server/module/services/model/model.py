@@ -1,11 +1,7 @@
 from datetime import datetime
 from typing import Any, List, Optional
 from pydantic import BaseModel
-from schema.services.common import _ULCALanguagePair
-
-class _Task(BaseModel):
-    type: str
-
+from schema.services.common import _ULCALanguagePair, _ULCATask
 
 class _OAuthId(BaseModel):
     oauthId: str
@@ -71,7 +67,7 @@ class Model(BaseModel):
     name: str
     description: str
     refUrl: str
-    task: _Task
+    task: _ULCATask
     languages: List[dict]
     license: str
     domain: List[str]

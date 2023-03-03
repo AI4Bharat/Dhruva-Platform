@@ -31,4 +31,8 @@ tritonclient[all]==2.23.0
 gevent==22.10.2
 scipy==1.10.0
 soundfile==0.11.0
+
+# Temporary
 git+https://github.com/libindic/indic-trans
+indic_numtowords
+translators
