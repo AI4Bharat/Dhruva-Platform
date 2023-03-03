@@ -3,15 +3,14 @@ from typing import Any, Dict, Optional
 
 import jwt
 from bson.objectid import ObjectId
-from dotenv import load_dotenv
-from fastapi import Depends
-
 from db.app_db import AppDatabase
+from dotenv import load_dotenv
+from fastapi import Request
 
 load_dotenv()
 
 
-def validate_credentials(credentials: str, db: AppDatabase) -> bool:
+def validate_credentials(credentials: str, request: Request, db: AppDatabase) -> bool:
     try:
         headers = jwt.get_unverified_header(credentials)
     except Exception:
@@ -32,6 +31,8 @@ def validate_credentials(credentials: str, db: AppDatabase) -> bool:
 
     if not session:
         return False
+
+    request.state.api_key_id = None
 
     return True
 
