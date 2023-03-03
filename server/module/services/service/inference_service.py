@@ -61,7 +61,7 @@ class InferenceService:
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
 
-    async def run_inference(
+    def run_inference(
         self,
         request: Union[
             ULCAGenericInferenceRequest,
@@ -86,21 +86,21 @@ class InferenceService:
 
         if task_type == "translation":
             request_obj = ULCATranslationInferenceRequest(**request_body)
-            return await self.run_translation_triton_inference(request_obj)
+            return self.run_translation_triton_inference(request_obj)
         elif task_type == "asr":
             request_obj = ULCAAsrInferenceRequest(**request_body)
-            return await self.run_asr_triton_inference(request_obj)
+            return self.run_asr_triton_inference(request_obj)
         elif task_type == "tts":
             request_obj = ULCATtsInferenceRequest(**request_body)
-            return await self.run_tts_triton_inference(request_obj)
+            return self.run_tts_triton_inference(request_obj)
         elif task_type == "ner":
             request_obj = ULCANerInferenceRequest(**request_body)
-            return await self.run_ner_triton_inference(request_obj)
+            return self.run_ner_triton_inference(request_obj)
         else:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
 
-    async def run_asr_triton_inference(
+    def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
 
@@ -152,7 +152,7 @@ class InferenceService:
             input1.set_data_from_numpy(o[1].astype("int32"))
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 
-            response = await self.inference_gateway.send_triton_request(
+            response = self.inference_gateway.send_triton_request(
                 url=service.endpoint,
                 model_name="asr_am_ensemble",
                 input_list=[input0, input1],
@@ -177,7 +177,7 @@ class InferenceService:
 
         return res
 
-    async def run_translation_triton_inference(
+    def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
 
@@ -197,7 +197,7 @@ class InferenceService:
                 ),
             ]
             output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
-            response = await self.inference_gateway.send_triton_request(
+            response = self.inference_gateway.send_triton_request(
                 url=service.endpoint,
                 model_name="nmt",
                 input_list=inputs,
@@ -210,7 +210,7 @@ class InferenceService:
         res = {"config": request_body.config, "output": results}
         return res
 
-    async def run_tts_triton_inference(
+    def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
         
@@ -229,7 +229,7 @@ class InferenceService:
                 self.__get_string_tensor(ip_language, "INPUT_LANGUAGE_ID"),
             ]
             output0 = http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
-            response = await self.inference_gateway.send_triton_request(
+            response = self.inference_gateway.send_triton_request(
                 url=service.endpoint,
                 model_name="tts",
                 input_list=inputs,
@@ -253,7 +253,7 @@ class InferenceService:
         }
         return res
     
-    async def run_ner_triton_inference(
+    def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
 
