@@ -13,9 +13,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(
-        self, db: Union[AppDatabase, LogDatabase], collection_name: str
-    ) -> None:
+    def __init__(self, db: Union[AppDatabase, LogDatabase], collection_name: str) -> None:
         super().__init__()
         self.db = db
         self.collection: Collection = db[collection_name]
@@ -68,8 +66,8 @@ class BaseRepository(Generic[T]):
         results = self.collection.find()
         return self.__map_to_model_list(results)
 
-    def delete_one(self, query: dict):
-        self.collection.delete_one(query)
+    def delete_one(self, id: ObjectId):
+        self.collection.delete_one({"_id": id})
 
     def delete_many(self, query: dict) -> int:
         count = self.collection.delete_many(query)
@@ -79,3 +77,8 @@ class BaseRepository(Generic[T]):
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
         return result.inserted_id
+
+    def update_one(self, data: T) -> int:
+        document = self.__map_to_document(data)
+        result = self.collection.update_one({"_id": document["_id"]}, {"$set": document})
+        return result.modified_count

@@ -15,3 +15,4 @@ class ServiceRepository(BaseRepository[Service]):
 
     def find_by_id(self, id: str) -> Optional[Service]:
         return super().find_one({"serviceId": id})
+
