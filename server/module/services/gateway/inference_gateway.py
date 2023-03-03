@@ -22,7 +22,8 @@ class InferenceGateway:
 
         return response.json()
 
-    async def send_triton_request(
+    # async def send_triton_request(
+    def send_triton_request(
         self, url: str, headers: dict, model_name: str, input_list: list, output_list: list
     ):
         try:
@@ -32,19 +33,17 @@ class InferenceGateway:
                 ssl_context_factory=gevent.ssl._create_default_https_context,
                 concurrency=20,
             )
+
             # health_ctx = triton_client.is_server_ready(headers=headers)
             # logger.info("Health ctx: {}".format(health_ctx))
             # if not health_ctx:
             #     raise BaseError(Errors.DHRUVA107.value, "Triton server is not ready")
-            response = triton_client.async_infer(
+            # response = triton_client.async_infer(
+            response = triton_client.infer(
                 model_name, model_version="1", inputs=input_list, outputs=output_list, headers=headers
             )
-            response = response.get_result(block=True, timeout=4)
+            # response = response.get_result(block=True, timeout=4)
 
         except:
             raise BaseError(Errors.DHRUVA101.value, traceback.format_exc()) 
         return response
-
-
-  
-
