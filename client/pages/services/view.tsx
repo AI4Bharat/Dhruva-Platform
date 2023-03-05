@@ -11,7 +11,6 @@ import {
   Text,
   Grid,
   GridItem,
-  Spacer,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -159,7 +158,7 @@ export default function ViewService() {
                     <Documentation serviceInfo={serviceInfo} />
                   </TabPanel>
                   <TabPanel>
-                      <Feedback serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"}/>
+                      <Feedback serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"} serviceLanguages={languages}/>
                   </TabPanel>
                 </TabPanels>
               </Tabs>
@@ -219,7 +218,7 @@ export default function ViewService() {
                     <Documentation serviceInfo={serviceInfo} userID={"john_doe_dummy_id"} />
                   </TabPanel>
                   <TabPanel>
-                      <Feedback serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"}/>
+                      <Feedback serviceLanguages={languages} serviceID={router.query["serviceId"]} userID={"john_doe_dummy_id"}/>
                   </TabPanel>
                 </TabPanels>
               </Tabs>
