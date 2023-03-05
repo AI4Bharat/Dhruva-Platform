@@ -7,10 +7,7 @@ from urllib.parse import parse_qs
 from dataclasses import dataclass
 import wave
 import requests
-
-ASR_TASK_TYPE = "asr"
-TRANSLATION_TASK_TYPE = "translation"
-TTS_TASK_TYPE = "tts"
+from schema.services.common import _ULCATaskType
 
 @dataclass
 class UserState:
@@ -29,12 +26,19 @@ class StreamingServerTaskSequence:
     This is a SocketIO server for simulating taskSequence inference.
     TODO: Generalize to different sequences. Currently it supports only ASR->Translation->TTS
     '''
-    def __init__(self) -> None:
-        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
-        self.app = socketio.ASGIApp(
-            self.sio, socketio_path="",
-            # other_asgi_app=app
-        )
+    def __init__(self, async_mode=True) -> None:
+        if async_mode:
+            self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+            self.app = socketio.ASGIApp(
+                self.sio, socketio_path="",
+                # other_asgi_app=app
+            )
+        else:
+            self.sio = socketio.Server(cors_allowed_origins='*')
+            self.app = socketio.WSGIApp(
+                self.sio, socketio_path="",
+                # other_asgi_app=app
+            )
         self.inference_url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
         if "BACKEND_PORT" in os.environ:
             self.inference_url = f"http://localhost:{os.environ['BACKEND_PORT']}/services/inference/pipeline"
@@ -139,9 +143,9 @@ class StreamingServerTaskSequence:
                 await self.sio.emit("abort", data=("Invalid `task_sequence`!"), room=sid)
 
             self.client_states[sid].task_sequence = task_sequence
-            self.client_states[sid].input_task_type = task_sequence[0]["task"]["type"]
+            self.client_states[sid].input_task_type = task_sequence[0]["taskType"]
 
-            if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+            if self.client_states[sid].input_task_type == _ULCATaskType.ASR:
                 # Compute the inference_frequency (once in how many bytes should we run inference)
                 sampling_rate = int(task_sequence[0]["config"]["samplingRate"])
                 run_inference_once_in_bytes = int(sampling_rate * (self.input_audio__response_frequency_in_ms / 1000) * self.input_audio__bytes_per_sample)
@@ -162,7 +166,7 @@ class StreamingServerTaskSequence:
         async def data(sid: str, input_data: dict, streaming_config: int, clear_server_state: bool, disconnect_stream: bool):
             if input_data:
                 # Update the user-state with the input_data
-                if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+                if self.client_states[sid].input_task_type == _ULCATaskType.ASR:
                     if input_data["audio"] and input_data["audio"][0]["audioContent"]:
                         # For example, in the case of speech client, append audio payload to client buffer
                         audioContent = input_data["audio"][0]["audioContent"]
@@ -186,7 +190,7 @@ class StreamingServerTaskSequence:
                     self.initialize_buffer(sid)
             else:
                 # For example, in the case of speech client, run inference once we have accumulated enough amount of audio since previous inference
-                if self.client_states[sid].input_task_type == ASR_TASK_TYPE:
+                if self.client_states[sid].input_task_type == _ULCATaskType.ASR:
                     if len(self.client_states[sid].input_audio__buffer) - self.client_states[sid].input_audio__last_inference_position_in_bytes >= self.client_states[sid].input_audio__run_inference_once_in_bytes:
                         await self.run_inference_and_send(sid)
                         self.client_states[sid].input_audio__last_inference_position_in_bytes = len(self.client_states[sid].input_audio__buffer)

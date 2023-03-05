@@ -33,10 +33,7 @@ from schema.services.response import (
     ULCAPipelineInferenceResponse,
 )
 from schema.services.common import (
-    ASR_TASK_TYPE,
-    TRANSLATION_TASK_TYPE,
-    TTS_TASK_TYPE,
-    NER_TASK_TYPE,
+    _ULCATaskType
 )
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -156,16 +153,16 @@ class InferenceService:
         task_type = model.task.type
         request_body = request.dict()
 
-        if task_type == "translation":
+        if task_type == _ULCATaskType.TRANSLATION:
             request_obj = ULCATranslationInferenceRequest(**request_body)
             return self.run_translation_triton_inference(request_obj, serviceId)
-        elif task_type == "asr":
+        elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
             return self.run_asr_triton_inference(request_obj, serviceId)
-        elif task_type == "tts":
+        elif task_type == _ULCATaskType.TTS:
             request_obj = ULCATtsInferenceRequest(**request_body)
             return self.run_tts_triton_inference(request_obj, serviceId)
-        elif task_type == "ner":
+        elif task_type == _ULCATaskType.NER:
             request_obj = ULCANerInferenceRequest(**request_body)
             return self.run_ner_triton_inference(request_obj, serviceId)
         else:
@@ -277,7 +274,7 @@ class InferenceService:
             for i in range(len(res["output"])):
                 res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
 
-        return res
+        return ULCAAsrInferenceResponse(**res)
 
     # async def run_translation_triton_inference(
     def run_translation_triton_inference(
@@ -315,7 +312,7 @@ class InferenceService:
                 result = input_string
             results.append({"source": input_string, "target": result})
         res = {"config": request_body.config, "output": results}
-        return res
+        return ULCATranslationInferenceResponse(**res)
 
     # async def run_tts_triton_inference(
     def run_tts_triton_inference(
@@ -366,7 +363,7 @@ class InferenceService:
             },
             "audio": results,
         }
-        return res
+        return ULCATtsInferenceResponse(**res)
     
     def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
@@ -376,10 +373,11 @@ class InferenceService:
         headers = {"Authorization": "Bearer " + service.key}
 
         # TODO: Replace with real deployments
-        return requests.post(
+        res = requests.post(
             service.endpoint,
             json=request_body.dict()
         ).json()
+        return ULCANerInferenceResponse(**res)
 
     def __pad_batch(self, batch_data):
         batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
@@ -401,7 +399,7 @@ class InferenceService:
     
     def auto_select_service_id(self, task_type: str, config: dict) -> str:
         serviceId = None
-        if task_type == ASR_TASK_TYPE:
+        if task_type == _ULCATaskType.ASR:
             if config["language"]["sourceLanguage"] == "en":
                 serviceId = "ai4bharat/conformer-en-gpu--t4"
             elif config["language"]["sourceLanguage"] == "hi":
@@ -410,9 +408,9 @@ class InferenceService:
                 serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
             else:
                 serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
-        elif task_type == TRANSLATION_TASK_TYPE:
+        elif task_type == _ULCATaskType.TRANSLATION:
             serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
-        elif task_type == TTS_TASK_TYPE:
+        elif task_type == _ULCATaskType.TTS:
             if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
                 serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
             elif config["language"]["sourceLanguage"] in {"en", "brx", "mni"}:
@@ -432,13 +430,13 @@ class InferenceService:
         # Check if the pipeline construction is valid
         is_pipeline_valid = True
         for i in range(len(request_body.pipelineTasks)-1):
-            current_task_type, next_task_type = request_body.pipelineTasks[i].task.type, request_body.pipelineTasks[i+1].task.type
-            if current_task_type == ASR_TASK_TYPE:
-                if next_task_type not in {TRANSLATION_TASK_TYPE}:
+            current_task_type, next_task_type = request_body.pipelineTasks[i].taskType, request_body.pipelineTasks[i+1].taskType
+            if current_task_type == _ULCATaskType.ASR:
+                if next_task_type not in {_ULCATaskType.TRANSLATION}:
                     is_pipeline_valid = False
                     break
-            elif current_task_type == TRANSLATION_TASK_TYPE:
-                if next_task_type not in {TTS_TASK_TYPE}:
+            elif current_task_type == _ULCATaskType.TRANSLATION:
+                if next_task_type not in {_ULCATaskType.TTS}:
                     is_pipeline_valid = False
                     break
             else:
@@ -455,7 +453,7 @@ class InferenceService:
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.serviceId
             if not serviceId:
-                serviceId = self.auto_select_service_id(pipeline_task.task.type, pipeline_task.config)
+                serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
             
             # previous_output_json = await self.run_inference(
             previous_output_json = self.run_inference(
@@ -465,12 +463,13 @@ class InferenceService:
             results.append(deepcopy(previous_output_json))
             
             # Output of previous will be input for next
+            previous_output_json = previous_output_json.dict()
             previous_output_json.pop("config", None)
             if "output" in previous_output_json:
                 previous_output_json["input"] = previous_output_json["output"]
                 del previous_output_json["output"]
 
-                if pipeline_task.task.type == TRANSLATION_TASK_TYPE:
+                if pipeline_task.taskType == _ULCATaskType.TRANSLATION:
                     # The output (target) of translation should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
                         previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["target"]
