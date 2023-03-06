@@ -33,18 +33,15 @@ class InferenceLoggingRoute(APIRoute):
 
         async def logging_route_handler(request: Request) -> Response:
             req_body = await request.body()
+
             start_time = time.time()
-            print("before route handler")
             response: Response = await original_route_handler(request)
-            print("after route handler")
-            print("request: ", request)
             res_body = response.body
             if request.url._url.split("/")[-1].split("?")[0] in ("asr", "translation", "tts"):
-                print(request.state.__dict__, request.state.api_key_name)
                 log_data.apply_async(
                     (
                         request.url._url,
-                        request.state.api_key_name,
+                        str(request.state.api_key_id),
                         req_body.decode("utf-8"),
                         res_body.decode("utf-8"),
                         time.time() - start_time

@@ -2,26 +2,28 @@ import os
 import json
 import logging
 from time import time
+from datetime import datetime
 from ..celery_app import app
 from .metering import meter_usage
 from .log_db import LogDatabase
 
+logs_db = LogDatabase()
 
-def log_to_db(inp: str, output: str, api_key_name: str, service_id: str):
+def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
     """ Log input output data pairs to the DB """
-    logs_db = LogDatabase("dhruva_log_db")
+    logs_collection = logs_db[service_id]
     log_document = {
         "input": inp,
         "output": output,
-        "api_key_name": api_key_name,
-        "service_id": service_id
+        "api_key_id": api_key_id,
+        "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
     }
-    logs_db.logs.insert_one(log_document)
+    logs_collection.insert_one(log_document)
 
 
 @app.task(name="log.data")
 def log_data(
-    url: str, api_key_name: str, req_body: str, resp_body: str, response_time: time
+    url: str, api_key_id: str, req_body: str, resp_body: str, response_time: time
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
@@ -42,8 +44,9 @@ def log_data(
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 
-    if os.environ.get("LOG_REQUEST_RESPONSE_DATA", None):
-        log_to_db(req_body, resp_body, api_key_name, service_id)
+    if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
+        print("not here")
+        log_to_db(req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
-    meter_usage(api_key_name, data_usage, usage_type, service_id)
+    meter_usage(api_key_id, data_usage, usage_type, service_id)

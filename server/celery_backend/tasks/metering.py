@@ -3,7 +3,8 @@ import base64
 import logging
 from typing import List
 import soundfile as sf
-from .database import get_db_client
+from bson import ObjectId
+from .app_db import AppDatabase
 
 # Constant multipiers to calculate cost equivalents later
 from .constants import (
@@ -22,6 +23,8 @@ from .constants import (
     NER_RAM_MULTIPLIER,
     NER_TOKEN_CALCULATION_MULTIPLIER,
 )
+
+metering_db = AppDatabase()
 
 
 def get_audio_length(audio) -> float:
@@ -94,16 +97,17 @@ def calculate_ner_usage(data: List) -> int:
     return total_usage
 
 
-def write_to_db(api_key_name: str, inference_units: int, service_id: str):
+def write_to_db(api_key_id: str, inference_units: int, service_id: str):
     """
     - Check doc presence or create
     - Check subdocument presence or create
-    Currently no single method ot check for document as well as subdocument level upsert
+    Currently no single method to check for document as well as subdocument level upsert
     """
-    metering_db = get_db_client("dhruva")
-    doc = metering_db.metering.find_one({"api_key_hash": api_key_name})
+    metering_collection = metering_db["api_key"]
+    doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
+
     # Check for the document
-    if doc:
+    if doc and "services" in doc:
         # Check for services
         for service in doc["services"]:
             if service["service_id"] == service_id:
@@ -113,28 +117,24 @@ def write_to_db(api_key_name: str, inference_units: int, service_id: str):
             # Insert service sub document
             doc["services"].append({"service_id": service_id, "usage": inference_units})
 
-        doc["total"] += inference_units
-        metering_db.metering.replace_one(
-            {"api_key_hash": api_key_name},
-            doc
-        )
+        doc["usage"] += inference_units
+        metering_collection.replace_one({"_id": doc["_id"]}, doc)
+
     else:
-        # Create the document, serviceId and set usage
-        metering_db.metering.insert_one(
+        # Create the serviceId and set usage
+        metering_collection.update_one(
+            {"_id": doc["_id"]},
             {
-                "api_key_hash": api_key_name,
-                "services": [
-                    {"service_id": service_id, "usage": inference_units},
-                ],
-                "total": inference_units
+                "$set": {
+                    "services": [{"service_id": service_id, "usage": inference_units}],
+                    "usage": inference_units}
             }
         )
-    # doc = metering_db.metering.find_one({"api_key_hash": api_key_name})
-    # logging.debug(f"doc: {doc}")
-    # print(f"doc: {doc}")
+
+    doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
 
 
-def meter_usage(api_key_name: str, input_data: List, usage_type: str, service_id: str):
+def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: str):
     """Meters usage and writes to Mongo"""
 
     inference_units = 0
@@ -145,6 +145,5 @@ def meter_usage(api_key_name: str, input_data: List, usage_type: str, service_id
     elif usage_type == "tts":
         inference_units = calculate_tts_usage(input_data)
 
-    # logging.debug(f"inference units: {inference_units}")
-    print(f"inference units: {inference_units}")
-    write_to_db(api_key_name, inference_units, service_id)
+    logging.info(f"inference units: {inference_units}")
+    write_to_db(api_key_id, inference_units, service_id)
