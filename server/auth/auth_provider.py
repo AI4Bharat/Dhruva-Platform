@@ -4,31 +4,44 @@ from auth import api_key_provider, auth_token_provider
 from auth.token_type import TokenType
 from db.app_db import AppDatabase
 from fastapi import Depends, Header, HTTPException, Request, status
-from fastapi.security import HTTPBearer
+from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 
 
 def AuthProvider(
     request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
+    credentials_bearer: Optional[HTTPAuthorizationCredentials] = Depends(
+        HTTPBearer(auto_error=False)
+    ),
+    credentials_key: Optional[str] = Depends(APIKeyHeader(name="Authorization")),
     # This header specifies the origin of the request which
     # can either be API_KEY or AUTH_TOKEN
     x_auth_source: TokenType = Header(default=TokenType.API_KEY),
     db: AppDatabase = Depends(AppDatabase),
 ):
-    if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"message": "Not authenticated"},
-        )
-
     match x_auth_source:
         case TokenType.AUTH_TOKEN:
-            provider = auth_token_provider
-        case TokenType.API_KEY:
-            provider = api_key_provider
+            if not credentials_bearer:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail={"message": "Not authenticated"},
+                )
 
-    if not provider.validate_credentials(credentials.credentials, request, db):  # type: ignore
+            validate_status = auth_token_provider.validate_credentials(
+                credentials_bearer.credentials, request, db
+            )
+        case TokenType.API_KEY:
+            if not credentials_key:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail={"message": "Not authenticated"},
+                )
+
+            validate_status = api_key_provider.validate_credentials(
+                credentials_key, request, db
+            )
+
+    if not validate_status:  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"message": "Not authenticated"},
