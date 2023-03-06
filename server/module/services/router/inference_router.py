@@ -34,7 +34,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=ULCAGenericInferenceResponse)
-def _run_inference_generic(
+async def _run_inference_generic(
     request: Union[
         ULCAGenericInferenceRequest,
         ULCAAsrInferenceRequest,
@@ -44,50 +44,50 @@ def _run_inference_generic(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_inference(request, params.serviceId)
+    return await inference_service.run_inference(request, params.serviceId)
 
 
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)
-def _run_inference_translation(
+async def _run_inference_translation(
     request: ULCATranslationInferenceRequest,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_translation_triton_inference(
+    return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )
 
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
-def _run_inference_asr(
+async def _run_inference_asr(
     request: ULCAAsrInferenceRequest,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_asr_triton_inference(request, params.serviceId)
+    return await inference_service.run_asr_triton_inference(request, params.serviceId)
 
 
 @router.post("/tts", response_model=ULCATtsInferenceResponse)
-def _run_inference_tts(
+async def _run_inference_tts(
     request: ULCATtsInferenceRequest,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_tts_triton_inference(request, params.serviceId)
+    return await inference_service.run_tts_triton_inference(request, params.serviceId)
 
 
 @router.post("/ner", response_model=ULCANerInferenceResponse)
-def _run_inference_ner(
+async def _run_inference_ner(
     request: ULCANerInferenceRequest,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_ner_triton_inference(request, params.serviceId)
+    return await inference_service.run_ner_triton_inference(request, params.serviceId)
 
 # Temporary endpoint; will be removed/standardized soon
 
 
 @router.post("/s2s", response_model=ULCAS2SInferenceResponse)
-def _run_inference_sts(
+async def _run_inference_sts(
     request: ULCAS2SInferenceRequest,
     inference_service: InferenceService = Depends(InferenceService),
 ):
@@ -100,14 +100,14 @@ def _run_inference_sts(
     else:
         serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
 
-    asr_response = inference_service.run_asr_triton_inference(request, serviceId)
+    asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
     asr_response = ULCAAsrInferenceResponse(**asr_response)
 
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
         input=asr_response.output,
     )
-    translation_response = inference_service.run_translation_triton_inference(
+    translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
     )
     translation_response = ULCATranslationInferenceResponse(**translation_response)
@@ -129,7 +129,7 @@ def _run_inference_sts(
     tts_request = ULCATtsInferenceRequest(
         config=request.config, input=translation_response.output
     )
-    tts_response = inference_service.run_tts_triton_inference(
+    tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
     )
     tts_response = ULCATtsInferenceResponse(**tts_response)
@@ -149,8 +149,8 @@ def _run_inference_sts(
     return response
 
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
-def _run_inference_pipeline(
+async def _run_inference_pipeline(
     request: ULCAPipelineInferenceRequest,
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return inference_service.run_pipeline_inference(request)
+    return await inference_service.run_pipeline_inference(request)
