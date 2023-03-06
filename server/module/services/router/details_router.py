@@ -1,25 +1,29 @@
 import traceback
 from typing import List
 
+from auth.auth_provider import AuthProvider
 from exception.base_error import BaseError
+from exception.response_models import NotAuthenticatedResponse
 from fastapi import APIRouter, Depends, HTTPException, status
 from schema.services.request import ModelViewRequest, ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error import Errors
 from ..model import Model
-from ..repository import ServiceRepository
-from ..repository.model_repository import ModelRepository
+from ..repository import ModelRepository
 from ..service import DetailsService
 
 router = APIRouter(
     prefix="/details",
+    dependencies=[
+        Depends(AuthProvider),
+    ],
+    responses={"401": {"model": NotAuthenticatedResponse}},
 )
 
 
 @router.get("/list_services", response_model=List[ServiceListResponse])
 async def _list_services(
-    service_repository: ServiceRepository = Depends(ServiceRepository),
     details_service: DetailsService = Depends(DetailsService),
 ):
     services_list = details_service.list_services()
