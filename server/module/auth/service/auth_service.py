@@ -15,7 +15,13 @@ from pydantic import EmailStr
 
 from exception.base_error import BaseError
 from module.auth.model import Session
-from schema.auth.request import CreateApiKeyRequest, RefreshRequest, SignInRequest
+from schema.auth.request import (
+    CreateApiKeyRequest,
+    RefreshRequest,
+    SetApiKeyStatusQuery,
+    SignInRequest,
+)
+from schema.auth.request.set_api_key_status_query import ApiKeyAction
 from schema.auth.response import SignInResponse
 
 from ..error import Errors
@@ -140,14 +146,17 @@ class AuthService:
         return token
 
     def create_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
-        existing_api_key = self.api_key_repository.find_one(
-            {"name": request.name, "user_id": id}
-        )
+        try:
+            existing_api_key = self.api_key_repository.find_one(
+                {"name": request.name, "user_id": id}
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if existing_api_key:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="API Key name already exists",
+                detail={"message": "API Key name already exists"},
             )
 
         key = secrets.token_urlsafe(48)

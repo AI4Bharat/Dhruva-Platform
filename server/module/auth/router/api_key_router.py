@@ -1,16 +1,24 @@
+from bson import ObjectId
 from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
-from auth.session_provider import InjectSession, Session
+from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.response_models import NotAuthenticatedResponse
-from schema.auth.request import CreateApiKeyRequest, RefreshRequest, SignInRequest
-from schema.auth.response import CreateApiKeyResponse, SignInResponse
-from schema.auth.response.get_all_api_keys_response import GetAllApiKeysResponse
+from schema.auth.request import (
+    CreateApiKeyRequest,
+    GetApiKeyQuery,
+    SetApiKeyStatusQuery,
+)
+from schema.auth.response import (
+    CreateApiKeyResponse,
+    GetAllApiKeysResponse,
+    GetApiKeyResponse,
+)
 
 from ..service.auth_service import AuthService
 
 router = APIRouter(
-    prefix="/api_key",
+    prefix="/api-key",
     dependencies=[
         Depends(AuthProvider),
     ],
@@ -21,9 +29,9 @@ router = APIRouter(
 @router.get("/all", response_model=GetAllApiKeysResponse)
 async def _get_all_api_keys_for_user(
     auth_service: AuthService = Depends(AuthService),
-    session: Session = Depends(InjectSession),
+    request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_keys = auth_service.get_all_api_keys(session.id)
+    api_keys = auth_service.get_all_api_keys(request_session.id)
     return GetAllApiKeysResponse(api_keys=api_keys)  # type:ignore
 
 
@@ -31,7 +39,7 @@ async def _get_all_api_keys_for_user(
 async def _create_api_key(
     request: CreateApiKeyRequest,
     auth_service: AuthService = Depends(AuthService),
-    session: Session = Depends(InjectSession),
+    request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_key = auth_service.create_api_key(request, session.id)
+    api_key = auth_service.create_api_key(request, request_session.id)  # type: ignore
     return CreateApiKeyResponse(api_key=api_key)

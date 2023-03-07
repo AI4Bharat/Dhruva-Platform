@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import APIRouter, Depends
-from auth import AuthProvider
+from auth.auth_provider import AuthProvider
 from exception.response_models import NotAuthenticatedResponse
 from ..service.inference_service import InferenceService
 from schema.services.response import (
