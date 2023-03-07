@@ -62,11 +62,6 @@ router = APIRouter(
 )
 
 
-@router.post("/setup")
-async def _run_inference_generic():
-    return await setup_db_data()
-
-
 @router.post("", response_model=ULCAGenericInferenceResponse)
 async def _run_inference_generic(
     request: Union[

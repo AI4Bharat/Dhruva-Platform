@@ -15,12 +15,10 @@ class DetailsService:
     def __init__(
         self,
         service_repository: ServiceRepository = Depends(ServiceRepository),
-        model_repository: ModelRepository = Depends(ModelRepository),
-        api_key_repository: ApiKeyRepository =  Depends(ApiKeyRepository)
+        model_repository: ModelRepository = Depends(ModelRepository)
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
-        self.api_key_repository = api_key_repository
 
     def get_service_details(
         self, request: ServiceViewRequest
@@ -38,17 +36,8 @@ class DetailsService:
         except:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
         
-        try:
-            api_key_details = self.api_key_repository.get_by_id(request.api_key_id)
-            usage = 0
-            if "services" in api_key_details:
-                for srv in api_key_details["services"]:
-                    if srv["service_id"] == request.serviceId:
-                        usage = srv["usage"]
-        except:
-            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
-        return ServiceViewResponse(**service.dict(), model=model, usage=usage)
+        return ServiceViewResponse(**service.dict(), model=model)
 
     def list_services(self) -> List[ServiceListResponse]:
         try:
