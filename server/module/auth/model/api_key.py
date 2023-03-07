@@ -18,3 +18,9 @@ class ApiKey(MongoBaseModel):
     type: str
     usage: int = 0
     services: List[_ServiceUsage] = []
+
+    def revoke(self):
+        self.active = False
+
+    def activate(self):
+        self.active = True
