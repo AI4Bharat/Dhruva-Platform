@@ -12,3 +12,9 @@ class ApiKey(MongoBaseModel):
     active: bool
     user_id: ObjectId
     type: str
+
+    def revoke(self):
+        self.active = False
+
+    def activate(self):
+        self.active = True

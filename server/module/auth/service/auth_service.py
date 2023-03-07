@@ -176,6 +176,20 @@ class AuthService:
 
         return key
 
+    def get_api_key(self, id: ObjectId, user_id: ObjectId):
+        try:
+            key = self.api_key_repository.find_one({"_id": id, "user_id": user_id})
+        except Exception:
+            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+
+        if not key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "API Key does not exist"},
+            )
+
+        return key
+
     def get_all_api_keys(self, id: ObjectId):
         try:
             keys = self.api_key_repository.find({"user_id": id})
@@ -183,3 +197,30 @@ class AuthService:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
         return keys
+
+    def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
+        try:
+            api_key = self.api_key_repository.find_one(
+                {"_id": ObjectId(params.api_key_id), "user_id": id}
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
+
+        if not api_key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "Api key not found"},
+            )
+
+        match params.action:
+            case ApiKeyAction.ACTIVATE:
+                api_key.activate()
+            case ApiKeyAction.REVOKE:
+                api_key.revoke()
+
+        try:
+            self.api_key_repository.save(api_key)
+        except Exception:
+            raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
+
+        return api_key
