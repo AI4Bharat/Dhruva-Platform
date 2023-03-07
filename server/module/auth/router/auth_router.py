@@ -1,5 +1,6 @@
-from exception.response_models import NotAuthenticatedResponse
 from fastapi import APIRouter, Depends
+
+from exception.response_models import NotAuthenticatedResponse
 from schema.auth.request import RefreshRequest, SignInRequest
 from schema.auth.response import RefreshResponse, SignInResponse
 
