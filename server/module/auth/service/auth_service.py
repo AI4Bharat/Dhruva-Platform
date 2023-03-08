@@ -20,9 +20,10 @@ from schema.auth.request import (
     RefreshRequest,
     SetApiKeyStatusQuery,
     SignInRequest,
+    ULCAApiKeyRequest,
 )
 from schema.auth.request.set_api_key_status_query import ApiKeyAction
-from schema.auth.response import SignInResponse
+from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse
 
 from ..error import Errors
 from ..model.api_key import ApiKey
@@ -153,12 +154,19 @@ class AuthService:
         except Exception:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
-        if existing_api_key:
+        if existing_api_key and request.regenerate:
+            key = self.__regenerate_api_key(existing_api_key)
+        elif existing_api_key and not request.regenerate:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"message": "API Key name already exists"},
             )
+        else:
+            key = self.__generate_new_api_key(request, id)
 
+        return key
+
+    def __generate_new_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
         key = secrets.token_urlsafe(48)
         api_key = ApiKey(
             name=request.name,
@@ -176,9 +184,23 @@ class AuthService:
 
         return key
 
-    def get_api_key(self, id: ObjectId, user_id: ObjectId):
+    def __regenerate_api_key(self, existing_api_key: ApiKey):
+        key = secrets.token_urlsafe(48)
+        existing_api_key.key = key
+        existing_api_key.masked_key = ((len(key) - 4) * "*") + key[-4:]
+
         try:
-            key = self.api_key_repository.find_one({"_id": id, "user_id": user_id})
+            self.api_key_repository.save(existing_api_key)
+        except Exception:
+            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+
+        return key
+
+    def get_api_key(self, id: str, user_id: ObjectId):
+        try:
+            key = self.api_key_repository.find_one(
+                {"_id": ObjectId(id), "user_id": user_id}
+            )
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
@@ -224,3 +246,29 @@ class AuthService:
             raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
 
         return api_key
+
+    def set_api_key_status_ulca(self, request: ULCAApiKeyRequest, id: ObjectId):
+        api_key_name = request.emailId + request.appName
+
+        try:
+            api_key = self.api_key_repository.find_one(
+                {"name": api_key_name, "user_id": id}
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc(), True)
+
+        if not api_key:
+            return ULCAApiKeyDeleteResponse(
+                isRevoked=False, message="API Key not found"
+            )
+
+        api_key.revoke()
+
+        try:
+            self.api_key_repository.save(api_key)
+        except Exception:
+            raise BaseError(Errors.DHRUVA209.value, traceback.format_exc(), True)
+
+        return ULCAApiKeyDeleteResponse(
+            isRevoked=True, message="API Key successfully deleted"
+        )

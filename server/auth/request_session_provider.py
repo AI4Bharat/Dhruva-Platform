@@ -1,6 +1,8 @@
+from typing import Optional
+
 from bson import ObjectId
 from fastapi import Depends, Header
-from fastapi.security import HTTPBearer
+from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 
@@ -10,7 +12,10 @@ from db.app_db import AppDatabase
 
 
 def InjectRequestSession(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
+    credentials_bearer: Optional[HTTPAuthorizationCredentials] = Depends(
+        HTTPBearer(auto_error=False)
+    ),
+    credentials_key: Optional[str] = Depends(APIKeyHeader(name="Authorization")),
     x_auth_source: TokenType = Header(default=TokenType.API_KEY),
     db: AppDatabase = Depends(AppDatabase),
 ):
@@ -20,16 +25,20 @@ def InjectRequestSession(
     WARNING: Only use in protected routes, otherwise it will throw an error.
     """
 
-    if not credentials:
-        raise Exception("Route not protected by authentication")
-
     match x_auth_source:
         case TokenType.AUTH_TOKEN:
-            provider = auth_token_provider
-        case TokenType.API_KEY:
-            provider = api_key_provider
+            if not credentials_bearer:
+                raise Exception("Route not protected by authentication")
 
-    session = provider.fetch_session(credentials.credentials, db)  # type: ignore
+            session = auth_token_provider.fetch_session(
+                credentials_bearer.credentials, db
+            )
+        case TokenType.API_KEY:
+            if not credentials_key:
+                raise Exception("Route not protected by authentication")
+
+            session = api_key_provider.fetch_session(credentials_key, db)
+
     return RequestSession(**session)
 
 
