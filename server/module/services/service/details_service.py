@@ -1,5 +1,7 @@
+import copy
 import traceback
 from typing import List, Optional
+from bson import ObjectId
 
 from exception.base_error import BaseError
 from fastapi import Depends, HTTPException, status
@@ -7,6 +9,7 @@ from schema.services.request import ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error.errors import Errors
+from auth.session_provider import Session
 from ..repository import ModelRepository, ServiceRepository
 from module.auth.repository.api_key_repository import ApiKeyRepository
 
@@ -15,13 +18,15 @@ class DetailsService:
     def __init__(
         self,
         service_repository: ServiceRepository = Depends(ServiceRepository),
-        model_repository: ModelRepository = Depends(ModelRepository)
+        model_repository: ModelRepository = Depends(ModelRepository),
+        api_key_repository: ApiKeyRepository = Depends(ApiKeyRepository)
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
+        self.api_key_repository = api_key_repository
 
     def get_service_details(
-        self, request: ServiceViewRequest
+        self, request: ServiceViewRequest, user_id: ObjectId
     ) -> Optional[ServiceViewResponse]:
         try:
             service = self.service_repository.find_by_id(request.serviceId)
@@ -34,10 +39,24 @@ class DetailsService:
         try:
             model = self.model_repository.get_by_id(service.modelId)
         except:
-            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-        
+            # raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+            pass
 
-        return ServiceViewResponse(**service.dict(), model=model)
+        try:
+            # Sending all services in the response temporariliy
+            # TODO: convert the find result object to dict and create a new copy
+            total_usage = 0
+            api_keys = self.api_key_repository.find({"user_id": user_id})
+            for key in api_keys:
+                if getattr(key, "services"):
+                    for srv in key.services:
+                        if srv.service_id == request.serviceId:
+                            total_usage += srv.usage
+                            break
+
+        except Exception:
+            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+        return ServiceViewResponse(**service.dict(), model=model, key_usage=api_keys, total_usage=total_usage)
 
     def list_services(self) -> List[ServiceListResponse]:
         try:

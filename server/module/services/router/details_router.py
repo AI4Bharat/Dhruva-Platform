@@ -2,6 +2,7 @@ import traceback
 from typing import List
 
 from auth.auth_provider import AuthProvider
+from auth.session_provider import InjectSession, Session
 from exception.base_error import BaseError
 from exception.response_models import NotAuthenticatedResponse
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -34,8 +35,9 @@ async def _list_services(
 async def _view_service_details(
     request: ServiceViewRequest,
     details_service: DetailsService = Depends(DetailsService),
+    session: Session = Depends(InjectSession)
 ):
-    response = details_service.get_service_details(request)
+    response = details_service.get_service_details(request, session.id)
     return response
 
 

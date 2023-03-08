@@ -3,7 +3,6 @@ from typing import Union, Callable
 from fastapi import APIRouter, Depends
 from auth import AuthProvider
 from fastapi.routing import APIRoute, Response, Request
-from db.database import setup_db_data
 from exception.response_models import NotAuthenticatedResponse
 from ..service.inference_service import InferenceService
 from schema.services.response import (

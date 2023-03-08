@@ -7,7 +7,7 @@ from db.MongoBaseModel import MongoBaseModel
 
 class _ServiceUsage(BaseModel):
     service_id: str
-    usage: int
+    usage: int = 0
 
 class ApiKey(MongoBaseModel):
     name: str
@@ -16,5 +16,5 @@ class ApiKey(MongoBaseModel):
     active: bool
     user_id: ObjectId
     type: str
-    usage: int
-    services: Optional[List[_ServiceUsage]]
+    usage: int = 0
+    services: List[_ServiceUsage] = []
