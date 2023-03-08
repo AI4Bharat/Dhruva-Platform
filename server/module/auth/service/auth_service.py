@@ -151,7 +151,15 @@ class AuthService:
         return token
 
     def create_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
-        user_id = id if not request.target_user_id else ObjectId(request.target_user_id)
+        try:
+            user_id = (
+                id if not request.target_user_id else ObjectId(request.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
 
         try:
             existing_api_key = self.api_key_repository.find_one(
@@ -223,6 +231,15 @@ class AuthService:
         return key
 
     def get_all_api_keys(self, params: GetAllApiKeysRequest, id: ObjectId):
+        try:
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
         user_id = id if not params.target_user_id else ObjectId(params.target_user_id)
 
         try:
