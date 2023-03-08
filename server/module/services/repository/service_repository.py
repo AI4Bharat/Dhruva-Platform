@@ -16,3 +16,6 @@ class ServiceRepository(BaseRepository[Service]):
     def find_by_id(self, id: str) -> Optional[Service]:
         return super().find_one({"serviceId": id})
 
+    def delete_one(self, id: str):
+        result = self.collection.delete_one({"serviceId": id})
+        return result.deleted_count

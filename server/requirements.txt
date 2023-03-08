@@ -1,4 +1,6 @@
 anyio==3.6.2
+argon2-cffi==21.3.0
+
 autopep8==2.0.1
 bidict==0.22.1
 certifi==2022.12.7
@@ -11,7 +13,7 @@ idna==3.4
 prometheus-client==0.15.0
 prometheus-fastapi-instrumentator==5.9.1
 pycodestyle==2.10.0
-pydantic==1.10.4
+pydantic[email]==1.10.4
 python-dotenv==0.21.0
 python-engineio==4.3.4
 pymongo==4.3.3
