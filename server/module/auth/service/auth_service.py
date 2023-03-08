@@ -166,12 +166,16 @@ class AuthService:
 
         return key
 
+    def __mask_key(self, key: str):
+        masked_key = key[:4] + (len(key) - 8) * "*" + key[-4:]
+        return masked_key
+
     def __generate_new_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
         key = secrets.token_urlsafe(48)
         api_key = ApiKey(
             name=request.name,
             key=key,
-            masked_key=((len(key) - 4) * "*") + key[-4:],
+            masked_key=self.__mask_key(key),
             active=True,
             user_id=id,
             type=request.type.value,
@@ -187,7 +191,7 @@ class AuthService:
     def __regenerate_api_key(self, existing_api_key: ApiKey):
         key = secrets.token_urlsafe(48)
         existing_api_key.key = key
-        existing_api_key.masked_key = ((len(key) - 4) * "*") + key[-4:]
+        existing_api_key.masked_key = self.__mask_key(key)
 
         try:
             self.api_key_repository.save(existing_api_key)
