@@ -1,4 +1,5 @@
 import os
+import math
 import secrets
 import time
 import traceback
@@ -248,6 +249,26 @@ class AuthService:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
         return keys
+    
+    def get_all_api_keys_with_usage(self, page, limit) -> List:
+        """
+        Fetches all API keys from the collection and calculates the total usage
+        Args:
+            - page: Current page
+            - limit: Number of documents per page
+        Returns:
+            - List[APIKeys]
+            - total_usage
+            - total_pages
+        """
+        keys = self.api_key_repository.find_all()
+        total_usage = sum(k.usage for k in keys)
+
+        return (
+            keys[(page - 1) * limit: page * limit],
+            total_usage,
+            math.ceil(len(keys) / limit)
+        )
 
     def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
         try:
