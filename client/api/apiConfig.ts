@@ -60,4 +60,4 @@ apiInstance.interceptors.response.use(
   }
 );
 
-export { dhruvaAPI };
+export { dhruvaAPI,apiInstance };
