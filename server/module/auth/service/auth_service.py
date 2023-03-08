@@ -17,6 +17,7 @@ from exception.base_error import BaseError
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
+    GetApiKeyQuery,
     RefreshRequest,
     SetApiKeyStatusQuery,
     SignInRequest,
@@ -200,10 +201,10 @@ class AuthService:
 
         return key
 
-    def get_api_key(self, id: str, user_id: ObjectId):
+    def get_api_key(self, api_key_name: str, user_id: ObjectId):
         try:
             key = self.api_key_repository.find_one(
-                {"_id": ObjectId(id), "user_id": user_id}
+                {"name": api_key_name, "user_id": user_id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
@@ -227,7 +228,7 @@ class AuthService:
     def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
         try:
             api_key = self.api_key_repository.find_one(
-                {"_id": ObjectId(params.api_key_id), "user_id": id}
+                {"name": params.api_key_name, "user_id": id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
