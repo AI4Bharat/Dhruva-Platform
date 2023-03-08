@@ -1,12 +1,13 @@
-from exception.response_models import NotAuthenticatedResponse
 from fastapi import APIRouter, Depends
+from exception.http_error import HttpErrorResponse
+
 from schema.auth.request import RefreshRequest, SignInRequest
 from schema.auth.response import RefreshResponse, SignInResponse
 
 from ..service.auth_service import AuthService
 
 router = APIRouter(
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 

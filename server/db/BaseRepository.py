@@ -79,3 +79,9 @@ class BaseRepository(Generic[T]):
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
         return result.inserted_id
+
+    def save(self, data: T):
+        update_values = data.dict()
+        id = update_values["_id"]
+        del update_values["_id"]
+        self.collection.update_one({"_id": id}, {"$set": update_values})
