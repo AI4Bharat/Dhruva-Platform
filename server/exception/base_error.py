@@ -8,13 +8,11 @@ class BaseError(Exception):
         self,
         error: dict[str, str],
         traceback: Optional[str] = None,
-        ulca_api_error=False,
     ) -> None:
         self.error_kind = error["kind"]
         self.error_message = error["message"]
         self.traceback = traceback
-        self.ulca_api_error = ulca_api_error
-        super().__init__(error["kind"], error["message"], traceback, ulca_api_error)
+        super().__init__(error["kind"], error["message"], traceback)
 
     def __str__(self) -> str:
         return "{}: {}\n{}".format(self.error_kind, self.error_message, self.traceback)

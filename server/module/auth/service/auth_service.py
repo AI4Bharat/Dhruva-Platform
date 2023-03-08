@@ -14,6 +14,8 @@ from fastapi import Depends, HTTPException, status
 from pydantic import EmailStr
 
 from exception.base_error import BaseError
+from exception.ulca_api_key_client_error import ULCAApiKeyClientError
+from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
@@ -262,19 +264,17 @@ class AuthService:
                 {"name": api_key_name, "user_id": id}
             )
         except Exception:
-            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc(), True)
+            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if not api_key:
-            return ULCAApiKeyDeleteResponse(
-                isRevoked=False, message="API Key not found"
-            )
+            raise ULCAApiKeyClientError(status.HTTP_404_NOT_FOUND, "API Key not found")
 
         api_key.revoke()
 
         try:
             self.api_key_repository.save(api_key)
         except Exception:
-            raise BaseError(Errors.DHRUVA209.value, traceback.format_exc(), True)
+            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
 
         return ULCAApiKeyDeleteResponse(
             isRevoked=True, message="API Key successfully deleted"

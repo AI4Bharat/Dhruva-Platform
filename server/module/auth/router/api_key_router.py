@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
-from exception.response_models import NotAuthenticatedResponse
+from exception.http_error import HttpErrorResponse
 from schema.auth.request import (
     CreateApiKeyRequest,
     GetApiKeyQuery,
@@ -27,7 +27,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 

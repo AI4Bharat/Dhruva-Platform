@@ -1,33 +1,35 @@
 from typing import Union
+
 from fastapi import APIRouter, Depends
+
 from auth.auth_provider import AuthProvider
-from exception.response_models import NotAuthenticatedResponse
-from ..service.inference_service import InferenceService
-from schema.services.response import (
-    ULCAGenericInferenceResponse,
-    ULCAAsrInferenceResponse,
-    ULCATranslationInferenceResponse,
-    ULCATtsInferenceResponse,
-    ULCANerInferenceResponse,
-    ULCAS2SInferenceResponse,
-)
+from exception.http_error import HttpErrorResponse
 from schema.services.request import (
-    ULCAInferenceQuery,
-    ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,
-    ULCATranslationInferenceRequest,
-    ULCATtsInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCAInferenceQuery,
     ULCANerInferenceRequest,
     ULCAS2SInferenceRequest,
+    ULCATranslationInferenceRequest,
+    ULCATtsInferenceRequest,
+)
+from schema.services.response import (
+    ULCAAsrInferenceResponse,
+    ULCAGenericInferenceResponse,
+    ULCANerInferenceResponse,
+    ULCAS2SInferenceResponse,
+    ULCATranslationInferenceResponse,
+    ULCATtsInferenceResponse,
 )
 
+from ..service.inference_service import InferenceService
 
 router = APIRouter(
     prefix="/inference",
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
@@ -81,6 +83,7 @@ async def _run_inference_ner(
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_ner_triton_inference(request, params.serviceId)
+
 
 # Temporary endpoint; will be removed/standardized soon
 
