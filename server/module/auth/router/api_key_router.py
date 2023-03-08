@@ -1,6 +1,3 @@
-import json
-from typing import Optional
-
 from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
@@ -41,9 +38,7 @@ async def _get_all_api_keys_for_user(
 ):
     api_keys = auth_service.get_all_api_keys(params, request_session.id)
 
-    return GetAllApiKeysResponse(
-        api_keys=json.loads(json.dumps(api_keys))
-    )  # type:ignore
+    return GetAllApiKeysResponse(api_keys=api_keys)  # type:ignore
 
 
 @router.post("", response_model=CreateApiKeyResponse, status_code=201)
