@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from fastapi import APIRouter, Depends
 
@@ -7,6 +8,7 @@ from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.http_error import HttpErrorResponse
 from schema.auth.request import (
     CreateApiKeyRequest,
+    GetAllApiKeysRequest,
     GetApiKeyQuery,
     SetApiKeyStatusQuery,
     ULCAApiKeyRequest,
@@ -33,10 +35,11 @@ router = APIRouter(
 
 @router.get("/all", response_model=GetAllApiKeysResponse)
 async def _get_all_api_keys_for_user(
+    params: GetAllApiKeysRequest = Depends(GetAllApiKeysRequest),
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_keys = auth_service.get_all_api_keys(request_session.id)
+    api_keys = auth_service.get_all_api_keys(params, request_session.id)
 
     return GetAllApiKeysResponse(
         api_keys=json.loads(json.dumps(api_keys))
