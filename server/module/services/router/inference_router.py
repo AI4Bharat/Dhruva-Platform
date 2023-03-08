@@ -1,17 +1,27 @@
 import time
 from typing import Union, Callable
 from fastapi import APIRouter, Depends
+
 from auth.auth_provider import AuthProvider
 from fastapi.routing import APIRoute, Response, Request
 from exception.response_models import NotAuthenticatedResponse
-from ..service.inference_service import InferenceService
+from exception.http_error import HttpErrorResponse
+from schema.services.request import (
+    ULCAAsrInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCAInferenceQuery,
+    ULCANerInferenceRequest,
+    ULCAS2SInferenceRequest,
+    ULCATranslationInferenceRequest,
+    ULCATtsInferenceRequest,
+)
 from schema.services.response import (
-    ULCAGenericInferenceResponse,
     ULCAAsrInferenceResponse,
-    ULCATranslationInferenceResponse,
-    ULCATtsInferenceResponse,
+    ULCAGenericInferenceResponse,
     ULCANerInferenceResponse,
     ULCAS2SInferenceResponse,
+    ULCATranslationInferenceResponse,
+    ULCATtsInferenceResponse,
 )
 from schema.services.request import (
     ULCAInferenceQuery,
@@ -23,8 +33,8 @@ from schema.services.request import (
     ULCAS2SInferenceRequest,
 )
 # from ..repository import ServiceRepository, ModelRepository
+from ..service.inference_service import InferenceService
 from celery_backend.tasks import log_data
-
 
 class InferenceLoggingRoute(APIRoute):
     def get_route_handler(self) -> Callable:
@@ -57,7 +67,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
@@ -112,6 +122,7 @@ async def _run_inference_ner(
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_ner_triton_inference(request, params.serviceId)
+
 
 # Temporary endpoint; will be removed/standardized soon
 
