@@ -148,9 +148,11 @@ class AuthService:
         return token
 
     def create_api_key(self, request: CreateApiKeyRequest, id: ObjectId):
+        user_id = id if not request.target_user_id else ObjectId(request.target_user_id)
+
         try:
             existing_api_key = self.api_key_repository.find_one(
-                {"name": request.name, "user_id": id}
+                {"name": request.name, "user_id": user_id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
@@ -163,7 +165,7 @@ class AuthService:
                 detail={"message": "API Key name already exists"},
             )
         else:
-            key = self.__generate_new_api_key(request, id)
+            key = self.__generate_new_api_key(request, user_id)
 
         return key
 
