@@ -85,7 +85,7 @@ async def _create_ulca_api_key(
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
     create_api_key_req = CreateApiKeyRequest(
-        name=(request.emailId + "-" + request.appName),
+        name=(request.emailId + "/" + request.appName),
         type=ApiKeyType.INFERENCE,
         regenerate=True,
     )
