@@ -52,6 +52,11 @@ app.add_middleware(
 async def base_error_handler(request: Request, exc: BaseError):
     logger.error(exc)
 
+    if exc.ulca_api_error:
+        return JSONResponse(
+            status_code=500, content={"isRevoked": False, "message": exc.error_kind}
+        )
+
     return JSONResponse(
         status_code=500,
         content={
