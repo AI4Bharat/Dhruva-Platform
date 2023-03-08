@@ -19,6 +19,7 @@ from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
+    GetAllApiKeysRequest,
     GetApiKeyQuery,
     RefreshRequest,
     SetApiKeyStatusQuery,
@@ -221,9 +222,11 @@ class AuthService:
 
         return key
 
-    def get_all_api_keys(self, id: ObjectId):
+    def get_all_api_keys(self, params: GetAllApiKeysRequest, id: ObjectId):
+        user_id = id if not params.target_user_id else ObjectId(params.target_user_id)
+
         try:
-            keys = self.api_key_repository.find({"user_id": id})
+            keys = self.api_key_repository.find({"user_id": user_id})
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
