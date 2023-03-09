@@ -1,7 +1,11 @@
-from ..model import Service, Model
-from schema.services.request import ServiceCreateRequest, ModelCreateRequest
-from ..repository import ServiceRepository, ModelRepository
+import traceback
 from fastapi import Depends
+from exception.base_error import BaseError
+
+from ...auth.service.auth_service import AuthService
+from ..error.errors import Errors
+from ..repository import ServiceRepository, ModelRepository
+from schema.auth.response.get_all_api_keys_response import GetAllApiKeysDetailsResponse
 
 
 class AdminService:
@@ -9,14 +13,24 @@ class AdminService:
         self,
         service_repository: ServiceRepository = Depends(ServiceRepository),
         model_repository: ModelRepository = Depends(ModelRepository),
+        auth_service: AuthService = Depends(AuthService)
     ):
         self.service_repository = service_repository
         self.model_repository = model_repository
+        self.auth_service = auth_service
 
-    def create_service(self, request: ServiceCreateRequest):
-        service = Service(**request.dict())
-        return self.service_repository.insert_one(service)
+    def view_dashboard(self, page, limit):
+        try:
+            api_keys, total_usage, total_pages = self.auth_service.get_all_api_keys_with_usage(
+                page, limit
+            )
 
-    def create_model(self, request: ModelCreateRequest):
-        model = Model(**request.dict())
-        return self.model_repository.insert_one(model)
+            return GetAllApiKeysDetailsResponse(
+                api_keys=api_keys,
+                total_usage=total_usage,
+                page=page,
+                limit=limit,
+                total_pages=total_pages
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA109.value, traceback.format_exc())

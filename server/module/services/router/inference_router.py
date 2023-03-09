@@ -1,8 +1,9 @@
-from typing import Union
-
+import time
+from typing import Union, Callable
 from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
+from fastapi.routing import APIRoute, Response, Request
 from exception.http_error import HttpErrorResponse
 from schema.services.request import (
     ULCAAsrInferenceRequest,
@@ -15,21 +16,50 @@ from schema.services.request import (
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
+    ULCAAsrInferenceResponse,
     ULCAGenericInferenceResponse,
+    ULCANerInferenceResponse,
+    ULCAS2SInferenceResponse,
     ULCANerInferenceResponse,
     ULCAS2SInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
 )
-
+# from ..repository import ServiceRepository, ModelRepository
 from ..service.inference_service import InferenceService
+from celery_backend.tasks import log_data
+
+class InferenceLoggingRoute(APIRoute):
+    def get_route_handler(self) -> Callable:
+        original_route_handler = super().get_route_handler()
+
+        async def logging_route_handler(request: Request) -> Response:
+            req_body = await request.body()
+
+            start_time = time.time()
+            response: Response = await original_route_handler(request)
+            res_body = response.body
+            if request.url._url.split("/")[-1].split("?")[0] in ("asr", "translation", "tts"):
+                log_data.apply_async(
+                    (
+                        request.url._url,
+                        str(request.state.api_key_id),
+                        req_body.decode("utf-8"),
+                        res_body.decode("utf-8"),
+                        time.time() - start_time
+                    ),
+                    queue="data_log"
+                )
+            return response
+        return logging_route_handler
 
 router = APIRouter(
     prefix="/inference",
+    route_class=InferenceLoggingRoute,
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={"401": {"model": HttpErrorResponse}}
 )
 
 
@@ -53,6 +83,7 @@ async def _run_inference_translation(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
+    print("inference")
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )
@@ -83,6 +114,7 @@ async def _run_inference_ner(
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_ner_triton_inference(request, params.serviceId)
+
 
 
 # Temporary endpoint; will be removed/standardized soon
