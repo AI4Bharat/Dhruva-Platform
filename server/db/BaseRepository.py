@@ -80,5 +80,6 @@ class BaseRepository(Generic[T]):
         return result.inserted_id
 
     def update_one(self, data: dict) -> int:
-        result = self.collection.update_one({"_id": ObjectId(data['id'])}, {"$set": data})
+        id = data.pop("id")
+        result = self.collection.update_one({"_id": ObjectId(id)}, {"$set": data})
         return result.modified_count
