@@ -1,5 +1,4 @@
-import { createContext } from "react";
-import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
+import axios from "axios";
 
 const dhruvaRootURL: string = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
