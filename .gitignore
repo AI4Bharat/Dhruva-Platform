@@ -4,3 +4,6 @@
 server/venv
 .DS_Store
 __pycache__
+mongodb
+appdb
+logdb
