@@ -7,9 +7,11 @@ from auth.auth_provider import AuthProvider
 from fastapi.routing import APIRoute, Response, Request
 from exception.http_error import HttpErrorResponse
 from schema.services.request import (
-    ULCAAsrInferenceRequest,
-    ULCAGenericInferenceRequest,
     ULCAInferenceQuery,
+    ULCAGenericInferenceRequest,
+    ULCAAsrInferenceRequest,
+    ULCATranslationInferenceRequest,
+    ULCATtsInferenceRequest,
     ULCANerInferenceRequest,
     ULCAS2SInferenceRequest,
     ULCAPipelineInferenceRequest,

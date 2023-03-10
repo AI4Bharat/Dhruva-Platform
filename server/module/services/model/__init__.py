@@ -1,2 +1,2 @@
-from .model import Model,Task
+from .model import Model
 from .service import Service
