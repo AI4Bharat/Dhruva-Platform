@@ -4,21 +4,21 @@ import io
 import os
 import sys
 from urllib.parse import parse_qs
-from dataclasses import dataclass
+from pydantic import BaseModel
 import wave
 import requests
 from schema.services.common import _ULCATaskType
 
-@dataclass
-class UserState:
-    input_audio__buffer: bytes
-    input_audio__run_inference_once_in_bytes: int
-    input_audio__last_inference_position_in_bytes: int
-    input_audio__sampling_rate: int
+class UserState(BaseModel):
+    input_audio__buffer: bytes = None
+    input_audio__run_inference_once_in_bytes: int = -1
+    input_audio__max_inference_duration_in_bytes: int = 0
+    input_audio__last_inference_position_in_bytes: int = 0
+    input_audio__sampling_rate: int = -1
 
-    task_sequence: list
-    input_task_type: str
-    sequence_depth_to_run: int
+    task_sequence: list = []
+    input_task_type: str = None
+    sequence_depth_to_run: int = 1
     http_headers: dict
 
 class StreamingServerTaskSequence:
@@ -47,8 +47,9 @@ class StreamingServerTaskSequence:
             exit(f"ERROR: Please set the env var `BACKEND_PORT`")
 
         # Constants. TODO: Should we allow changing this?
-        self.input_audio__response_frequency_in_ms = 2000
+        self.input_audio__response_frequency_in_ms = 2*1000
         self.input_audio__bytes_per_sample = 2
+        self.input_audio__max_inference_time_in_ms = 30*1000
         
         # Storage for state specific to each client (key will be socket connection-ID string, and value would be `UserStateForASR`)
         self.client_states = {}
@@ -126,14 +127,6 @@ class StreamingServerTaskSequence:
                 return False
             
             self.client_states[sid] = UserState(
-                input_audio__buffer=None,
-                input_audio__run_inference_once_in_bytes=-1,
-                input_audio__last_inference_position_in_bytes=0,
-                input_audio__sampling_rate=-1,
-
-                task_sequence=[],
-                input_task_type=None,
-                sequence_depth_to_run=1,
                 http_headers=auth,
             )
             return True
@@ -152,8 +145,10 @@ class StreamingServerTaskSequence:
                 # Compute the inference_frequency (once in how many bytes should we run inference)
                 sampling_rate = int(task_sequence[0]["config"]["samplingRate"])
                 run_inference_once_in_bytes = int(sampling_rate * (self.input_audio__response_frequency_in_ms / 1000) * self.input_audio__bytes_per_sample)
+                max_inference_duration_in_bytes = int(sampling_rate * (self.input_audio__max_inference_time_in_ms / 1000) * self.input_audio__bytes_per_sample)
 
                 self.client_states[sid].input_audio__run_inference_once_in_bytes = run_inference_once_in_bytes
+                self.client_states[sid].input_audio__max_inference_duration_in_bytes = max_inference_duration_in_bytes
                 self.client_states[sid].input_audio__sampling_rate = task_sequence[0]["config"]["samplingRate"]
 
             # print("Ready to start stream for:", sid)
@@ -167,15 +162,24 @@ class StreamingServerTaskSequence:
         
         @self.sio.on("data")
         async def data(sid: str, input_data: dict, streaming_config: int, clear_server_state: bool, disconnect_stream: bool):
+            if sid not in self.client_states:
+                # TODO: Send an error response stating this
+                return
+            
             if input_data:
                 # Update the user-state with the input_data
                 if self.client_states[sid].input_task_type == _ULCATaskType.ASR:
+                    remaining_bytes = self.client_states[sid].input_audio__max_inference_duration_in_bytes - len(self.client_states[sid].input_audio__buffer)
                     if input_data["audio"] and input_data["audio"][0]["audioContent"]:
                         # For example, in the case of speech client, append audio payload to client buffer
                         audioContent = input_data["audio"][0]["audioContent"]
                         if type(audioContent) is list:
                             # Assume uint16 array, and pack it into bytes
                             audioContent = b''.join([i.to_bytes(self.input_audio__bytes_per_sample, sys.byteorder) for i in audioContent])
+                        if remaining_bytes <= len(audioContent):
+                            audioContent = audioContent[:remaining_bytes]
+                            disconnect_stream = True
+
                         self.client_states[sid].input_audio__buffer += audioContent
             
             if streaming_config:
