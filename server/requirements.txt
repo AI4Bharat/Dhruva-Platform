@@ -1,3 +1,4 @@
+argon2-cffi==21.3.0
 anyio==3.6.2
 autopep8==2.0.1
 bidict==0.22.1
@@ -11,9 +12,10 @@ idna==3.4
 prometheus-client==0.15.0
 prometheus-fastapi-instrumentator==5.9.1
 pycodestyle==2.10.0
-pydantic==1.10.4
+pydantic[email]==1.10.4
 python-dotenv==0.21.0
 python-engineio==4.3.4
+pymongo==4.3.3
 python-socketio==5.7.2
 PyYAML==6.0
 requests==2.28.2
@@ -32,6 +34,12 @@ gevent==22.10.2
 scipy==1.10.0
 soundfile==0.11.0
 pydub==0.25.1
+pyjwt==2.6.0
+motor==3.1.1
+pymongo==4.3.3
+celery==5.2.7
+celery-flower==1.0.1
+# asgiref
 
 # Temporary
 git+https://github.com/libindic/indic-trans

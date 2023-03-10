@@ -1,25 +1,28 @@
+import base64
+import io
 import traceback
 from typing import Union
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from exception.base_error import BaseError
 import requests
 from copy import deepcopy
+from urllib.request import urlopen
+
 import numpy as np
-import tritonclient.http as http_client
-import soundfile as sf
-from scipy.io import wavfile
+import requests
 import scipy.signal as sps
-import io
+import soundfile as sf
 import tritonclient.http as http_client
 from tritonclient.utils import np_to_triton_dtype
-import base64
-from urllib.request import urlopen
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 
+from exception.base_error import BaseError
+from indictrans import Transliterator
 from schema.services.request import (
-    ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCANerInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
     ULCANerInferenceRequest,
@@ -27,6 +30,7 @@ from schema.services.request import (
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
+    ULCANerInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
     ULCANerInferenceResponse,
@@ -35,11 +39,13 @@ from schema.services.response import (
 from schema.services.common import (
     _ULCATaskType
 )
+from scipy.io import wavfile
+from tritonclient.utils import np_to_triton_dtype
+
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
-from ..repository import ServiceRepository, ModelRepository
+from ..repository import ModelRepository, ServiceRepository
 
-from indictrans import Transliterator
 ISO_639_v2_to_v3 = {
     "as": "asm",
     "bn": "ben",
@@ -144,8 +150,13 @@ class InferenceService:
         except:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
+        if not service:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+            )
+
         try:
-            model = self.model_repository.find_by_id(service.modelId)
+            model = self.model_repository.get_by_id(service.modelId)
         except:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
@@ -187,8 +198,16 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
+        try:
+            service = self.service_repository.find_by_id(serviceId)
+        except:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
-        service = self.service_repository.find_by_id(serviceId)
+        if not service:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+            )
+
         headers = {"Authorization": "Bearer " + service.key}
 
         language = request_body.config.language.sourceLanguage
@@ -205,12 +224,14 @@ class InferenceService:
             raw_audio = np.array(data) # in float64
 
             # sampling_rate, raw_audio = wavfile.read(file_handle)
-            if len(raw_audio.shape) > 1: # Stereo to mono
+            if len(raw_audio.shape) > 1:  # Stereo to mono
                 raw_audio = raw_audio.sum(axis=1) / 2
 
             standard_rate = 16000
             if sampling_rate != standard_rate:
-                number_of_samples = round(len(raw_audio) * float(standard_rate) / sampling_rate)
+                number_of_samples = round(
+                    len(raw_audio) * float(standard_rate) / sampling_rate
+                )
                 raw_audio = sps.resample(raw_audio, number_of_samples)
 
             # Amplitude Equalization, assuming mono-streamed
@@ -276,8 +297,16 @@ class InferenceService:
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
+        try:
+            service = self.service_repository.find_by_id(serviceId)
+        except Exception:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
-        service = self.service_repository.find_by_id(serviceId)
+        if not service:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+            )
+
         headers = {"Authorization": "Bearer " + service.key}
 
         results = []
@@ -312,14 +341,21 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        
-        service = self.service_repository.find_by_id(serviceId)
-        headers = {"Authorization": "Bearer " + service.key}
+        try:
+            service = self.service_repository.find_by_id(serviceId)
+        except Exception:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
+        if not service:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+            )
+
+        headers = {"Authorization": "Bearer " + service.key}
         results = []
 
         for input in request_body.input:
-            input_string = input.source.replace('।', '.')
+            input_string = input.source.replace("।", ".")
             ip_language = request_body.config.language.sourceLanguage
             ip_gender = request_body.config.gender
 
@@ -361,8 +397,16 @@ class InferenceService:
     async def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
+        try:
+            service = self.service_repository.find_by_id(serviceId)
+        except Exception:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
-        service = self.service_repository.find_by_id(serviceId)
+        if not service:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+            )
+
         headers = {"Authorization": "Bearer " + service.key}
 
         # TODO: Replace with real deployments

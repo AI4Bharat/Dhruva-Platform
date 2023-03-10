@@ -4,7 +4,11 @@ from pydantic import BaseModel
 
 
 class BaseError(Exception):
-    def __init__(self, error: dict[str, str], traceback: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        error: dict[str, str],
+        traceback: Optional[str] = None,
+    ) -> None:
         self.error_kind = error["kind"]
         self.error_message = error["message"]
         self.traceback = traceback
@@ -17,6 +21,7 @@ class BaseError(Exception):
 class _ErrorDetail(BaseModel):
     kind: str
     message: str
+
 
 class BaseErrorResponse(BaseModel):
     detail: _ErrorDetail

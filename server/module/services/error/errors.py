@@ -10,3 +10,4 @@ class Errors(Enum):
     DHRUVA106 = {"kind": "DHRUVA-106", "message": "Failed to fetch all models"}
     DHRUVA107 = {"kind": "DHRUVA-107", "message": "Failed to get triton ready"}
     DHRUVA108 = {"kind": "DHRUVA-108", "message": "Failed to parse request"}
+    DHRUVA109 = {"kind": "DHRUVA-109", "message": "Failed to get Dashboard details from db"}

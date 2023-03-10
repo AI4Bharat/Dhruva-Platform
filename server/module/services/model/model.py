@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Any, List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from schema.services.common import _ULCALanguagePair, _ULCATask
+from db.MongoBaseModel import MongoBaseModel
 
 class _OAuthId(BaseModel):
     oauthId: str
@@ -58,8 +59,7 @@ class _Benchmark(BaseModel):
     score: List[_BenchmarkMetric]
 
 
-class Model(BaseModel):
-    _id: Optional[Any]
+class Model(MongoBaseModel):
     modelId: str
     version: str
     submittedOn: int
@@ -74,3 +74,6 @@ class Model(BaseModel):
     inferenceEndPoint: _InferenceEndPoint
     benchmarks: Optional[List[_Benchmark]]
     submitter: _Submitter
+
+    class Config:
+        allow_population_by_field_name = True
