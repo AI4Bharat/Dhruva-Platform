@@ -35,5 +35,3 @@ pydub==0.25.1
 
 # Temporary
 git+https://github.com/libindic/indic-trans
-indic_numtowords
-translators

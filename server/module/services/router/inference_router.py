@@ -101,7 +101,6 @@ async def _run_inference_sts(
         serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
 
     asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
-    asr_response = ULCAAsrInferenceResponse(**asr_response)
 
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
@@ -110,7 +109,6 @@ async def _run_inference_sts(
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
     )
-    translation_response = ULCATranslationInferenceResponse(**translation_response)
 
     for i in range(len(translation_response.output)):
         translation_response.output[i].source, translation_response.output[i].target = (
@@ -132,7 +130,6 @@ async def _run_inference_sts(
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
     )
-    tts_response = ULCATtsInferenceResponse(**tts_response)
 
     for i in range(len(translation_response.output)):
         translation_response.output[i].source, translation_response.output[i].target = (

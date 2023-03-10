@@ -25,7 +25,6 @@ app.mount("/socket.io", streamer.app)
 # TODO: Depreciate this soon in-favor of above
 from asr_streamer import StreamingServerASR
 streamer_asr = StreamingServerASR()
-
 # Mount it at an alternative path. 
 app.mount("/socket_asr.io", streamer_asr.app)
 

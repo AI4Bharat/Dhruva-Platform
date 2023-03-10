@@ -39,9 +39,12 @@ class StreamingServerTaskSequence:
                 self.sio, socketio_path="",
                 # other_asgi_app=app
             )
-        self.inference_url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+        
         if "BACKEND_PORT" in os.environ:
             self.inference_url = f"http://localhost:{os.environ['BACKEND_PORT']}/services/inference/pipeline"
+        else:
+            # self.inference_url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
+            exit(f"ERROR: Please set the env var `BACKEND_PORT`")
 
         # Constants. TODO: Should we allow changing this?
         self.input_audio__response_frequency_in_ms = 2000
