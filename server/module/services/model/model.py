@@ -1,12 +1,8 @@
 from datetime import datetime
 from typing import Any, List, Optional
 from pydantic import BaseModel, Field
-from schema.services.common import _ULCALanguagePair
+from schema.services.common import _ULCALanguagePair, _ULCATask
 from db.MongoBaseModel import MongoBaseModel
-from schema.services.common import _ULCATask
-class Task(BaseModel):
-    type: str
-
 
 class _OAuthId(BaseModel):
     oauthId: str
