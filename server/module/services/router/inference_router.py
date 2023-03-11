@@ -1,18 +1,29 @@
 import time
 from typing import Union, Callable
 from fastapi import APIRouter, Depends
+from ..service.inference_service import InferenceService
 
 from auth.auth_provider import AuthProvider
 from fastapi.routing import APIRoute, Response, Request
 from exception.http_error import HttpErrorResponse
 from schema.services.request import (
-    ULCAAsrInferenceRequest,
-    ULCAGenericInferenceRequest,
     ULCAInferenceQuery,
-    ULCANerInferenceRequest,
-    ULCAS2SInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCAAsrInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
+    ULCANerInferenceRequest,
+    ULCAS2SInferenceRequest,
+    ULCAPipelineInferenceRequest,
+)
+from schema.services.response import (
+    ULCAGenericInferenceResponse,
+    ULCAAsrInferenceResponse,
+    ULCATranslationInferenceResponse,
+    ULCATtsInferenceResponse,
+    ULCANerInferenceResponse,
+    ULCAS2SInferenceResponse,
+    ULCAPipelineInferenceResponse,
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
@@ -87,7 +98,6 @@ async def _run_inference_translation(
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )
-
 
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
@@ -181,3 +191,10 @@ async def _run_inference_sts(
     )
 
     return response
+
+@router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
+async def _run_inference_pipeline(
+    request: ULCAPipelineInferenceRequest,
+    inference_service: InferenceService = Depends(InferenceService),
+):
+    return await inference_service.run_pipeline_inference(request)
