@@ -15,7 +15,7 @@ services:
       - ./server:/src
     command: sh -c "uvicorn main:app --reload --host 0.0.0.0"
     env_file:
-      - .env
+      - .env.dev
 
   client:
     container_name: client
