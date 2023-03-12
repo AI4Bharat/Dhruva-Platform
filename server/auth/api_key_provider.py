@@ -1,17 +1,18 @@
+import time
 from typing import Dict, Any
 from db.app_db import AppDatabase
 from fastapi import Request
+from module.auth.model.api_key import ApiKeyCache
+from fastapi import Depends
 
 
-def validate_credentials(credentials: str, request: Request, db: AppDatabase) -> bool:
-    api_key_collection = db["api_key"]
-    api_key = api_key_collection.find_one({"key": credentials})
+def validate_credentials(credentials: str, request: Request) -> bool:
+    api_key = ApiKeyCache.get(credentials)
 
-    if not api_key or not api_key["active"]:
+    if not api_key or not bool(api_key.active):
         return False
 
-    request.state.api_key_id = api_key["_id"]
-
+    request.state.api_key_id = api_key.id
     return True
 
 
@@ -20,7 +21,7 @@ def fetch_session(credentials: str, db: AppDatabase):
     user_collection = db["user"]
 
     # Api key has to exist since it was already checked during auth verification
-    api_key: Dict[str, Any] = api_key_collection.find_one({"key": credentials})  # type: ignore
+    api_key: Dict[str, Any] = api_key_collection.find_one({"api_key": credentials})  # type: ignore
 
     user_id = api_key["user_id"]
 
