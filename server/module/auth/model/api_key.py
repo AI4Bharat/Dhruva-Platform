@@ -11,6 +11,7 @@ class _ServiceUsage(pydantic.BaseModel):
     hits: int = 0
 
 
+
 class ApiKey(MongoBaseModel):
     name: str
     api_key: str

@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict
 
-from fastapi import Request
+from fastapi import Depends, Request
 from pymongo.database import Database
 
 from module.auth.model.api_key import ApiKeyCache
