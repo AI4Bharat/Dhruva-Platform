@@ -51,15 +51,6 @@ export default function ASRTry({ ...props }) {
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
 
-  // const startRecording = () => {
-  //   setRecording(true);
-  //   setFetched(false);
-  //   setFetching(true);
-  //   setPlaceHolder("Recording Audio....");
-  //   recorder.record();
-  //   console.log("Recording started");
-  // };
-
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
@@ -106,17 +97,6 @@ export default function ASRTry({ ...props }) {
       getASROutput(base64Data);
     };
   };
-
-  // const stopRecording = () => {
-  //   setRecording(false);
-  //   console.log("Recording stopped");
-  //   recorder.exportWAV(handleRecording, "audio/wav", 16000);
-  //   recorder.stop();
-  //   audioStream.getAudioTracks()[0].stop();
-  //   setPlaceHolder("Start Recording for ASR Inference...");
-  //   setFetching(false);
-  //   setFetched(true);
-  // };
 
   const startStreaming = () => {
     setStreamingText("");
