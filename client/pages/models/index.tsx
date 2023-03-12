@@ -374,7 +374,7 @@ export default function Models() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedModels? (
+            {searchedModels ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>
