@@ -16,7 +16,7 @@ const dhruvaAPI: { [key: string]: string } = {
   nerInference: `${dhruvaRootURL}/services/inference/ner`,
 };
 
-const apiInstance = axios.create();
+const apiInstance = axios.create({baseURL: dhruvaRootURL});
 
 apiInstance.interceptors.request.use((config: any) => {
   config.headers["request-startTime"] = new Date().getTime();
