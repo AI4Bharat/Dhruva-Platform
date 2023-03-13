@@ -61,43 +61,33 @@ class AdminService:
         return insert_id
 
     def update_service(self, request: ServiceUpdateRequest):
-        cache = ServiceCache.get(request.id)
+        cache = ServiceCache.get(request.serviceId)
         request_dict = request.dict()
 
-        # TODO: Fix explicit id to serviceId mapping
-        request_dict["serviceId"] = request.id
-        del request_dict["id"]
-
         # Cache ignores all complex fields
+        new_cache = cache.dict()
         for key, value in request_dict.items():
-            if key in cache.__fields__:
-                cache.k = value
+            if key in cache.__fields__ and value:
+                new_cache[key] = value
 
-        cache.save()
+        new_cache = ServiceCache(**new_cache)
+        new_cache.save()
 
-        # TODO: Don't get _id from user
-        # Wrongly expecting ObjectId from user
-        # id is not a valid ObjectId
         return self.service_repository.update_one(request.dict())
 
     def update_model(self, request: ModelUpdateRequest):
-        cache = ModelCache.get(request.id)
+        cache = ModelCache.get(request.modelId)
         request_dict = request.dict()
 
-        # TODO: Fix explicit id to modelId mapping
-        request_dict["modelId"] = request.id
-        del request_dict["id"]
-
         # Cache ignores all complex fields
+        new_cache = cache.dict()
         for key, value in request_dict.items():
-            if key in cache.__fields__:
-                cache.k = value
+            if key in cache.__fields__ and value:
+                new_cache[key] = value
 
-        cache.save()
+        new_cache = ModelCache(**new_cache)
+        new_cache.save()
 
-        # TODO: Don't get _id from user
-        # Wrongly expecting ObjectId from user
-        # id is not a valid ObjectId
         return self.model_repository.update_one(request.dict())
 
     def delete_service(self, id):
