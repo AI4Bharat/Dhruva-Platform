@@ -1,18 +1,16 @@
 from logging.config import dictConfig
-from typing import Callable, Union
 
 from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette_exporter import handle_metrics
-from starlette_exporter.middleware import PrometheusMiddleware
 
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from log.logger import LogConfig
-from metrics import inference_service_callback
+from metrics import api_key_name_callback, inference_service_callback, user_id_callback
+from middleware import PrometheusMetricsMiddleware
 from module import *
 from seq_streamer import StreamingServerTaskSequence
 
@@ -31,7 +29,7 @@ from asr_streamer import StreamingServerASR
 
 streamer_asr = StreamingServerASR()
 
-# Mount it at an alternative path. 
+# Mount it at an alternative path.
 app.mount("/socket_asr.io", streamer_asr.app)
 
 app.include_router(ServicesApiRouter)
@@ -43,10 +41,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.add_middleware(
-    PrometheusMiddleware, labels={"inference_service": inference_service_callback}
+    PrometheusMetricsMiddleware,
+    app_name="Dhruva",
+    custom_labels={
+        "inference_service": inference_service_callback,
+        "api_key_name": api_key_name_callback,
+        "user_id": user_id_callback,
+    },
 )
-app.add_route("/metrics", handle_metrics)
 
 # def http_body_language() -> Callable[[Info], None]:
 #     METRIC = Counter(

@@ -1,9 +1,10 @@
 import time
-from typing import Dict, Any
+from typing import Any, Dict
+
+from fastapi import Depends, Request
+
 from db.app_db import AppDatabase
-from fastapi import Request
 from module.auth.model.api_key import ApiKeyCache
-from fastapi import Depends
 
 
 def validate_credentials(credentials: str, request: Request) -> bool:
@@ -12,7 +13,10 @@ def validate_credentials(credentials: str, request: Request) -> bool:
     if not api_key or not bool(api_key.active):
         return False
 
+    request.state.api_key_name = api_key.name
+    request.state.user_id = api_key.user_id
     request.state.api_key_id = api_key.id
+
     return True
 
 
