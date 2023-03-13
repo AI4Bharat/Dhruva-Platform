@@ -18,19 +18,25 @@ const KeyCard = (props) => {
       maxW={"90vw"}
     >
       <Text fontSize={"xl"} fontWeight={"extrabold"}>
-        {props.alias}
+        {props.name}
       </Text>
       <hr></hr>
       <Box mt="1rem" fontSize={"md"}>
         <HStack>
-          <Text fontWeight={"bold"}>Used By :</Text>
-          <Text>{props.usedBy}</Text>
+          <Text fontWeight={"bold"}>Type :</Text>
+          <Text>{props.type}</Text>
         </HStack>
       </Box>
       <Box fontSize={"md"}>
         <HStack>
-          <Text fontWeight={"bold"}>Created On:</Text>
-          <Text>{props.createdOn}</Text>
+          <Text fontWeight={"bold"}>Status:</Text>
+          <Text fontWeight={"bold"} color={props?"green.600":"red.600"}>{props.active?"active":"inactive"}</Text>
+        </HStack>
+      </Box>
+      <Box fontSize={"md"}>
+        <HStack>
+          <Text fontWeight={"bold"}>Total Usage:</Text>
+          <Text>0</Text>
         </HStack>
       </Box>
       <Button
@@ -46,9 +52,9 @@ const KeyCard = (props) => {
         onClose={() => {
           setIsOpen(false);
         }}
-        alias={props.alias}
+        name={props.name}
         k={props.k}
-        validity={props.validity}
+        active={props.active}
       />
       <br></br>
       <br></br>

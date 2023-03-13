@@ -15,97 +15,103 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdVpnKey } from "react-icons/md";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import KeyCard from "../Mobile/Admin/KeyCard";
 import KeyModal from "./KeyModal";
+import { listallkeys } from "../../api/adminAPI";
+import { useQuery } from "@tanstack/react-query";
 
 const AccessKeys = () => {
   interface Key {
     id: string;
-    alias: string;
-    createdOn: string;
-    usedBy: string;
-    validity: string;
-    total : number;
-    key: string;
+    name: string;
+    services : any;
+    type: string;
+    active: boolean;
+    masked_key: string;
   }
 
   interface ModalData {
-    alias: string;
-    validity: string;
-    key: string;
+    name: string;
+    active: boolean;
+    masked_key: string;
   }
 
-  const dummykeydata: Key[] = [
-    {
-      id: "1",
-      alias: "Gokul-Key",
-      usedBy: "Gokul",
-      createdOn: "5 January 2023",
-      validity: "9 January 2026",
-      total : 34,
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-    {
-      id: "2",
-      alias: "Yash-Key",
-      usedBy: "Yash",
-      createdOn: "7 January 2023",
-      validity: "9 January 2026",
-      total : 34,
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-    {
-      id: "3",
-      alias: "Rugved-Key",
-      usedBy: "Rugved",
-      createdOn: "7 January 2023",
-      total : 45,
-      validity: "9 January 2026",
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-    {
-      id: "4",
-      alias: "Umashankar-Key",
-      usedBy: "Umashankar",
-      createdOn: "9 January 2023",
-      validity: "9 January 2026",
-      total : 54,
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-    {
-      id: "5",
-      alias: "Ashwin-Key",
-      usedBy: "Ashwin",
-      createdOn: "10 January 2023",
-      validity: "9 January 2026",
-      total : 44,
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-    {
-      id: "6",
-      alias: "Nikhil-Key",
-      usedBy: "Nikhil",
-      createdOn: "10 January 2023",
-      validity: "11 January 2026",
-      total : 67,
-      key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-    },
-  ];
+  // const dummykeydata: Key[] = [
+  //   {
+  //     id: "1",
+  //     name: "Gokul-Key",
+  //     type: "ADMIN",
+  //     active : false,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Yash-Key",
+  //     type: "ADMIN",
+  //     active : true,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Rugved-Key",
+  //     type: "ADMIN",
+  //     active : true,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Umashankar-Key",
+  //     type: "ADMIN",
+  //     active : true,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Ashwin-Key",
+  //     type: "ADMIN",
+  //     active : true,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  //   {
+  //     id: "6",
+  //     name: "Nikhil-Key",
+  //     type: "ADMIN",
+  //     active : true,
+  //     services : [],
+  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
+  //   },
+  // ];
 
+  const { data } = useQuery(["services", "640821bea4b229f2b8545108"], () => listallkeys("640821bea4b229f2b8545108"));
+  
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const [hide, togglehide] = useState<boolean>(false);
-  const [modalstate, setModalState] = useState<ModalData>({alias:"", key:"", validity:""});
-  const [searchedKeys, setSearchedKeys] = useState<Key[]>(dummykeydata);
+  const [hide, togglehide] = useState<boolean>(true);
+  const [modalstate, setModalState] = useState<ModalData>({name:"", masked_key:"", active : false,});
+  const [searchedKeys, setSearchedKeys] = useState<Key[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if(data)
+    {
+        setSearchedKeys(data);
+        togglehide(false);
+    }
+
+}, [data]);
 
   const searchToggler = (event: any) => {
     setSearchedKeys(
-      dummykeydata.filter((k) =>
-        k.alias.toLowerCase().includes(event.target.value.toLowerCase())
+      data.filter((k) =>
+        k.name.toLowerCase().includes(event.target.value.toLowerCase())
       )
     );
   };
@@ -142,18 +148,17 @@ const AccessKeys = () => {
             placeholder="Search for Keys"
           />
         </InputGroup>
-        <Box mt="1rem">
+        <Box mt="1rem" mb="2rem">
           {searchedKeys.length !== 0 ? (
             smallscreen ? (
               <Box>
                 {Object.entries(searchedKeys).map(([id, keysData]) => {
                   return (
                     <KeyCard
-                      alias={keysData.alias}
-                      usedBy={keysData.usedBy}
-                      createdOn={keysData.createdOn}
-                      validity={keysData.validity}
-                      k={keysData.key}
+                      name={keysData.name}
+                      type={keysData.type}
+                      active={keysData.active}
+                      k={keysData.masked_key}
                     />
                   );
                 })}
@@ -163,9 +168,9 @@ const AccessKeys = () => {
                 <Table variant="unstyled">
                   <Thead>
                     <Tr>
-                      <Th>Key Alias</Th>
-                      <Th>Used by</Th>
-                      <Th>Created On</Th>
+                      <Th>Key Name</Th>
+                      <Th>Type</Th>
+                      <Th>Status</Th>
                       <Th>Total Usage</Th>
                       <Th>Actions</Th>
                     </Tr>
@@ -174,18 +179,18 @@ const AccessKeys = () => {
                     {Object.entries(searchedKeys).map(([id, keysData]) => {
                       return (
                         <Tr key={id} fontSize={"sm"}>
-                          <Td>{keysData.alias}</Td>
-                          <Td>{keysData.usedBy}</Td>
-                          <Td>{keysData.createdOn}</Td>
-                          <Td>{keysData.total}</Td>
+                          <Td>{keysData.name}</Td>
+                          <Td>{keysData.type}</Td>
+                          <Td fontWeight={"bold"} color={keysData.active?"green.600":"red.600"}>{keysData.active?"active":"inactive"}</Td>
+                          <Td>0</Td>
                           <Td>
                             <Button
                               onClick={() => {
                                 setIsOpen(true),
                                   setModalState({
-                                    alias: keysData.alias,
-                                    key: keysData.key,
-                                    validity: keysData.validity,
+                                    name: keysData.name,
+                                    masked_key: keysData.masked_key,
+                                    active: keysData.active,
                                   });
                               }}
                               size={"sm"}
@@ -204,9 +209,9 @@ const AccessKeys = () => {
                   onClose={() => {
                     setIsOpen(false);
                   }}
-                  alias={modalstate.alias}
-                  k={modalstate.key}
-                  validity={modalstate.validity}
+                  name={modalstate.name}
+                  k={modalstate.masked_key}
+                  active={modalstate.active}
                 />
               </Box>
             )
