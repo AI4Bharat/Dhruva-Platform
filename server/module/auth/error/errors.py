@@ -24,3 +24,11 @@ class Errors(Enum):
         "kind": "DHRUVA-207",
         "message": "Failed to create user",
     }
+    DHRUVA208 = {
+        "kind": "DHRUVA-208",
+        "message": "Failed to get api key",
+    }
+    DHRUVA209 = {
+        "kind": "DHRUVA-209",
+        "message": "Failed to update api key status",
+    }

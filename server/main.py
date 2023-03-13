@@ -10,8 +10,13 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_fastapi_instrumentator.metrics import Info
 
 from exception.base_error import BaseError
+from exception.ulca_api_key_client_error import ULCAApiKeyClientError
+from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from log.logger import LogConfig
+from fastapi.logger import logger
+from logging.config import dictConfig
 from module import *
+from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
 
@@ -19,6 +24,16 @@ app = FastAPI(
     title="Dhruva API",
     description="Backend API for communicating with the Dhruva platform",
 )
+
+streamer = StreamingServerTaskSequence()
+app.mount("/socket.io", streamer.app)
+
+# TODO: Depreciate this soon in-favor of above
+from asr_streamer import StreamingServerASR
+streamer_asr = StreamingServerASR()
+
+# Mount it at an alternative path. 
+app.mount("/socket_asr.io", streamer_asr.app)
 
 app.include_router(ServicesApiRouter)
 app.include_router(AuthApiRouter)
@@ -48,6 +63,34 @@ app.add_middleware(
 #     Instrumentator().instrument(app).add(http_body_language()).expose(app)
 
 
+@app.exception_handler(ULCAApiKeyClientError)
+async def ulca_api_key_client_error_handler(
+    request: Request, exc: ULCAApiKeyClientError
+):
+    return JSONResponse(
+        status_code=exc.error_code,
+        content={
+            "isRevoked": False,
+            "message": exc.message,
+        },
+    )
+
+
+@app.exception_handler(ULCAApiKeyServerError)
+async def ulca_api_key_server_error_handler(
+    request: Request, exc: ULCAApiKeyServerError
+):
+    logger.error(exc)
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "isRevoked": False,
+            "message": exc.error_kind + " - Internal Server Error",
+        },
+    )
+
+
 @app.exception_handler(BaseError)
 async def base_error_handler(request: Request, exc: BaseError):
     logger.error(exc)
@@ -66,7 +109,6 @@ async def base_error_handler(request: Request, exc: BaseError):
 @app.get("/")
 def read_root():
     return "Welcome to Dhruva API!"
-
 
 if __name__ == "__main__":
     import uvicorn

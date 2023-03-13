@@ -5,7 +5,7 @@ from pydantic import EmailStr
 
 from auth.auth_provider import AuthProvider
 from exception.base_error import BaseError
-from exception.response_models import NotAuthenticatedResponse
+from exception.http_error import HttpErrorResponse
 from schema.auth.request import (
     CreateUserRequest,
     GetUserQuery,
@@ -25,7 +25,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
