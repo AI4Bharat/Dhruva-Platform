@@ -18,7 +18,7 @@ from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 
 from exception.base_error import BaseError
-# from indictrans import Transliterator
+from indictrans import Transliterator
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
