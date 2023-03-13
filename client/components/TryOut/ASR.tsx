@@ -51,15 +51,6 @@ export default function ASRTry({ ...props }) {
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
 
-  const startRecording = () => {
-    setRecording(!recording);
-    setFetched(false);
-    setFetching(true);
-    setPlaceHolder("Recording Audio....");
-    recorder.record();
-    console.log("Recording started");
-  };
-
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
@@ -107,16 +98,6 @@ export default function ASRTry({ ...props }) {
     };
   };
 
-  const stopRecording = () => {
-    setRecording(!recording);
-    recorder.stop();
-    audioStream.getAudioTracks()[0].stop();
-    recorder.exportWAV(handleRecording, "audio/wav", 16000);
-    setPlaceHolder("Start Recording for ASR Inference...");
-    setFetching(false);
-    setFetched(true);
-  };
-
   const startStreaming = () => {
     setStreamingText("");
     setStreaming(true);
@@ -156,17 +137,39 @@ export default function ASRTry({ ...props }) {
     setFetching(false);
   };
 
+  const startRecording = () => {
+    var AudioContext = window.AudioContext;
+    var audioContext = new AudioContext();
+    var input = audioContext.createMediaStreamSource(audioStream);
+    var Recorder = (window as any).Recorder;
+    var newRecorder = new Recorder(input, { numChannels: 1 });
+    newRecorder.record();
+    setRecorder(newRecorder);
+    console.log("Recording Started");
+    setRecording(true);
+    setFetched(false);
+    setFetching(true);
+    setPlaceHolder("Recording Audio....");
+  };
+
+  const stopRecording = () => {
+    console.log("Recording Stopped");
+    setRecording(false);
+    audioStream.getAudioTracks()[0].stop();
+    recorder.exportWAV(handleRecording, "audio/wav", 16000);
+    recorder.stop();
+    setPlaceHolder("Start Recording for ASR Inference...");
+    setFetching(false);
+    setFetched(true);
+  };
+
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
       setAudioStream(stream);
-      var AudioContext = window.AudioContext;
-      var audioContext = new AudioContext();
-      var input = audioContext.createMediaStreamSource(stream);
-      var Recorder = (window as any).Recorder;
-      var newRecorder = new Recorder(input, { numChannels: 1 });
-      setRecorder(newRecorder);
     });
+  }, [recording]);
 
+  useEffect(() => {
     const uniqueSourceLanguages: any = Array.from(
       new Set(
         props.languages.map(
