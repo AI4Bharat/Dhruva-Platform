@@ -32,11 +32,8 @@ class _Schema(BaseModel):
 
 
 class _InferenceEndPoint(BaseModel):
-    class Config:
-        fields = {
-            'schema_': 'schema'
-        }
-    schema_: _Schema
+    
+    schema_: _Schema = Field(None, alias="schema")
 
 
 class _LanguagePair(BaseModel):
@@ -77,3 +74,4 @@ class Model(MongoBaseModel):
 
     class Config:
         allow_population_by_field_name = True
+        orm_mode = True
