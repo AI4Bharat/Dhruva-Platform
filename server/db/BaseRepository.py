@@ -77,7 +77,7 @@ class BaseRepository(Generic[T]):
     def insert_one(self, data: T) -> object:
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
-        return result.inserted_id
+        return str(result.inserted_id)
 
     def update_one(self, data: dict) -> int:
         id = data.pop("id")
