@@ -48,6 +48,7 @@ from ..gateway import InferenceGateway
 from ..model.service import ServiceCache
 from ..model.model import ModelCache
 from ..repository import ModelRepository, ServiceRepository
+from celery_backend.tasks import log_data
 
 ISO_639_v2_to_v3 = {
     "as": "asm",
@@ -129,10 +130,7 @@ def convert_numbers_to_words(text, lang):
 
 def validate_service_id(serviceId: str):
     try:
-        st = time.time()
         service = ServiceCache.get(serviceId)
-        print("service: ", service, type(service))
-        print(time.time() - st)
     except:
         raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
@@ -448,7 +446,7 @@ class InferenceService:
         return serviceId
     
     async def run_pipeline_inference(
-        self, request_body: ULCAPipelineInferenceRequest
+        self, request_body: ULCAPipelineInferenceRequest, request_state # for request state
     ) -> ULCAPipelineInferenceResponse:
 
         results = []
@@ -474,16 +472,30 @@ class InferenceService:
             return {
                 "pipelineResponse": results
             }
-        
+
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.serviceId
             if not serviceId:
                 serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
             
+            start_time = time.perf_counter()
+            new_request = ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json)
             previous_output_json = await self.run_inference(
-                request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
+                request=new_request,
                 serviceId=serviceId
+            )
+
+            log_data.apply_async(
+                (
+                    # Create the url for metering
+                    request_state.url._url.split("/")[0] + pipeline_task.taskType + "?" + serviceId,
+                    str(request_state.state.api_key_id),
+                    new_request.dict(),
+                    previous_output_json.dict(),
+                    time.perf_counter() - start_time
+                ),
+                queue="data_log"
             )
             results.append(deepcopy(previous_output_json))
             

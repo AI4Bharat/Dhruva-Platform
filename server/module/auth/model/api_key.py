@@ -8,6 +8,7 @@ from cache.CacheBaseModel import CacheBaseModel, generate_cache_model
 class _ServiceUsage(pydantic.BaseModel):
     service_id: str
     usage: int = 0
+    hits: int = 0
 
 
 class ApiKey(MongoBaseModel):
@@ -18,6 +19,7 @@ class ApiKey(MongoBaseModel):
     user_id: ObjectId
     type: str
     usage: int = 0
+    hits: int = 0
     services: List[_ServiceUsage] = []
 
     def revoke(self):
