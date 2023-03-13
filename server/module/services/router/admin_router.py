@@ -26,7 +26,7 @@ async def _create_service(request: ServiceCreateRequest, admin_service: AdminSer
     return admin_service.create_service(request)
 
 
-@router.get("/create/model")
+@router.post("/create/model")
 async def _create_model(request: ModelCreateRequest, admin_service: AdminService = Depends(AdminService)):
     return admin_service.create_model(request)
 
