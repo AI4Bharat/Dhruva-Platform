@@ -32,7 +32,6 @@ apiInstance.interceptors.response.use(
     const currentTime = new Date().getTime();
     const startTime = response.config.headers["request-startTime"];
     response.headers["request-duration"] = currentTime - startTime;
-
     return response;
   },
   (error) => {
@@ -48,8 +47,7 @@ apiInstance.interceptors.response.use(
         .post(`${dhruvaRootURL}/auth/refresh`, { token: refreshToken })
         .then((res) => {
           if (res.status === 200) {
-            localStorage.setItem("access_token", res.data.access);
-            localStorage.setItem("refresh_token", res.data.refresh);
+            localStorage.setItem("access_token", res.data.token);
             apiInstance.defaults.headers.common["Authorization"] =
               "Bearer " + localStorage.getItem("access_token");
             return apiInstance(originalRequest);
