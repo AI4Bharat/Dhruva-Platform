@@ -1,38 +1,30 @@
-from typing import Optional
-from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
-
-from db.database import Database
+from typing import Dict, Any
+from db.app_db import AppDatabase
+from fastapi import Request
 
 
-class ApiKeyProvider:
-    def __init__(
-        self,
-        credentials: Optional[str] = Depends(
-            APIKeyHeader(name="authorization", auto_error=False)
-        ),
+def validate_credentials(credentials: str, request: Request, db: AppDatabase) -> bool:
+    api_key_collection = db["api_key"]
+    api_key = api_key_collection.find_one({"key": credentials})
 
-        # this will be replaced with an api_key repository when it is created
-        db: Database = Depends(Database)
-    ) -> None:
-        self.db = db
-
-        if not self.validate_credentials(credentials):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={
-                    "message": "Not authenticated"
-                }
-            )
-
-    # logic will be changed when the api_key repository is created
-    def validate_credentials(self, credentials: Optional[str]) -> bool:
-        if not credentials:
-            return False
-
-        api_key_collection: list[dict] = self.db["api_key"]
-        for api_key in api_key_collection:
-            if api_key["key"] == credentials:
-                return True
-
+    if not api_key or not api_key["active"]:
         return False
+
+    request.state.api_key_id = api_key["_id"]
+
+    return True
+
+
+def fetch_session(credentials: str, db: AppDatabase):
+    api_key_collection = db["api_key"]
+    user_collection = db["user"]
+
+    # Api key has to exist since it was already checked during auth verification
+    api_key: Dict[str, Any] = api_key_collection.find_one({"key": credentials})  # type: ignore
+
+    user_id = api_key["user_id"]
+
+    user: Dict[str, Any] = user_collection.find_one({"_id": user_id})  # type: ignore
+    del user["password"]
+
+    return user

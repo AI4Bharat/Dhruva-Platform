@@ -21,9 +21,9 @@ import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaConfig, lang2label } from "../../config/config";
-import axios from "axios";
 import Head from "next/head";
+import { useQuery } from "@tanstack/react-query";
+import { getModel } from "../../api/modelAPI";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -48,39 +48,13 @@ interface Benchmark {
   ];
 }
 
-interface Model {
-  modelId: string;
-  version: string;
-  submittedOn: number;
-  updatedOn: number;
-  name: string;
-  description: string;
-  refUrl: string;
-  task: {
-    type: string;
-  };
-  languages: LanguageConfig[];
-  benchmarks: Benchmark[];
-}
-
 export default function ViewModel({ ...props }) {
   const router = useRouter();
+  const { data: modelInfo, isLoading } = useQuery(
+    ["model", router.query["modelId"]],
+    () => getModel(router.query["modelId"])
+  );
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-
-  const [modelInfo, setModelInfo] = useState<Model>({
-    modelId: "",
-    version: "",
-    submittedOn: 1,
-    updatedOn: 1,
-    name: "",
-    description: "",
-    refUrl: "",
-    task: {
-      type: "",
-    },
-    languages: [],
-    benchmarks: [],
-  });
 
   const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
   const [benchmarkMetrics, setBenchmarkMetrics] = useState<string[]>([]);
@@ -90,37 +64,28 @@ export default function ViewModel({ ...props }) {
   const [benchmarkValues, setBenchmarkValues] = useState<Benchmark[]>([]);
 
   useEffect(() => {
-    if (router.isReady) {
-      const modelId = router.query["modelId"];
-      axios({
-        method: "POST",
-        url: dhruvaConfig.viewModel,
-        data: {
-          modelId: modelId,
-        },
-      }).then((response) => {
-        setModelInfo(response.data);
-        if (response.data.benchmarks !== null)
-          setBenchmarks(response.data.benchmarks);
-      });
+    if (modelInfo !== undefined) {
+      setBenchmarks(modelInfo.benchmarks);
     }
-  }, [router.isReady]);
+  }, [modelInfo]);
 
   useEffect(() => {
-    const metrics = new Set();
-    const datasets = new Set();
-    benchmarks.forEach((benchmark) => {
-      benchmark["score"].forEach((score) => {
-        metrics.add(score["metricName"]);
+    if (benchmarks) {
+      const metrics = new Set();
+      const datasets = new Set();
+      benchmarks.forEach((benchmark) => {
+        benchmark["score"].forEach((score) => {
+          metrics.add(score["metricName"]);
+        });
+        datasets.add(benchmark["name"]);
       });
-      datasets.add(benchmark["name"]);
-    });
-    const currentBenchmarkDatasets = Array.from(datasets) as string[];
-    const currentBenchmarkMetrics = Array.from(metrics) as string[];
-    setBenchmarkMetrics(currentBenchmarkMetrics);
-    setBenchmarkMetric(currentBenchmarkMetrics[0]);
-    setBenchmarkDatasets(currentBenchmarkDatasets);
-    setBenchmarkDataset(currentBenchmarkDatasets[0]);
+      const currentBenchmarkDatasets = Array.from(datasets) as string[];
+      const currentBenchmarkMetrics = Array.from(metrics) as string[];
+      setBenchmarkMetrics(currentBenchmarkMetrics);
+      setBenchmarkMetric(currentBenchmarkMetrics[0]);
+      setBenchmarkDatasets(currentBenchmarkDatasets);
+      setBenchmarkDataset(currentBenchmarkDatasets[0]);
+    }
   }, [benchmarks]);
 
   useEffect(() => {
@@ -144,6 +109,10 @@ export default function ViewModel({ ...props }) {
 
     setBenchmarkValues(currentMetricBenchmarks);
   }, [benchmarkMetric, benchmarkDataset]);
+
+  if (isLoading) {
+    return <div>Loading</div>;
+  }
 
   return (
     <>
@@ -208,7 +177,7 @@ export default function ViewModel({ ...props }) {
                     Benchmarks
                   </Heading>
                 </Box>
-                {benchmarks.length !== 0 ? (
+                {benchmarks ? (
                   <Stack spacing={5}>
                     <Stack direction={"row"}>
                       <Text className="dview-service-try-option-title">
@@ -336,7 +305,7 @@ export default function ViewModel({ ...props }) {
                     Benchmarks
                   </Heading>
                 </Box>
-                {benchmarks.length !== 0 ? (
+                {benchmarks ? (
                   <Stack spacing={5}>
                     <Stack direction={"row"}>
                       <Text className="dview-service-try-option-title">

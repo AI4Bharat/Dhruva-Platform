@@ -1,0 +1,14 @@
+FROM node:lts-alpine
+
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache --upgrade bash \
+    && apk add git
+
+WORKDIR /usr/app
+COPY . /usr/app
+
+RUN yarn install
+RUN yarn build
+
+# CMD yarn start
