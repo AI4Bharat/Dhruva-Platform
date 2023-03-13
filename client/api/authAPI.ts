@@ -1,11 +1,16 @@
 import { apiInstance } from "./apiConfig";
 
-const login = async (username: string, password: string) => {
-  const response = await apiInstance.post("/api/login", { username, password });
+function timeout(delay: number) {
+  return new Promise((res) => setTimeout(res, delay));
+}
+
+const login = async (email: string, password: string) => {
+  const response = await apiInstance.post("/auth/signin", { email, password });
   let token = response.data.token;
   if (token) {
     localStorage.setItem("refresh_token", token);
   }
+  await timeout(500)
   await getNewAccessToken();
 };
 
@@ -19,3 +24,5 @@ const getNewAccessToken = async () => {
     localStorage.setItem("access_token", token);
   }
 };
+
+export { login, getNewAccessToken };

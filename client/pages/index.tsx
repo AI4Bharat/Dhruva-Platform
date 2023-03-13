@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { login } from "../api/authAPI";
 
 export default function Login() {
   const router = useRouter();
@@ -20,17 +21,20 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const validateCredentials = () => {
-    if (username === "dhruva" && password === "test@123") {
+  const validateCredentials = async () => {
+    try {
+      await login(username, password);
       router.push("/services");
+    } catch {
+      alert("Invalid Credentials");
     }
   };
 
   return (
     <>
-    <Head>
-      <title>Login into Dhruva</title>
-    </Head>
+      <Head>
+        <title>Login into Dhruva</title>
+      </Head>
       {isMobile ? (
         <Grid templateColumns="repeat(1, 1fr)">
           <GridItem className="centered-column" w="100%" h="100vh">

@@ -18,3 +18,6 @@ class ModelRepository(BaseRepository[Model]):
 
     def get_by_id(self, id: str) -> Model:
         return super().get_one({"modelId": id})
+
+    def delete_one(self, id: str):
+        return self.collection.delete_one({"modelId": id})

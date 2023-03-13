@@ -1,10 +1,12 @@
 import traceback
 from typing import List
 
-from auth.auth_provider import AuthProvider
-from exception.base_error import BaseError
-from exception.response_models import NotAuthenticatedResponse
 from fastapi import APIRouter, Depends, HTTPException, status
+
+from auth.auth_provider import AuthProvider
+from auth.request_session_provider import InjectRequestSession, RequestSession
+from exception.base_error import BaseError
+from exception.http_error import HttpErrorResponse
 from schema.services.request import ModelViewRequest, ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
@@ -18,7 +20,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": NotAuthenticatedResponse}},
+    responses={"401": {"model": HttpErrorResponse}}
 )
 
 
@@ -34,8 +36,9 @@ async def _list_services(
 async def _view_service_details(
     request: ServiceViewRequest,
     details_service: DetailsService = Depends(DetailsService),
+    session: RequestSession = Depends(InjectRequestSession)
 ):
-    response = details_service.get_service_details(request)
+    response = details_service.get_service_details(request, session.id)
     return response
 
 
