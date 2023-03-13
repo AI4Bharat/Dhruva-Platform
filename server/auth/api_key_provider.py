@@ -11,6 +11,8 @@ def validate_credentials(credentials: str, request: Request, db: AppDatabase) ->
         return False
 
     request.state.api_key_id = api_key["_id"]
+    request.state.api_key_name = api_key["name"]
+    request.state.user_id = api_key["user_id"]
 
     return True
 

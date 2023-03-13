@@ -3,9 +3,10 @@ from typing import Any, Dict, Optional
 
 import jwt
 from bson.objectid import ObjectId
-from db.app_db import AppDatabase
 from dotenv import load_dotenv
 from fastapi import Request
+
+from db.app_db import AppDatabase
 
 load_dotenv()
 
@@ -31,8 +32,6 @@ def validate_credentials(credentials: str, request: Request, db: AppDatabase) ->
 
     if not session:
         return False
-
-    request.state.api_key_id = None
 
     return True
 

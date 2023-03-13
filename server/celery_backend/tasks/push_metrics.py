@@ -1,0 +1,22 @@
+import json
+import logging
+import os
+from datetime import datetime
+from time import time
+
+from dotenv import load_dotenv
+from prometheus_client import CollectorRegistry, push_to_gateway
+
+from ..celery_app import app
+from .log_db import LogDatabase
+from .metering import meter_usage
+
+logs_db = LogDatabase()
+
+load_dotenv()
+
+
+@app.task(name="push.metrics")
+def push_metrics(registry: CollectorRegistry) -> None:
+    """Logs metrics to Prometheus using the push method"""
+    push_to_gateway(os.environ["PROMETHEUS_URL"], job="metrics_push", registry=registry)
