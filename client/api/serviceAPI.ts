@@ -1,8 +1,7 @@
-import axios from "axios";
-import { dhruvaAPI } from "./apiConfig";
+import { dhruvaAPI, apiInstance } from "./apiConfig";
 
 const listServices = async (): Promise<ServiceList[]> => {
-  const response = await axios({
+  const response = await apiInstance({
     method: "GET",
     url: dhruvaAPI.listServices,
   });
@@ -12,7 +11,7 @@ const listServices = async (): Promise<ServiceList[]> => {
 const getService = async (
   serviceId: string | string[]
 ): Promise<ServiceView> => {
-  const response = await axios({
+  const response = await apiInstance({
     method: "POST",
     url: dhruvaAPI.viewService,
     data: {
