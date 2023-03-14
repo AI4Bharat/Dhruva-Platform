@@ -114,6 +114,18 @@ services:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
 
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes: 
+      - cache:/data
+    env_file:
+      - .env.dev
+    command: redis-server --save 20 1 --loglevel warning
+    restart: unless-stopped
+
   celery-flower:
     container_name: celery-flower
     image: server_image
@@ -151,3 +163,5 @@ services:
 volumes:
   grafana_data: {}
   prometheus_data: {}
+  redis:
+    driver: local
