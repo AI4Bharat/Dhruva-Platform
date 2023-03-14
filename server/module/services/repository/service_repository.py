@@ -19,3 +19,7 @@ class ServiceRepository(BaseRepository[Service]):
     def delete_one(self, id: str):
         result = self.collection.delete_one({"serviceId": id})
         return result.deleted_count
+    
+    def update_one(self, data: dict) -> int:
+        result = self.collection.update_one({"serviceId": data['serviceId']}, {"$set": data})
+        return result.modified_count

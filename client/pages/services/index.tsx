@@ -21,9 +21,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
-import { dhruvaConfig } from "../../config/config";
 import Image from "next/image";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
@@ -135,14 +133,12 @@ export default function Services() {
   };
 
   useEffect(() => {
-    if(services)
-    {
-        setFilteredServices(services);
-        setSearchedServices(services);
-        togglehide(false);
+    if (services) {
+      setFilteredServices(services);
+      setSearchedServices(services);
+      togglehide(false);
     }
-
-}, [services]);
+  }, [services]);
 
   useEffect(() => {
     filterToggler();
@@ -273,6 +269,7 @@ export default function Services() {
                 />
                 <Input
                   borderRadius={0}
+                  color="gray.600"
                   onChange={searchToggler}
                   placeholder="Search for Services"
                 />
@@ -358,7 +355,7 @@ export default function Services() {
         <br />
         {smallscreen ? (
           // Mobile View
-          searchedservices? (
+          searchedservices ? (
             <>
               {Object.entries(searchedservices).map(([id, serviceData]) => (
                 <ServiceCard
