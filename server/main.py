@@ -13,7 +13,8 @@ from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from log.logger import LogConfig
-from metrics import api_key_name_callback, inference_service_callback, user_id_callback
+from constants import APP_NAME
+from metrics import CUSTOM_LABELS
 from middleware import PrometheusMetricsMiddleware
 from module import *
 from seq_streamer import StreamingServerTaskSequence
@@ -48,14 +49,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.add_middleware(
     PrometheusMetricsMiddleware,
-    app_name="Dhruva",
-    custom_labels={
-        "inference_service": inference_service_callback,
-        "api_key_name": api_key_name_callback,
-        "user_id": user_id_callback,
-    },
+    app_name=APP_NAME,
+    custom_labels=CUSTOM_LABELS,
 )
 
 
