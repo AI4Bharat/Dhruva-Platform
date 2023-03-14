@@ -22,7 +22,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
         self.registry = CollectorRegistry()
         self.app_name = app_name.lower()
         self.custom_labels = custom_labels
-        self.instance_id = uuid.uuid4()
 
     async def dispatch(self, request: Request, call_next):
         begin = time.perf_counter()
@@ -35,7 +34,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
             request.url.components.path,
             int(response.status_code),
             self.app_name,
-            self.instance_id,
             uuid.uuid4(),
             *self._get_custom_labels_values(request),
         ]
@@ -66,7 +64,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "instance_id",
                     "request_id",
                     *self._get_custom_labels_keys(),
                 ),
@@ -94,7 +91,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "instance_id",
                     "request_id",
                     *self._get_custom_labels_keys(),
                 ),
