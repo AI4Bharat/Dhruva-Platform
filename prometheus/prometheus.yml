@@ -17,10 +17,11 @@ scrape_configs:
 
     static_configs:
       - targets: ["localhost:9090"]
-  - job_name: "server"
+
+  - job_name: "prom-aggregation-gateway"
 
     # Override the global default and scrape targets from this job every 5 seconds.
     scrape_interval: 5s
 
     static_configs:
-      - targets: ['server:8000']
+      - targets: ["prom-aggregation-gateway:80"]
