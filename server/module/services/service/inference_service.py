@@ -179,7 +179,6 @@ class InferenceService:
     ) -> dict:
         
         service = validate_service_id(serviceId)
-        # TODO: Add separate models cache different from nested Mongo Schema to Redis
         model = validate_model_id(service.modelId)
 
         task_type = model.task_type

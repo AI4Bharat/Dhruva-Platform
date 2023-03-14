@@ -39,7 +39,6 @@ class AdminService:
             raise BaseError(Errors.DHRUVA109.value, traceback.format_exc())
 
     def create_service(self, request: ServiceCreateRequest):
-        # TODO: Expects _id from user. Need to fix
         svc = request.dict()
         service = Service(**svc)
         insert_id = self.service_repository.insert_one(service)
@@ -50,7 +49,6 @@ class AdminService:
         return insert_id
 
     def create_model(self, request: ModelCreateRequest):
-        # TODO: Expects _id from user. Need to fix
         mdl = request.dict()
         model = Model(**mdl)
         insert_id = self.model_repository.insert_one(model)
