@@ -4,7 +4,7 @@ import logging
 from typing import List
 import soundfile as sf
 from bson import ObjectId
-from .app_db import AppDatabase
+from .database import AppDatabase
 
 # Constant multipiers to calculate cost equivalents later
 from .constants import (

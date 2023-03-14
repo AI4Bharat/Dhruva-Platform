@@ -1,15 +1,11 @@
-import json
-import logging
 import os
-from datetime import datetime
 from time import time
 
 from dotenv import load_dotenv
 from prometheus_client import CollectorRegistry, push_to_gateway
 
 from ..celery_app import app
-from .log_db import LogDatabase
-from .metering import meter_usage
+from .database import LogDatabase
 
 logs_db = LogDatabase()
 
