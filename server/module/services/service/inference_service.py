@@ -1,3 +1,4 @@
+import time
 import base64
 import io
 import traceback
@@ -44,7 +45,10 @@ from tritonclient.utils import np_to_triton_dtype
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
+from ..model.service import ServiceCache
+from ..model.model import ModelCache
 from ..repository import ModelRepository, ServiceRepository
+from celery_backend.tasks import log_data
 
 ISO_639_v2_to_v3 = {
     "as": "asm",
@@ -124,6 +128,32 @@ def convert_numbers_to_words(text, lang):
       text = text.replace(num_str, ' '+num_word+' ', 1)
     return text.replace("  ", ' ')
 
+def validate_service_id(serviceId: str):
+    try:
+        service = ServiceCache.get(serviceId)
+    except:
+        raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
+
+    if not service:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
+    return service
+
+
+def validate_model_id(modelId: str):
+    try:
+        service = ModelCache.get(modelId)
+    except:
+        raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+
+    if not service:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
+    return service
+
+
 class InferenceService:
     def __init__(
         self,
@@ -143,24 +173,14 @@ class InferenceService:
             ULCATranslationInferenceRequest,
             ULCATtsInferenceRequest,
         ],
-        serviceId: str,
+        serviceId: str
     ) -> dict:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
+        
+        service = validate_service_id(serviceId)
+        # TODO: Add separate models cache different from nested Mongo Schema to Redis
+        model = validate_model_id(service.modelId)
 
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        try:
-            model = self.model_repository.get_by_id(service.modelId)
-        except:
-            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-
-        task_type = model.task.type
+        task_type = model.task_type
         request_body = request.dict()
 
         if task_type == _ULCATaskType.TRANSLATION:
@@ -198,17 +218,9 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         language = request_body.config.language.sourceLanguage
         res = {"config": request_body.config, "output": []}
@@ -297,17 +309,9 @@ class InferenceService:
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         results = []
         for input in request_body.input:
@@ -341,17 +345,9 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId)
+        headers = {"Authorization": "Bearer " + service.api_key}
         results = []
 
         for input in request_body.input:
@@ -397,17 +393,9 @@ class InferenceService:
     async def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         # TODO: Replace with real deployments
         res = requests.post(
@@ -458,7 +446,7 @@ class InferenceService:
         return serviceId
     
     async def run_pipeline_inference(
-        self, request_body: ULCAPipelineInferenceRequest
+        self, request_body: ULCAPipelineInferenceRequest, request_state # for request state
     ) -> ULCAPipelineInferenceResponse:
 
         results = []
@@ -484,16 +472,30 @@ class InferenceService:
             return {
                 "pipelineResponse": results
             }
-        
+
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.serviceId
             if not serviceId:
                 serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
             
+            start_time = time.perf_counter()
+            new_request = ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json)
             previous_output_json = await self.run_inference(
-                request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
+                request=new_request,
                 serviceId=serviceId
+            )
+
+            log_data.apply_async(
+                (
+                    # Create the url for metering
+                    request_state.url._url.split("/")[0] + pipeline_task.taskType + "?" + serviceId,
+                    str(request_state.state.api_key_id),
+                    new_request.dict(),
+                    previous_output_json.dict(),
+                    time.perf_counter() - start_time
+                ),
+                queue="data_log"
             )
             results.append(deepcopy(previous_output_json))
             

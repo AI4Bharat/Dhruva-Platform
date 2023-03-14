@@ -110,6 +110,7 @@ async def base_error_handler(request: Request, exc: BaseError):
 def read_root():
     return "Welcome to Dhruva API!"
 
+
 if __name__ == "__main__":
     import uvicorn
 

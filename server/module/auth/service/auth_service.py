@@ -31,7 +31,7 @@ from schema.auth.request.set_api_key_status_query import ApiKeyAction
 from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse
 
 from ..error import Errors
-from ..model.api_key import ApiKey
+from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
 load_dotenv()
@@ -189,7 +189,7 @@ class AuthService:
         key = secrets.token_urlsafe(48)
         api_key = ApiKey(
             name=request.name,
-            key=key,
+            api_key=key,
             masked_key=self.__mask_key(key),
             active=True,
             user_id=id,
@@ -197,7 +197,12 @@ class AuthService:
         )
 
         try:
-            self.api_key_repository.insert_one(api_key)
+            inserted_id = self.api_key_repository.insert_one(api_key)
+            api_key.id = inserted_id
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
@@ -205,11 +210,15 @@ class AuthService:
 
     def __regenerate_api_key(self, existing_api_key: ApiKey):
         key = secrets.token_urlsafe(48)
-        existing_api_key.key = key
+        existing_api_key.api_key = key
         existing_api_key.masked_key = self.__mask_key(key)
 
         try:
             self.api_key_repository.save(existing_api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**existing_api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
@@ -292,6 +301,10 @@ class AuthService:
 
         try:
             self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
 
@@ -314,6 +327,10 @@ class AuthService:
 
         try:
             self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
 

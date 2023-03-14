@@ -1,8 +1,15 @@
 from datetime import datetime
 from typing import Any, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
+from redis_om import Field as RedisField
 from schema.services.common import _ULCALanguagePair, _ULCATask
 from db.MongoBaseModel import MongoBaseModel
+from cache.CacheBaseModel import CacheBaseModel, generate_cache_model
+
+
+class Task(BaseModel):
+    type: str
+
 
 class _OAuthId(BaseModel):
     oauthId: str
@@ -75,3 +82,10 @@ class Model(MongoBaseModel):
     class Config:
         allow_population_by_field_name = True
         orm_mode = True
+
+
+ModelCache = create_model(
+    "ModelCache",
+    __base__=CacheBaseModel,
+    **generate_cache_model(Model, primary_key_field="modelId")
+)
