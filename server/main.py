@@ -1,10 +1,14 @@
+import os
 from logging.config import dictConfig
 
+import pymongo
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from db.database import db_clients
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
@@ -15,6 +19,8 @@ from module import *
 from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
+
+load_dotenv()
 
 app = FastAPI(
     title="Dhruva API",
@@ -52,21 +58,11 @@ app.add_middleware(
     },
 )
 
-# def http_body_language() -> Callable[[Info], None]:
-#     METRIC = Counter(
-#         "http_body_language", "Number of times a certain language has been requested.", labelnames=("langs",)
-#     )
 
-#     def instrumentation(info: Info) -> None:
-#         lang_str = info.request.body['langs']
-#         METRIC.labels(langs=lang_str).inc()
-
-#     return instrumentation
-
-
-# @app.on_event("startup")
-# async def load_prometheus():
-#     Instrumentator().instrument(app).add(http_body_language()).expose(app)
+@app.on_event("startup")
+async def load_prometheus():
+    db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
+    db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
 
 
 @app.exception_handler(ULCAApiKeyClientError)

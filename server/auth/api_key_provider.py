@@ -1,9 +1,10 @@
-from typing import Dict, Any
-from db.app_db import AppDatabase
+from typing import Any, Dict
+
 from fastapi import Request
+from pymongo.database import Database
 
 
-def validate_credentials(credentials: str, request: Request, db: AppDatabase) -> bool:
+def validate_credentials(credentials: str, request: Request, db: Database) -> bool:
     api_key_collection = db["api_key"]
     api_key = api_key_collection.find_one({"key": credentials})
 
@@ -17,7 +18,7 @@ def validate_credentials(credentials: str, request: Request, db: AppDatabase) ->
     return True
 
 
-def fetch_session(credentials: str, db: AppDatabase):
+def fetch_session(credentials: str, db: Database):
     api_key_collection = db["api_key"]
     user_collection = db["user"]
 

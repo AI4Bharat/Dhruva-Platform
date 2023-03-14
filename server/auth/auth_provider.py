@@ -1,11 +1,13 @@
 from typing import Optional
 
-from auth import api_key_provider, auth_token_provider
-from auth.token_type import TokenType
-from db.app_db import AppDatabase
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
+from pymongo.database import Database
+
+from auth import api_key_provider, auth_token_provider
+from auth.token_type import TokenType
+from db.database import AppDatabase
 
 
 def AuthProvider(
@@ -17,7 +19,7 @@ def AuthProvider(
     # This header specifies the origin of the request which
     # can either be API_KEY or AUTH_TOKEN
     x_auth_source: TokenType = Header(default=TokenType.API_KEY),
-    db: AppDatabase = Depends(AppDatabase),
+    db: Database = Depends(AppDatabase),
 ):
     match x_auth_source:
         case TokenType.AUTH_TOKEN:

@@ -1,4 +1,3 @@
-import os
 import time
 import uuid
 from datetime import datetime
@@ -6,13 +5,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 from fastapi import Request
 from fastapi.logger import logger
-from prometheus_client import (
-    CollectorRegistry,
-    Counter,
-    Gauge,
-    Histogram,
-    push_to_gateway,
-)
+from prometheus_client import CollectorRegistry, Counter, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from celery_backend.tasks import push_metrics
@@ -33,9 +26,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         begin = time.perf_counter()
-
-        # do something with the request object, for example
-        content_type = request.headers.get("Content-Type")
 
         # process the request and get the response
         response = await call_next(request)
