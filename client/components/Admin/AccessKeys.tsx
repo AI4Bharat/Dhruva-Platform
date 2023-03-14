@@ -5,7 +5,9 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Select,
   Spacer,
+  Stack,
   Table,
   Tbody,
   Td,
@@ -40,59 +42,12 @@ const AccessKeys = () => {
     masked_key: string;
   }
 
-  // const dummykeydata: Key[] = [
-  //   {
-  //     id: "1",
-  //     name: "Gokul-Key",
-  //     type: "ADMIN",
-  //     active : false,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Yash-Key",
-  //     type: "ADMIN",
-  //     active : true,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Rugved-Key",
-  //     type: "ADMIN",
-  //     active : true,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  //   {
-  //     id: "4",
-  //     name: "Umashankar-Key",
-  //     type: "ADMIN",
-  //     active : true,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Ashwin-Key",
-  //     type: "ADMIN",
-  //     active : true,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  //   {
-  //     id: "6",
-  //     name: "Nikhil-Key",
-  //     type: "ADMIN",
-  //     active : true,
-  //     services : [],
-  //     masked_key: "YAES0997869685AWGHIUH9876875A67456AWFGUYWAG897TAW877",
-  //   },
-  // ];
+  const users = [
+    {user_id : "640821bea4b229f2b8545108"}
+  ]
 
-  const { data } = useQuery(["services", "640821bea4b229f2b8545108"], () => listallkeys("640821bea4b229f2b8545108"));
-  
+  const [selectedUser, setSelectedUser] = useState<string>()
+  const { data } = useQuery(["services", selectedUser], () => listallkeys(selectedUser));
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [hide, togglehide] = useState<boolean>(true);
   const [modalstate, setModalState] = useState<ModalData>({name:"", masked_key:"", active : false,});
@@ -132,13 +87,13 @@ const AccessKeys = () => {
             <MdVpnKey />
           </Text>
         </HStack>
+        <Stack direction={['column', 'column', 'column', 'column', 'row']} mt="1rem"  mr={smallscreen?"0rem":"2rem"}>
         <InputGroup
-          mt="1rem"
-          width={smallscreen ? "90vw" : "30rem"}
           background={"light.100"}
+          width={smallscreen ? "90vw" : "30rem"}
         >
           <InputLeftElement
-            color="gray.600"
+            color="gray.300"
             pointerEvents="none"
             children={<IoSearchOutline />}
           />
@@ -148,6 +103,17 @@ const AccessKeys = () => {
             placeholder="Search for Keys"
           />
         </InputGroup>
+        <Select color={"gray.300"} background={"light.100"} width={smallscreen ? "90vw" : "30rem"} borderRadius={0} onChange={(e)=>{setSelectedUser(e.target.value)}}>
+          <option defaultValue={null} selected disabled hidden>Select a User</option>
+          {
+            users.map((user)=>{return <option value={user.user_id}>{user.user_id}</option>})
+          }
+        </Select>
+        <Spacer/>
+        <Button width={smallscreen ? "90vw" : "10rem"}>
+          Create a New Key
+        </Button>
+        </Stack>
         <Box mt="1rem" mb="2rem">
           {searchedKeys.length !== 0 ? (
             smallscreen ? (
