@@ -129,10 +129,7 @@ def convert_numbers_to_words(text, lang):
 
 def validate_service_id(serviceId: str):
     try:
-        st = time.time()
         service = ServiceCache.get(serviceId)
-        print("service: ", service, type(service))
-        print(time.time() - st)
     except:
         raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
