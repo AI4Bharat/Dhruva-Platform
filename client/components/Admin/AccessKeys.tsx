@@ -43,16 +43,23 @@ const AccessKeys = () => {
   }
 
   const users = [
-    {user_id : "640821bea4b229f2b8545108"}
+    {user_id : "640821bea4b229f2b8545108"},
+    {user_id : "igiveanerrorerrorerrorerrorerror:)"}
   ]
 
   const [selectedUser, setSelectedUser] = useState<string>()
-  const { data } = useQuery(["services", selectedUser], () => listallkeys(selectedUser));
+  const { data, refetch } = useQuery(["services", selectedUser], () => listallkeys(selectedUser));
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [hide, togglehide] = useState<boolean>(true);
   const [modalstate, setModalState] = useState<ModalData>({name:"", masked_key:"", active : false,});
   const [searchedKeys, setSearchedKeys] = useState<Key[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => 
+  {
+  refetch();
+  setSearchedKeys([]);
+}, [selectedUser]);
 
   useEffect(() => {
     if(data)
@@ -115,7 +122,7 @@ const AccessKeys = () => {
         </Button>
         </Stack>
         <Box mt="1rem" mb="2rem">
-          {searchedKeys.length !== 0 ? (
+          {searchedKeys?.length !== 0 ? (
             smallscreen ? (
               <Box>
                 {Object.entries(searchedKeys).map(([id, keysData]) => {
