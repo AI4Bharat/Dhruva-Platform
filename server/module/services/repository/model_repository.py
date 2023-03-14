@@ -20,4 +20,9 @@ class ModelRepository(BaseRepository[Model]):
         return super().get_one({"modelId": id})
 
     def delete_one(self, id: str):
-        return self.collection.delete_one({"modelId": id})
+        result = self.collection.delete_one({"modelId": id})
+        return result.deleted_count
+        
+    def update_one(self, data: dict) -> int:
+        result = self.collection.update_one({"modelId": data['modelId']}, {"$set": data})
+        return result.modified_count
