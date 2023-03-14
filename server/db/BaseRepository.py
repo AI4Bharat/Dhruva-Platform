@@ -3,17 +3,17 @@ from typing import Generic, List, Optional, Type, TypeVar, Union
 from bson import ObjectId
 from pydantic import BaseModel
 from pymongo.collection import Collection
+from pymongo.database import Database
 
 from exception.null_value_error import NullValueError
-
-from .app_db import AppDatabase
-from .log_db import LogDatabase
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(self, db: Union[AppDatabase, LogDatabase], collection_name: str) -> None:
+    def __init__(
+        self, db: Database, collection_name: str
+    ) -> None:
         super().__init__()
         self.db = db
         self.collection: Collection = db[collection_name]

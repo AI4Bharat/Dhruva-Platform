@@ -1,9 +1,9 @@
 import time
 from typing import Any, Dict
 
-from fastapi import Depends, Request
+from fastapi import Request
+from pymongo.database import Database
 
-from db.app_db import AppDatabase
 from module.auth.model.api_key import ApiKeyCache
 
 
@@ -20,7 +20,7 @@ def validate_credentials(credentials: str, request: Request) -> bool:
     return True
 
 
-def fetch_session(credentials: str, db: AppDatabase):
+def fetch_session(credentials: str, db: Database):
     api_key_collection = db["api_key"]
     user_collection = db["user"]
 
