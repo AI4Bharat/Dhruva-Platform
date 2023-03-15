@@ -154,7 +154,6 @@ services:
     prom-aggregation-gateway:
       container_name: prom-aggregation-gateway
       image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
-      working_dir: /src
       volumes:
         - prometheus_data:/prom-agg-gateway
       ports:
