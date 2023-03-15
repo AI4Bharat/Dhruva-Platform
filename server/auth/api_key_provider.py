@@ -1,9 +1,10 @@
 import time
-from typing import Dict, Any
-from db.app_db import AppDatabase
-from fastapi import Request
+from typing import Any, Dict
+
+from fastapi import Depends, Request
+from pymongo.database import Database
+
 from module.auth.model.api_key import ApiKeyCache
-from fastapi import Depends
 
 
 def validate_credentials(credentials: str, request: Request) -> bool:
@@ -12,11 +13,14 @@ def validate_credentials(credentials: str, request: Request) -> bool:
     if not api_key or not bool(api_key.active):
         return False
 
+    request.state.api_key_name = api_key.name
+    request.state.user_id = api_key.user_id
     request.state.api_key_id = api_key.id
+
     return True
 
 
-def fetch_session(credentials: str, db: AppDatabase):
+def fetch_session(credentials: str, db: Database):
     api_key_collection = db["api_key"]
     user_collection = db["user"]
 

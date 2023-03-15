@@ -1,24 +1,26 @@
+import os
 from logging.config import dictConfig
-from typing import Callable, Union
 
+import pymongo
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_client import Counter
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_fastapi_instrumentator.metrics import Info
 
+from db.database import db_clients
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
 from log.logger import LogConfig
-from fastapi.logger import logger
-from logging.config import dictConfig
+from metrics import api_key_name_callback, inference_service_callback, user_id_callback
+from middleware import PrometheusMetricsMiddleware
 from module import *
 from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
+
+load_dotenv()
 
 app = FastAPI(
     title="Dhruva API",
@@ -30,9 +32,10 @@ app.mount("/socket.io", streamer.app)
 
 # TODO: Depreciate this soon in-favor of above
 from asr_streamer import StreamingServerASR
+
 streamer_asr = StreamingServerASR()
 
-# Mount it at an alternative path. 
+# Mount it at an alternative path.
 app.mount("/socket_asr.io", streamer_asr.app)
 
 app.include_router(ServicesApiRouter)
@@ -45,22 +48,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# def http_body_language() -> Callable[[Info], None]:
-#     METRIC = Counter(
-#         "http_body_language", "Number of times a certain language has been requested.", labelnames=("langs",)
-#     )
-
-#     def instrumentation(info: Info) -> None:
-#         lang_str = info.request.body['langs']
-#         METRIC.labels(langs=lang_str).inc()
-
-#     return instrumentation
+app.add_middleware(
+    PrometheusMetricsMiddleware,
+    app_name="Dhruva",
+    custom_labels={
+        "inference_service": inference_service_callback,
+        "api_key_name": api_key_name_callback,
+        "user_id": user_id_callback,
+    },
+)
 
 
-# @app.on_event("startup")
-# async def load_prometheus():
-#     Instrumentator().instrument(app).add(http_body_language()).expose(app)
+@app.on_event("startup")
+async def init_mongo_client():
+    db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
+    db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
 
 
 @app.exception_handler(ULCAApiKeyClientError)
