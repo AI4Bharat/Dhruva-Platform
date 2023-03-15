@@ -376,7 +376,7 @@ class InferenceService:
         
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
-            serviceId = pipeline_task.serviceId
+            serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
             if not serviceId:
                 serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
             
