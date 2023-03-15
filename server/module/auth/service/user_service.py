@@ -1,4 +1,5 @@
 import traceback
+from typing import List
 
 from argon2 import PasswordHasher
 from bson import ObjectId
@@ -6,6 +7,7 @@ from fastapi import Depends, HTTPException, status
 
 from exception.base_error import BaseError
 from schema.auth.request import CreateUserRequest
+from schema.auth.response.get_user_response import GetUserResponse
 
 from ..error.errors import Errors
 from ..model.user import User
@@ -50,3 +52,10 @@ class UserService:
             raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
 
         return created_user
+
+    def list_users(self):
+        try:
+            users = self.user_repository.find({})
+        except Exception:
+            raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
+        return users
