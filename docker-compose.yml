@@ -156,7 +156,7 @@ services:
       image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
       working_dir: /src
       volumes:
-        - ./server:/src
+        - prometheus_data:/prom-agg-gateway
       ports:
         - "8080:80"
 

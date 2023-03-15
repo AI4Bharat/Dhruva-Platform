@@ -60,7 +60,7 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-async def load_prometheus():
+async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
 
