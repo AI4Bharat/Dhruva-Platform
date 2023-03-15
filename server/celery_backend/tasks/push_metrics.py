@@ -16,7 +16,7 @@ load_dotenv()
 @app.task(name="push.metrics")
 def push_metrics(registry_enc: str) -> None:
     """Logs metrics to Prometheus using the push method"""
-    registry: CollectorRegistry = jsonpickle.decode(registry_enc)  # type: ignore
+    registry: CollectorRegistry = jsonpickle.decode(registry_enc, keys=True)  # type: ignore
     push_to_gateway(
         os.environ["PROMETHEUS_URL"],
         job="metrics_push",

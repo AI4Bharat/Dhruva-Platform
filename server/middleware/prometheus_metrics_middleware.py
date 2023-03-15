@@ -45,7 +45,7 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
         self.request_duration_seconds.labels(*labels).observe(end - begin)
 
         push_metrics.apply_async(
-            (jsonpickle.encode(self.registry),), queue="metrics_log"
+            (jsonpickle.encode(self.registry, keys=True),), queue="metrics_log"
         )
 
         return response
