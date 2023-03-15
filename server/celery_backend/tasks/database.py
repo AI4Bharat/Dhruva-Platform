@@ -1,6 +1,15 @@
+import os
+from dotenv import load_dotenv
+import pymongo
 from pymongo.database import Database
 
-db_clients = dict()
+
+load_dotenv()
+
+db_clients = {
+    "app": pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"]),
+    "log": pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
+}
 
 
 def AppDatabase() -> Database:

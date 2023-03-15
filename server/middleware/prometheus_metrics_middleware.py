@@ -1,8 +1,10 @@
 import time
 import uuid
-from datetime import datetime
+
+# from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
 
+import jsonpickle
 from fastapi import Request
 from fastapi.logger import logger
 from prometheus_client import CollectorRegistry, Counter, Histogram
@@ -42,7 +44,9 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
         end = time.perf_counter()
         self.request_duration_seconds.labels(*labels).observe(end - begin)
 
-        push_metrics.apply_async((self.registry,), queue="metrics_log")
+        push_metrics.apply_async(
+            (jsonpickle.encode(self.registry),), queue="metrics_log"
+        )
 
         return response
 
