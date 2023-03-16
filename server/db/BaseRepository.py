@@ -72,7 +72,7 @@ class BaseRepository(Generic[T]):
         count = self.collection.delete_many(query)
         return count.deleted_count
 
-    def insert_one(self, data: T) -> object:
+    def insert_one(self, data: T) -> str:
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
         return str(result.inserted_id)

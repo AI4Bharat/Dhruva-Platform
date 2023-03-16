@@ -1,5 +1,5 @@
-import os
 import math
+import os
 import secrets
 import time
 import traceback
@@ -194,6 +194,7 @@ class AuthService:
             active=True,
             user_id=id,
             type=request.type.value,
+            created_timestamp=datetime.now(),
         )
 
         try:
@@ -224,10 +225,20 @@ class AuthService:
 
         return key
 
-    def get_api_key(self, api_key_name: str, user_id: ObjectId):
+    def get_api_key(self, params: GetApiKeyQuery, id: ObjectId):
+        try:
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
+
         try:
             key = self.api_key_repository.find_one(
-                {"name": api_key_name, "user_id": user_id}
+                {"name": params.api_key_name, "user_id": user_id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
@@ -250,7 +261,6 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"message": "Invalid target user id"},
             )
-        user_id = id if not params.target_user_id else ObjectId(params.target_user_id)
 
         try:
             keys = self.api_key_repository.find({"user_id": user_id})
@@ -258,7 +268,7 @@ class AuthService:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
         return keys
-    
+
     def get_all_api_keys_with_usage(self, page, limit) -> List:
         """
         Fetches all API keys from the collection and calculates the total usage
@@ -274,9 +284,9 @@ class AuthService:
         total_usage = sum(k.usage for k in keys)
 
         return (
-            keys[(page - 1) * limit: page * limit],
+            keys[(page - 1) * limit : page * limit],
             total_usage,
-            math.ceil(len(keys) / limit)
+            math.ceil(len(keys) / limit),
         )
 
     def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
