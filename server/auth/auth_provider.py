@@ -44,7 +44,7 @@ def AuthProvider(
                 )
 
             validate_status = api_key_provider.validate_credentials(
-                credentials_key, request
+                credentials_key, request, db
             )
 
     if not validate_status:  # type: ignore
