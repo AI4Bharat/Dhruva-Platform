@@ -11,9 +11,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(
-        self, db: Database, collection_name: str
-    ) -> None:
+    def __init__(self, db: Database, collection_name: str) -> None:
         super().__init__()
         self.db = db
         self.collection: Collection = db[collection_name]
@@ -83,3 +81,10 @@ class BaseRepository(Generic[T]):
         id = data.pop("id")
         result = self.collection.update_one({"_id": ObjectId(id)}, {"$set": data})
         return result.modified_count
+
+    def save(self, data: T):
+        data_dict = data.dict()
+        result = self.collection.update_one(
+            {"_id": ObjectId(str(data_dict["_id"]))}, {"$set": data}
+        )
+        return result
