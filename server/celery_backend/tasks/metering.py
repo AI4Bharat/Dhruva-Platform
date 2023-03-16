@@ -14,6 +14,7 @@ from .constants import (
     TTS_CPU_MULTIPLIER,
     TTS_GPU_MULTIPLIER,
     TTS_RAM_MULTIPLIER,
+    TTS_TOKEN_CALCULATION_MULTIPLIER,
     NMT_CPU_MULTIPLIER,
     NMT_GPU_MULTIPLIER,
     NMT_RAM_MULTIPLIER,
@@ -68,10 +69,12 @@ def calculate_translation_usage(data) -> int:
 def calculate_tts_usage(data: List) -> int:
     total_usage = 0
     for d in data:
-        audio = base64.b64decode(d["audioContent"])
-        length = get_audio_length(audio)
         total_usage += (
-            length * TTS_GPU_MULTIPLIER * TTS_CPU_MULTIPLIER * TTS_RAM_MULTIPLIER
+            len(d["source"])
+            * TTS_TOKEN_CALCULATION_MULTIPLIER
+            * TTS_GPU_MULTIPLIER
+            * TTS_CPU_MULTIPLIER
+            * TTS_RAM_MULTIPLIER
         )
 
     return total_usage

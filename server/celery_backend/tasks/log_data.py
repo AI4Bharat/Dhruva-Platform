@@ -38,7 +38,7 @@ def log_data(
 
     data_usage = None
     if usage_type == "tts":
-        data_usage = resp_body["audio"]
+        data_usage = req_body["input"]
     elif usage_type == "asr":
         data_usage = req_body["audio"]
     elif usage_type == "translation":
