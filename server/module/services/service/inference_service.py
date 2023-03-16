@@ -133,11 +133,29 @@ def convert_numbers_to_words(text, lang):
     return text.replace("  ", " ")
 
 
-def validate_service_id(serviceId: str):
+
+def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
+    service = service_repository.find_by_id(serviceId)
+    service_cache = ServiceCache(**service.dict())
+    service_cache.save()
+    return service_cache
+
+
+def populate_model_cache(modelId: str, model_repository: ModelRepository):
+    model = model_repository.get_by_id(modelId)
+    model_cache = ModelCache(**model.dict())
+    model_cache.save()
+    return model_cache
+
+
+def validate_service_id(serviceId: str, service_repository):
     try:
         service = ServiceCache.get(serviceId)
-    except:
-        raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
+    except Exception:
+        try:
+            service = populate_service_cache(serviceId, service_repository)
+        except Exception:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
     if not service:
         raise HTTPException(
@@ -146,11 +164,14 @@ def validate_service_id(serviceId: str):
     return service
 
 
-def validate_model_id(modelId: str):
+def validate_model_id(modelId: str, model_repository):
     try:
         service = ModelCache.get(modelId)
-    except:
-        raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+    except Exception:
+        try:
+            service = populate_model_cache(modelId, model_repository)
+        except Exception:
+            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
     if not service:
         raise HTTPException(
@@ -180,8 +201,9 @@ class InferenceService:
         ],
         serviceId: str,
     ) -> dict:
-        service = validate_service_id(serviceId)
-        model = validate_model_id(service.modelId)
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        model = validate_model_id(service.modelId, self.model_repository)
 
         task_type = model.task_type
         request_body = request.dict()
@@ -221,7 +243,8 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-        service = validate_service_id(serviceId)
+        
+        service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
         language = request_body.config.language.sourceLanguage
@@ -321,7 +344,8 @@ class InferenceService:
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
-        service = validate_service_id(serviceId)
+        
+        service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
         results = []
@@ -357,7 +381,8 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        service = validate_service_id(serviceId)
+        
+        service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
         results = []
 
@@ -404,7 +429,8 @@ class InferenceService:
     async def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
-        service = validate_service_id(serviceId)
+        
+        service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
         # TODO: Replace with real deployments

@@ -1,5 +1,6 @@
 from typing import Optional
 from bson import ObjectId
+from bson.int64 import Int64
 import redis
 from redis_om import HashModel, Field as RedisField
 from redis_om.model.model import PrimaryKey
@@ -10,7 +11,7 @@ from .app_cache import cache
 
 # Ignore these fields when creating models from Mongo DB Model Schemas
 EXCLUDED_FIELDS = ["id", "key", "services"]
-ACCEPTED_FIELD_TYPES = (str, int, float, bytes, bool, ObjectId)
+ACCEPTED_FIELD_TYPES = (str, int, float, bytes, bool, ObjectId, Int64)
 
 
 class CacheBaseModel(HashModel):
@@ -55,6 +56,8 @@ class CacheBaseModel(HashModel):
                 values[v] = str(values[v])
             elif isinstance(values.get(v), bool):
                 values[v] = str(values[v])
+            elif isinstance(values.get(v), Int64):
+                values[v] = int(values[v])
         return values
 
 
