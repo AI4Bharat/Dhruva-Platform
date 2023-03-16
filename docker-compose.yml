@@ -120,7 +120,7 @@ services:
     ports:
       - "6379:6379"
     volumes: 
-      - cache:/data
+      - redis:/data
     env_file:
       - .env.dev
     command: redis-server --save 20 1 --loglevel warning
@@ -151,13 +151,13 @@ services:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
 
-    prom-aggregation-gateway:
-      container_name: prom-aggregation-gateway
-      image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
-      volumes:
-        - prometheus_data:/prom-agg-gateway
-      ports:
-        - "8080:80"
+  prom-aggregation-gateway:
+    container_name: prom-aggregation-gateway
+    image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
+    volumes:
+      - prometheus_data:/prom-agg-gateway
+    ports:
+      - "8080:80"
 
 volumes:
   grafana_data: {}
