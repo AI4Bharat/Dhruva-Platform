@@ -291,8 +291,18 @@ class AuthService:
 
     def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
         try:
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
+
+        try:
             api_key = self.api_key_repository.find_one(
-                {"name": params.api_key_name, "user_id": id}
+                {"name": params.api_key_name, "user_id": user_id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
