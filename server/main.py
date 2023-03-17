@@ -8,6 +8,7 @@ from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from cache.app_cache import cache
 from db.database import db_clients
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
@@ -63,6 +64,11 @@ app.add_middleware(
 async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
+
+
+@app.on_event("startup")
+async def flush_cache():
+    cache.flushall()
 
 
 @app.exception_handler(ULCAApiKeyClientError)
