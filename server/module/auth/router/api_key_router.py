@@ -1,3 +1,4 @@
+from bson import ObjectId
 from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
@@ -57,7 +58,7 @@ async def _get_api_key(
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_key = auth_service.get_api_key(params.api_key_name, request_session.id)
+    api_key = auth_service.get_api_key(params, request_session.id)
     return api_key.dict()
 
 

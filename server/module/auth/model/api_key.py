@@ -1,15 +1,17 @@
+from datetime import datetime
 from typing import List, Optional
+
 import pydantic
 from bson import ObjectId
-from db.MongoBaseModel import MongoBaseModel
+
 from cache.CacheBaseModel import CacheBaseModel, generate_cache_model
+from db.MongoBaseModel import MongoBaseModel
 
 
 class _ServiceUsage(pydantic.BaseModel):
     service_id: str
     usage: int = 0
     hits: int = 0
-
 
 
 class ApiKey(MongoBaseModel):
@@ -19,6 +21,7 @@ class ApiKey(MongoBaseModel):
     active: bool
     user_id: ObjectId
     type: str
+    created_timestamp: datetime
     usage: int = 0
     hits: int = 0
     services: List[_ServiceUsage] = []

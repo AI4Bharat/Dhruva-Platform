@@ -1,21 +1,26 @@
+from datetime import datetime
 from typing import Optional
+
+import redis
 from bson import ObjectId
 from bson.int64 import Int64
-import redis
-from redis_om import HashModel, Field as RedisField
+from pydantic import Extra, Field, root_validator
+from redis_om import Field as RedisField
+from redis_om import HashModel
 from redis_om.model.model import PrimaryKey
-from pydantic import Extra, root_validator, Field
+
 from .app_cache import cache
+
 # from module.services.model.model import Model, ModelCache
 
 
 # Ignore these fields when creating models from Mongo DB Model Schemas
 EXCLUDED_FIELDS = ["id", "key", "services"]
-ACCEPTED_FIELD_TYPES = (str, int, float, bytes, bool, ObjectId, Int64)
+ACCEPTED_FIELD_TYPES = (str, int, float, bytes, bool, ObjectId, Int64, datetime)
 
 
 class CacheBaseModel(HashModel):
-    """ Base Model for all Cached values """
+    """Base Model for all Cached values"""
 
     # id Field in MongoBase is not working as expected when using with HashModel subclasses
     # Hence overriding it explicitly here
@@ -42,7 +47,9 @@ class CacheBaseModel(HashModel):
         # Remove all extra fields since overriding Config doesn't seem to work
         all_fields = [v for v in values]
         for v in all_fields:
-            if (v not in cls.__fields__ and v != "_id") or (type(values[v]) not in ACCEPTED_FIELD_TYPES):
+            if (v not in cls.__fields__ and v != "_id") or (
+                type(values[v]) not in ACCEPTED_FIELD_TYPES
+            ):
                 # Temporary special case for models
                 if v == "task" and cls.__name__ == "ModelCache":
                     values["task_type"] = values[v]["type"]
@@ -58,6 +65,8 @@ class CacheBaseModel(HashModel):
                 values[v] = str(values[v])
             elif isinstance(values.get(v), Int64):
                 values[v] = int(values[v])
+            elif isinstance(values.get(v), datetime):
+                values[v] = values[v].isoformat()
         return values
 
 

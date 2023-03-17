@@ -21,10 +21,8 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
         api_key = ApiKeyCache.get(credentials)
     except NotFoundError:
         try:
-            print("here")
             api_key = populate_api_key_cache(credentials, db)
         except Exception:
-            raise
             return False
 
     if not bool(api_key.active):
