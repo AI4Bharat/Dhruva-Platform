@@ -314,19 +314,21 @@ const AccessKeys = () => {
                 <FormLabel mt="1rem">Name</FormLabel>
                 <Input
                   value={createKeyDetails.name}
+                  borderRadius={0}
                   onChange={(e) => updateName(e.target.value)}
                 />
                 <FormLabel mt="1rem">Type</FormLabel>
                 <Select
+                  borderRadius={0}
                   value={createKeyDetails.type}
                   onChange={(e) => updateType(e.target.value)}
                 >
                   <option>INFERENCE</option>
-                  <option>ENUM</option>
-                  <option>ADMIN</option>
+                  <option>PLATFORM</option>
                 </Select>
                 <FormLabel mt="1rem">Regenerate</FormLabel>
                 <Select
+                  borderRadius={0}
                   value={createKeyDetails.regenerate ? "True" : "False"}
                   onChange={(e) =>
                     updateRegenerate(e.target.value == "True" ? true : false)

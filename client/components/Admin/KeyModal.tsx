@@ -2,9 +2,15 @@ import React from 'react'
 
 import { Modal, Text, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Box, HStack } from "@chakra-ui/react";
 import { BiArrowBack } from 'react-icons/bi';
-// import { FaCopy } from 'react-icons/fa';
 
 const KeyModal = ({isOpen, onClose, name, k, active}) => {
+
+
+  const handleRevoke = () =>
+  {
+
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay bg='blackAlpha.300'/>
@@ -24,8 +30,8 @@ const KeyModal = ({isOpen, onClose, name, k, active}) => {
         </HStack>
         </ModalBody>
         <ModalFooter >
-          <Button variant={"outline"} mt="2rem"  mr={3} >
-            Revoke
+          <Button variant={"outline"} mt="2rem"  mr={3} onClick={handleRevoke}>
+            {active?"Revoke":"Activate"}
           </Button>
         </ModalFooter>
       </ModalContent>
