@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from db.database import db_clients
+from db.populate_db import seed_collection
 from exception.base_error import BaseError
 from exception.ulca_api_key_client_error import ULCAApiKeyClientError
 from exception.ulca_api_key_server_error import ULCAApiKeyServerError
@@ -63,12 +64,12 @@ app.add_middleware(
 async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
+    if os.environ.get("SEED_DB", "False") == "True":
+        seed_collection(db_clients["app"]["dhruva"])
 
 
 @app.exception_handler(ULCAApiKeyClientError)
-async def ulca_api_key_client_error_handler(
-    request: Request, exc: ULCAApiKeyClientError
-):
+async def ulca_api_key_client_error_handler(request: Request, exc: ULCAApiKeyClientError):
     return JSONResponse(
         status_code=exc.error_code,
         content={
@@ -79,9 +80,7 @@ async def ulca_api_key_client_error_handler(
 
 
 @app.exception_handler(ULCAApiKeyServerError)
-async def ulca_api_key_server_error_handler(
-    request: Request, exc: ULCAApiKeyServerError
-):
+async def ulca_api_key_server_error_handler(request: Request, exc: ULCAApiKeyServerError):
     logger.error(exc)
 
     return JSONResponse(
