@@ -85,6 +85,6 @@ class BaseRepository(Generic[T]):
     def save(self, data: T):
         data_dict = data.dict()
         result = self.collection.update_one(
-            {"_id": ObjectId(str(data_dict["_id"]))}, {"$set": data}
+            {"_id": ObjectId(str(data_dict["_id"]))}, {"$set": data_dict}
         )
         return result
