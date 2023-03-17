@@ -241,7 +241,7 @@ class AuthService:
                 {"name": params.api_key_name, "user_id": user_id}
             )
         except Exception:
-            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if not key:
             raise HTTPException(
