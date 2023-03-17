@@ -1,5 +1,4 @@
 import time
-import uuid
 
 # from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
@@ -36,7 +35,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
             request.url.components.path,
             int(response.status_code),
             self.app_name,
-            uuid.uuid4(),
             *self._get_custom_labels_values(request),
         ]
 
@@ -68,7 +66,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "request_id",
                     *self._get_custom_labels_keys(),
                 ),
             )
@@ -95,7 +92,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "request_id",
                     *self._get_custom_labels_keys(),
                 ),
             )
