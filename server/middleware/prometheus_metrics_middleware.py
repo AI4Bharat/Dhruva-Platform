@@ -52,19 +52,25 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
     def request_count(self):
         unit = "requests_total"
         metric_name = f"{self.app_name}_{unit}"
+        key = f"{unit}_counter"
 
-        metric = Counter(
-            metric_name,
-            "Total HTTP requests",
-            registry=self.registry,
-            labelnames=(
-                "method",
-                "path",
-                "status_code",
-                "app_name",
-                *self._get_custom_labels_keys(),
-            ),
-        )
+        try:
+            metric = self.__getattribute__(key)
+        except Exception:
+            metric = Counter(
+                metric_name,
+                "Total HTTP requests",
+                registry=self.registry,
+                labelnames=(
+                    "method",
+                    "path",
+                    "status_code",
+                    "app_name",
+                    *self._get_custom_labels_keys(),
+                ),
+            )
+
+            self.__setattr__(key, metric)
 
         return metric
 
@@ -72,19 +78,25 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
     def request_duration_seconds(self):
         unit = "request_duration_seconds"
         metric_name = f"{self.app_name}_{unit}"
+        key = f"{unit}_histogram"
 
-        metric = Histogram(
-            metric_name,
-            "Request duration seconds",
-            registry=self.registry,
-            labelnames=(
-                "method",
-                "path",
-                "status_code",
-                "app_name",
-                *self._get_custom_labels_keys(),
-            ),
-        )
+        try:
+            metric = self.__getattribute__(key)
+        except Exception:
+            metric = Histogram(
+                metric_name,
+                "Request duration seconds",
+                registry=self.registry,
+                labelnames=(
+                    "method",
+                    "path",
+                    "status_code",
+                    "app_name",
+                    *self._get_custom_labels_keys(),
+                ),
+            )
+
+            self.__setattr__(key, metric)
 
         return metric
 
