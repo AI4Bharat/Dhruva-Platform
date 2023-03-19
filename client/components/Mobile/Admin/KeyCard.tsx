@@ -1,8 +1,21 @@
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
 import KeyModal from "../../Admin/KeyModal";
+
 const KeyCard = (props) => {
+
+  interface ModalData {
+    name: string;
+    active: boolean;
+    masked_key: string;
+  }
   const [isOpen, setIsOpen] = useState(false);
+  const [modalstate, setModalState] = useState<ModalData>({
+    name: props.name,
+    masked_key: props.k,
+    active: props.active,
+  });
+
   return (
     <Box
       mr="1rem"
@@ -30,7 +43,7 @@ const KeyCard = (props) => {
       <Box fontSize={"md"}>
         <HStack>
           <Text fontWeight={"bold"}>Status:</Text>
-          <Text fontWeight={"bold"} color={props?"green.600":"red.600"}>{props.active?"active":"inactive"}</Text>
+          <Text fontWeight={"bold"} color={props.active?"green.600":"red.600"}>{props.active?"active":"inactive"}</Text>
         </HStack>
       </Box>
       <Box fontSize={"md"}>
@@ -48,13 +61,14 @@ const KeyCard = (props) => {
         View
       </Button>
       <KeyModal
+        onRefresh={(data)=>{props.refreshCard();setModalState({name:data.name, masked_key:data.masked_key, active:data.active})}}
         isOpen={isOpen}
         onClose={() => {
-          setIsOpen(false);
+          setIsOpen(false); 
         }}
-        name={props.name}
-        k={props.k}
-        active={props.active}
+        name={modalstate.name}
+        k={modalstate.masked_key}
+        active={modalstate.active}
       />
       <br></br>
       <br></br>

@@ -82,7 +82,6 @@ const AccessKeys = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [modal, setModal] = useState(<></>);
-  const [usedMutation, setUsedMutation] = useState<boolean>(false);
   const [buttonDisplayText, setButtonDisplayText] = useState<string>("Create");
   const mutation = useMutation(createkey);
 
@@ -229,8 +228,6 @@ const AccessKeys = () => {
   };
 
   const renew = () => {
-
-    setUsedMutation(false);
     setModal(<></>);
     setButtonDisplayText("Create");
     setCreateKeyDetails({
@@ -374,6 +371,7 @@ const AccessKeys = () => {
                   {Object.entries(searchedKeys).map(([id, keysData]) => {
                     return (
                       <KeyCard
+                        refreshCard = {refetch}
                         name={keysData.name}
                         type={keysData.type}
                         active={keysData.active}
@@ -429,6 +427,7 @@ const AccessKeys = () => {
                     </Tbody>
                   </Table>
                   <KeyModal
+                    onRefresh={(data)=>{refetch(); setModalState({name:data.name, masked_key:data.masked_key, active:data.active})}}
                     isOpen={modalOpen}
                     onClose={() => {
                       setModalOpen(false);
