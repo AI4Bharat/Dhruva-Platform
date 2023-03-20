@@ -32,7 +32,7 @@ import { MdVpnKey } from "react-icons/md";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import KeyCard from "../Mobile/Admin/KeyCard";
 import KeyModal from "./KeyModal";
-import { createkey, listallkeys } from "../../api/adminAPI";
+import { createkey, listallkeys, listallusers } from "../../api/adminAPI";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FaCopy } from "react-icons/fa";
 
@@ -59,8 +59,7 @@ const AccessKeys = () => {
     user_id: string;
   }
 
-  const users = [{ user_id: "640821bea4b229f2b8545108" }];
-
+  const { data : userslist} = useQuery(["users"], () => listallusers());
   const [selectedUser, setSelectedUser] = useState<string>(null);
   const [createKeyDetails, setCreateKeyDetails] = useState<Icreatekey>({
     name: "",
@@ -84,7 +83,6 @@ const AccessKeys = () => {
   const [modal, setModal] = useState(<></>);
   const [buttonDisplayText, setButtonDisplayText] = useState<string>("Create");
   const mutation = useMutation(createkey);
-
 
   useEffect(() => {
     refetch();
@@ -289,8 +287,8 @@ const AccessKeys = () => {
             <option defaultValue={null} selected disabled hidden>
               Select a User
             </option>
-            {users.map((user) => {
-              return <option value={user.user_id}>{user.user_id}</option>;
+            {userslist?.map((user:any) => {
+              return <option value={user._id}>{user.name}</option>;
             })}
           </Select>
           <Spacer />

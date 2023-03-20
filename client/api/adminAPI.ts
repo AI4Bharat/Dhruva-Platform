@@ -25,5 +25,9 @@ const createkey = async (key_details : Icreatekey) => {
     return response.data;
   }
   
+  const listallusers = async() => {
+    const response = await apiInstance.get(`/auth/user/list`);
+     return response.data;
+ };
 
-export {listallkeys, createkey, setstatus};
+export {listallkeys, createkey, setstatus, listallusers};
