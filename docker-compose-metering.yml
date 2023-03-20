@@ -6,9 +6,9 @@ services:
     container_name: rabbitmq
     hostname: rabbithost
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin
-      - RABBITMQ_DEFAULT_VHOST=dhruva_host
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
+      - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
       - RABBITMQ_ERLANG_COOKIE=COOKIE
     ports:
       - "15672:15672"
