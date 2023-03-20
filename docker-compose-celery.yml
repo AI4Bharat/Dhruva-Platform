@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  rabbitmq_server:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbithost
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=dhruva_host
+      - RABBITMQ_ERLANG_COOKIE=COOKIE
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  celery:
+    container_name: celery
+    image: celery_image
+    build:
+      context: ./server
+    working_dir: /src
+    volumes:
+      - ./server:/src
+    env_file:
+      - .env
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+
+  # Use Flower later for monitoring
+  # celery-flower:
+  #   container_name: celery-flower
+  #   image: server_image
+  #   working_dir: /src
+  #   environment:
+  #     - AMQP_USERNAME=user
+  #     - AMQP_PASSWORD=user
+  #     - AMQP_ADMIN_USERNAME=admin
+  #     - AMQP_ADMIN_PASSWORD=admin
+  #     - AMQP_HOST=dhruva_host
+  #     - AMQP_PORT=5672
+  #     - AMQP_ADMIN_HOST=dhruva_host
+  #     - AMQP_ADMIN_PORT=15672
+  #     - FLOWER_BASIC_AUTH=user:user
+  #   volumes:
+  #     - ./server:/src
+  #   ports:
+  #     - "5555:5555"
+  #   command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
