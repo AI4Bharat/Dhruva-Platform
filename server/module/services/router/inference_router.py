@@ -94,7 +94,6 @@ async def _run_inference_translation(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    print("inference")
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )

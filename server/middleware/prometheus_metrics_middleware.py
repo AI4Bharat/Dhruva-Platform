@@ -1,5 +1,4 @@
 import time
-import uuid
 
 # from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
@@ -36,7 +35,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
             request.url.components.path,
             int(response.status_code),
             self.app_name,
-            uuid.uuid4(),
             *self._get_custom_labels_values(request),
         ]
 
@@ -47,6 +45,9 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
         push_metrics.apply_async(
             (jsonpickle.encode(self.registry, keys=True),), queue="metrics_log"
         )
+
+        self.request_count.clear()
+        self.request_duration_seconds.clear()
 
         return response
 
@@ -68,7 +69,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "request_id",
                     *self._get_custom_labels_keys(),
                 ),
             )
@@ -95,7 +95,6 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                     "path",
                     "status_code",
                     "app_name",
-                    "request_id",
                     *self._get_custom_labels_keys(),
                 ),
             )
