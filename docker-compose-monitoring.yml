@@ -13,6 +13,10 @@ services:
       - "--web.console.libraries=/usr/share/prometheus/console_libraries"
       - "--web.console.templates=/usr/share/prometheus/consoles"
       - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
 
   grafana:
     image: grafana/grafana:9.4.3
@@ -31,12 +35,14 @@ services:
       - .env
 
   prom-aggregation-gateway:
-      container_name: prom-aggregation-gateway
-      image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
-      volumes: 
-        - prometheus_data:/prom-agg-gateway
-      ports:
-        - "8080:80"
+    container_name: prom-aggregation-gateway
+    image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
+    volumes: 
+      - prometheus_data:/prom-agg-gateway
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
 
 volumes:
   grafana_data: {}
