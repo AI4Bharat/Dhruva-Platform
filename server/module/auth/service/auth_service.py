@@ -331,7 +331,7 @@ class AuthService:
         return api_key
 
     def set_api_key_status_ulca(self, request: ULCAApiKeyRequest, id: ObjectId):
-        api_key_name = request.emailId + request.appName
+        api_key_name = request.emailId + "/" + request.appName
 
         try:
             api_key = self.api_key_repository.find_one(
