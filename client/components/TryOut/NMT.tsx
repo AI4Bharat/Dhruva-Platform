@@ -123,7 +123,7 @@ export default function NMTTry({ ...props }) {
                     key={JSON.stringify(languageConfig)}
                     value={JSON.stringify(languageConfig)}
                   >
-                    {lang2label[languageConfig.sourceLanguage]} -{" "}
+                    {lang2label[languageConfig.sourceLanguage]} -{"> "}
                     {lang2label[languageConfig.targetLanguage]}
                   </option>
                 );

@@ -33,7 +33,8 @@ from schema.services.response import (
     ULCAPipelineInferenceResponse,
 )
 from schema.services.common import (
-    _ULCATaskType
+    _ULCATaskType,
+    LANG_CODE_TO_SCRIPT_CODE,
 )
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -214,16 +215,32 @@ class InferenceService:
         headers = {"Authorization": "Bearer " + service.key}
 
         results = []
+        source_lang = request_body.config.language.sourceLanguage
+        target_lang = request_body.config.language.targetLanguage
+
+        # TODO: Make Triton itself accept script-code separately
+        if request_body.config.language.sourceScriptCode \
+            and source_lang in LANG_CODE_TO_SCRIPT_CODE \
+            and request_body.config.language.sourceScriptCode != LANG_CODE_TO_SCRIPT_CODE[source_lang] \
+        :
+            source_lang += '_' + request_body.config.language.sourceScriptCode
+        
+        if request_body.config.language.targetScriptCode \
+            and target_lang in LANG_CODE_TO_SCRIPT_CODE \
+            and request_body.config.language.targetScriptCode != LANG_CODE_TO_SCRIPT_CODE[target_lang] \
+        :
+            target_lang += '_' + request_body.config.language.targetScriptCode
+
         for input in request_body.input:
             input_string = input.source.replace('\n', ' ').strip()
             if input_string:
                 inputs = [
                     self.__get_string_tensor(input_string, "INPUT_TEXT"),
                     self.__get_string_tensor(
-                        request_body.config.language.sourceLanguage, "INPUT_LANGUAGE_ID"
+                        source_lang, "INPUT_LANGUAGE_ID"
                     ),
                     self.__get_string_tensor(
-                        request_body.config.language.targetLanguage, "OUTPUT_LANGUAGE_ID"
+                        target_lang, "OUTPUT_LANGUAGE_ID"
                     ),
                 ]
                 output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
@@ -239,7 +256,10 @@ class InferenceService:
             else:
                 result = input_string
             results.append({"source": input_string, "target": result})
-        res = {"config": request_body.config, "output": results}
+        res = {
+            # "config": request_body.config,
+            "output": results
+        }
         return ULCATranslationInferenceResponse(**res)
 
     async def run_tts_triton_inference(
@@ -327,7 +347,8 @@ class InferenceService:
         serviceId = None
         if task_type == _ULCATaskType.ASR:
             if config["language"]["sourceLanguage"] == "en":
-                serviceId = "ai4bharat/conformer-en-gpu--t4"
+                # serviceId = "ai4bharat/conformer-en-gpu--t4"
+                serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
             elif config["language"]["sourceLanguage"] == "hi":
                 serviceId = "ai4bharat/conformer-hi-gpu--t4"
             elif config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
@@ -335,7 +356,8 @@ class InferenceService:
             else:
                 serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
         elif task_type == _ULCATaskType.TRANSLATION:
-            serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
+            # serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
+            serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
         elif task_type == _ULCATaskType.TTS:
             if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
                 serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
