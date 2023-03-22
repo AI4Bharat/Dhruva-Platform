@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from auth.auth_provider import AuthProvider
 from exception.http_error import HttpErrorResponse
+from auth.request_session_provider import InjectRequestSession, RequestSession
 from ..service import FeedbackService
 from schema.services.request import FeedbackSubmitRequest
 
@@ -17,5 +18,6 @@ router = APIRouter(
 async def _submit_feedback(
     request: FeedbackSubmitRequest,
     feedback_service: FeedbackService = Depends(FeedbackService),
+    request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    return feedback_service.submit_feedback(request)
+    return feedback_service.submit_feedback(request, request_session.id)
