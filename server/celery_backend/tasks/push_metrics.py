@@ -14,7 +14,7 @@ logs_db = LogDatabase()
 
 load_dotenv()
 
-def prom_agg_gateway_auth_handler(url, method, timeout, headers, data, username, password):
+def prom_agg_gateway_auth_handler(url, method, timeout, headers, data):
     try:
         username = os.environ["PROM_AGG_GATEWAY_USERNAME"]
         password = os.environ["PROM_AGG_GATEWAY_PASSWORD"]
