@@ -61,8 +61,6 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: unless-stopped
-    ports:
-      - "3030:3000"
 
   app_db:
     image: mongo
@@ -162,5 +160,6 @@ services:
 volumes:
   grafana_data: {}
   prometheus_data: {}
+  cache: {}
   redis:
     driver: local
