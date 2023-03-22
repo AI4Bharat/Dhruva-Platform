@@ -40,34 +40,6 @@ from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..repository import ServiceRepository, ModelRepository
 
-from indictrans import Transliterator
-ISO_639_v2_to_v3 = {
-    "as": "asm",
-    "bn": "ben",
-    "en": "eng",
-    "gu": "guj",
-    "hi": "hin",
-    "kn": "kan",
-    "ml": "mal",
-    "mr": "mar",
-    "ne": "nep",
-    "or": "ori",
-    "pa": "pan",
-    "sa": "hin",
-    "ta": "tam",
-    "te": "tel",
-    "ur": "urd",
-}
-
-import re
-ALL_DELIMITERS_REGEX = re.compile(r'[\.\?۔؟!\u0964\u0965]')
-
-def auto_add_fullstop(text: str):
-    if not text or ALL_DELIMITERS_REGEX.match(text[-1]):
-        return text
-    # TODO: Lang-specific fullstop
-    return text + '.'
-
 class InferenceService:
     def __init__(
         self,
@@ -275,8 +247,7 @@ class InferenceService:
             input_string = input.source.replace('।', '.').strip()
             ip_language = request_body.config.language.sourceLanguage
             ip_gender = request_body.config.gender
-
-            input_string = auto_add_fullstop(input_string)
+            
             if input_string:
                 inputs = [
                     self.__get_string_tensor(input_string, "INPUT_TEXT"),
@@ -293,8 +264,9 @@ class InferenceService:
                     headers=headers,
                 )
                 wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
+                target_sr = 22050
                 byte_io = io.BytesIO()
-                wavfile.write(byte_io, 22050, wav)
+                wavfile.write(byte_io, target_sr, wav)
                 encoded_bytes = base64.b64encode(byte_io.read())
                 encoded_string = encoded_bytes.decode()
             else:
@@ -305,7 +277,7 @@ class InferenceService:
                 "language": {"sourceLanguage": ip_language},
                 "audioFormat": "wav",
                 "encoding": "base64",
-                "samplingRate": 22050,
+                "samplingRate": target_sr,
             },
             "audio": results,
         }
@@ -426,3 +398,26 @@ class InferenceService:
         return {
             "pipelineResponse": results
         }
+
+
+###### TEMPORARY JUNK ########
+
+# ASR JUNK #
+from indictrans import Transliterator
+ISO_639_v2_to_v3 = {
+    "as": "asm",
+    "bn": "ben",
+    "en": "eng",
+    "gu": "guj",
+    "hi": "hin",
+    "kn": "kan",
+    "ml": "mal",
+    "mr": "mar",
+    "ne": "nep",
+    "or": "ori",
+    "pa": "pan",
+    "sa": "hin",
+    "ta": "tam",
+    "te": "tel",
+    "ur": "urd",
+}
