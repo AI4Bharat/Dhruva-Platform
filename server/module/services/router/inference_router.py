@@ -1,6 +1,6 @@
 import time
 from typing import Union, Callable
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from ..service.inference_service import InferenceService
 
 from auth.auth_provider import AuthProvider
@@ -94,7 +94,6 @@ async def _run_inference_translation(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    print("inference")
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )
@@ -251,6 +250,7 @@ async def _run_inference_sts_new_mt(
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
 async def _run_inference_pipeline(
     request: ULCAPipelineInferenceRequest,
+    request_state: Request,
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_pipeline_inference(request)
+    return await inference_service.run_pipeline_inference(request, request_state)

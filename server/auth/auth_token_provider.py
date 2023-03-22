@@ -1,16 +1,16 @@
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import jwt
 from bson.objectid import ObjectId
-from db.app_db import AppDatabase
 from dotenv import load_dotenv
 from fastapi import Request
+from pymongo.database import Database
 
 load_dotenv()
 
 
-def validate_credentials(credentials: str, request: Request, db: AppDatabase) -> bool:
+def validate_credentials(credentials: str, request: Request, db: Database) -> bool:
     try:
         headers = jwt.get_unverified_header(credentials)
     except Exception:
@@ -32,12 +32,10 @@ def validate_credentials(credentials: str, request: Request, db: AppDatabase) ->
     if not session:
         return False
 
-    request.state.api_key_id = None
-
     return True
 
 
-def fetch_session(credentials: str, db: AppDatabase):
+def fetch_session(credentials: str, db: Database):
     # This cannot fail, since this was already checked during auth verification
     claims = jwt.decode(
         credentials, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"]

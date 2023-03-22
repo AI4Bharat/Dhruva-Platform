@@ -4,7 +4,7 @@ import logging
 from typing import List
 import soundfile as sf
 from bson import ObjectId
-from .app_db import AppDatabase
+from .database import AppDatabase
 
 # Constant multipiers to calculate cost equivalents later
 from .constants import (
@@ -14,6 +14,7 @@ from .constants import (
     TTS_CPU_MULTIPLIER,
     TTS_GPU_MULTIPLIER,
     TTS_RAM_MULTIPLIER,
+    TTS_TOKEN_CALCULATION_MULTIPLIER,
     NMT_CPU_MULTIPLIER,
     NMT_GPU_MULTIPLIER,
     NMT_RAM_MULTIPLIER,
@@ -68,10 +69,12 @@ def calculate_translation_usage(data) -> int:
 def calculate_tts_usage(data: List) -> int:
     total_usage = 0
     for d in data:
-        audio = base64.b64decode(d["audioContent"])
-        length = get_audio_length(audio)
         total_usage += (
-            length * TTS_GPU_MULTIPLIER * TTS_CPU_MULTIPLIER * TTS_RAM_MULTIPLIER
+            len(d["source"])
+            * TTS_TOKEN_CALCULATION_MULTIPLIER
+            * TTS_GPU_MULTIPLIER
+            * TTS_CPU_MULTIPLIER
+            * TTS_RAM_MULTIPLIER
         )
 
     return total_usage
@@ -107,17 +110,19 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
     doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
 
     # Check for the document
-    if doc and "services" in doc:
+    if "services" in doc:
         # Check for services
         for service in doc["services"]:
             if service["service_id"] == service_id:
                 service["usage"] += inference_units
+                service["hits"] += 1
                 break
         else:
             # Insert service sub document
             doc["services"].append({"service_id": service_id, "usage": inference_units})
 
         doc["usage"] += inference_units
+        doc["hits"] += 1
         metering_collection.replace_one({"_id": doc["_id"]}, doc)
 
     else:
@@ -126,12 +131,12 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
             {"_id": doc["_id"]},
             {
                 "$set": {
-                    "services": [{"service_id": service_id, "usage": inference_units}],
-                    "usage": inference_units}
+                    "services": [{"service_id": service_id, "usage": inference_units, "hits": 1}],
+                    "usage": inference_units,
+                    "hits": 1
+                }
             }
         )
-
-    doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
 
 
 def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: str):

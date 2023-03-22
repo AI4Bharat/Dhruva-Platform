@@ -3,19 +3,15 @@ from typing import Generic, List, Optional, Type, TypeVar, Union
 from bson import ObjectId
 from pydantic import BaseModel
 from pymongo.collection import Collection
+from pymongo.database import Database
 
 from exception.null_value_error import NullValueError
-
-from .app_db import AppDatabase
-from .log_db import LogDatabase
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(
-        self, db: Union[AppDatabase, LogDatabase], collection_name: str
-    ) -> None:
+    def __init__(self, db: Database, collection_name: str) -> None:
         super().__init__()
         self.db = db
         self.collection: Collection = db[collection_name]
@@ -68,20 +64,27 @@ class BaseRepository(Generic[T]):
         results = self.collection.find()
         return self.__map_to_model_list(results)
 
-    def delete_one(self, query: dict):
-        self.collection.delete_one(query)
+    def delete_one(self, id: Union[str, ObjectId]):
+        result = self.collection.delete_one({"_id": id})
+        return result.deleted_count
 
     def delete_many(self, query: dict) -> int:
         count = self.collection.delete_many(query)
         return count.deleted_count
 
-    def insert_one(self, data: T) -> object:
+    def insert_one(self, data: T) -> str:
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
-        return result.inserted_id
+        return str(result.inserted_id)
+
+    def update_one(self, data: dict) -> int:
+        id = data.pop("id")
+        result = self.collection.update_one({"_id": ObjectId(id)}, {"$set": data})
+        return result.modified_count
 
     def save(self, data: T):
-        update_values = data.dict()
-        id = update_values["_id"]
-        del update_values["_id"]
-        self.collection.update_one({"_id": id}, {"$set": update_values})
+        data_dict = data.dict()
+        result = self.collection.update_one(
+            {"_id": ObjectId(str(data_dict["_id"]))}, {"$set": data_dict}
+        )
+        return result

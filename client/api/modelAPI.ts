@@ -1,8 +1,7 @@
-import axios from "axios";
-import { dhruvaAPI } from "./apiConfig";
+import { dhruvaAPI,apiInstance } from "./apiConfig";
 
 const listModels = async (): Promise<ModelList[]> => {
-  const response = await axios({
+  const response = await apiInstance({
     method: "GET",
     url: dhruvaAPI.listModels,
   });
@@ -10,7 +9,7 @@ const listModels = async (): Promise<ModelList[]> => {
 };
 
 const getModel = async (modelId: string | string[]): Promise<ModelView> => {
-  const response = await axios({
+  const response = await apiInstance({
     method: "POST",
     url: dhruvaAPI.viewModel,
     data: {

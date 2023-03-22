@@ -1,11 +1,9 @@
 import base64
 import io
+import time
 import traceback
-from typing import Union
-from fastapi import Depends, HTTPException, status
-from exception.base_error import BaseError
-import requests
 from copy import deepcopy
+from typing import Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -13,24 +11,28 @@ import requests
 import scipy.signal as sps
 import soundfile as sf
 import tritonclient.http as http_client
-from tritonclient.utils import np_to_triton_dtype
+from fastapi import Depends, HTTPException, status
+from indictrans import Transliterator
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
+from scipy.io import wavfile
+from tritonclient.utils import np_to_triton_dtype
 
+from celery_backend.tasks import log_data
 from exception.base_error import BaseError
-from indictrans import Transliterator
+from schema.services.common import _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
     ULCANerInferenceRequest,
+    ULCAPipelineInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATtsInferenceRequest,
-    ULCANerInferenceRequest,
-    ULCAPipelineInferenceRequest,
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
     ULCANerInferenceResponse,
+    ULCAPipelineInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
     ULCANerInferenceResponse,
@@ -40,12 +42,58 @@ from schema.services.common import (
     _ULCATaskType,
     LANG_CODE_TO_SCRIPT_CODE,
 )
-from scipy.io import wavfile
-from tritonclient.utils import np_to_triton_dtype
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
+from ..model.model import ModelCache
+from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
+
+def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
+    service = service_repository.find_by_id(serviceId)
+    service_cache = ServiceCache(**service.dict())
+    service_cache.save()
+    return service_cache
+
+
+def populate_model_cache(modelId: str, model_repository: ModelRepository):
+    model = model_repository.get_by_id(modelId)
+    model_cache = ModelCache(**model.dict())
+    model_cache.save()
+    return model_cache
+
+
+def validate_service_id(serviceId: str, service_repository):
+    try:
+        service = ServiceCache.get(serviceId)
+    except Exception:
+        try:
+            service = populate_service_cache(serviceId, service_repository)
+        except Exception:
+            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
+
+    if not service:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
+    return service
+
+
+def validate_model_id(modelId: str, model_repository):
+    try:
+        service = ModelCache.get(modelId)
+    except Exception:
+        try:
+            service = populate_model_cache(modelId, model_repository)
+        except Exception:
+            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
+
+    if not service:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
+    return service
+
 
 class InferenceService:
     def __init__(
@@ -68,22 +116,11 @@ class InferenceService:
         ],
         serviceId: str,
     ) -> dict:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        model = validate_model_id(service.modelId, self.model_repository)
 
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        try:
-            model = self.model_repository.get_by_id(service.modelId)
-        except:
-            raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
-
-        task_type = model.task.type
+        task_type = model.task_type
         request_body = request.dict()
 
         if task_type == _ULCATaskType.TRANSLATION:
@@ -105,17 +142,9 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         language = request_body.config.language.sourceLanguage
         res = {"config": request_body.config, "output": []}
@@ -128,7 +157,7 @@ class InferenceService:
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
             data = data.tolist()
-            raw_audio = np.array(data) # in float64
+            raw_audio = np.array(data)  # in float64
 
             # sampling_rate, raw_audio = wavfile.read(file_handle)
             if len(raw_audio.shape) > 1:  # Stereo to mono
@@ -144,27 +173,35 @@ class InferenceService:
             # Amplitude Equalization, assuming mono-streamed
             # TODO-1: Normalize based on a reference audio from MUCS benchmark? Ref: https://stackoverflow.com/a/42496373
             # TODO-2: Just implement it without pydub? Ref: https://stackoverflow.com/a/61254921
-            raw_audio *= 2**15 - 1 # Dequantize to int16
+            raw_audio *= 2**15 - 1  # Dequantize to int16
             pydub_audio = AudioSegment(
-                data=raw_audio.astype('int16').tobytes(),
+                data=raw_audio.astype("int16").tobytes(),
                 sample_width=2,
                 frame_rate=standard_rate,
-                channels=1
+                channels=1,
             )
             pydub_audio = pydub_normalize(pydub_audio)
-            raw_audio = np.array(pydub_audio.get_array_of_samples()).astype('float64') / (2**15 - 1)
+            raw_audio = np.array(pydub_audio.get_array_of_samples()).astype(
+                "float64"
+            ) / (2**15 - 1)
 
             # Chunk audio below 20 sec
             CHUNK_LENGTH = 20
             audio_chunks = []
-            num_audio_chunks = int(np.ceil(len(raw_audio) / standard_rate / CHUNK_LENGTH))
+            num_audio_chunks = int(
+                np.ceil(len(raw_audio) / standard_rate / CHUNK_LENGTH)
+            )
 
             if num_audio_chunks > 1:
                 for i in range(num_audio_chunks):
                     # Get CHUNK_LENGTH seconds
                     # For mono audio
                     temp = raw_audio[
-                        CHUNK_LENGTH * i * standard_rate: (i + 1) * CHUNK_LENGTH * standard_rate
+                        CHUNK_LENGTH
+                        * i
+                        * standard_rate : (i + 1)
+                        * CHUNK_LENGTH
+                        * standard_rate
                     ]
                     audio_chunks.append(temp)
             else:
@@ -186,9 +223,11 @@ class InferenceService:
             )
             encoded_result = response.as_numpy("TRANSCRIPTS")
             # Combine all outputs
-            outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
+            outputs = " ".join(
+                [result.decode("utf-8") for result in encoded_result.tolist()]
+            )
             res["output"].append({"source": outputs})
-        
+
         # Temporary patch
         if language in {"kn", "ml", "te"}:
             trn = Transliterator(source="tam", target=ISO_639_v2_to_v3[language])
@@ -204,17 +243,9 @@ class InferenceService:
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         results = []
         source_lang = request_body.config.language.sourceLanguage
@@ -234,7 +265,7 @@ class InferenceService:
             target_lang += '_' + request_body.config.language.targetScriptCode
 
         for input in request_body.input:
-            input_string = input.source.replace('\n', ' ').strip()
+            input_string = input.source.replace("\n", " ").strip()
             if input_string:
                 inputs = [
                     self.__get_string_tensor(input_string, "INPUT_TEXT"),
@@ -267,17 +298,9 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
         results = []
 
         for input in request_body.input:
@@ -292,7 +315,7 @@ class InferenceService:
                     self.__get_string_tensor(ip_language, "INPUT_LANGUAGE_ID"),
                 ]
                 output0 = http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
-                
+
                 response = await self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name="tts",
@@ -307,7 +330,7 @@ class InferenceService:
                 encoded_bytes = base64.b64encode(byte_io.read())
                 encoded_string = encoded_bytes.decode()
             else:
-                encoded_string = ''
+                encoded_string = ""
             results.append({"audioContent": encoded_string})
         res = {
             "config": {
@@ -319,27 +342,16 @@ class InferenceService:
             "audio": results,
         }
         return ULCATtsInferenceResponse(**res)
-    
+
     async def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except Exception:
-            raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
-
-        if not service:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
-            )
-
-        headers = {"Authorization": "Bearer " + service.key}
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         # TODO: Replace with real deployments
-        res = requests.post(
-            service.endpoint,
-            json=request_body.dict()
-        ).json()
+        res = requests.post(service.endpoint, json=request_body.dict()).json()
         return ULCANerInferenceResponse(**res)
 
     def __pad_batch(self, batch_data):
@@ -359,7 +371,7 @@ class InferenceService:
         )
         input_obj.set_data_from_numpy(string_obj)
         return input_obj
-    
+
     def auto_select_service_id(self, task_type: str, config: dict) -> str:
         serviceId = None
         if task_type == _ULCATaskType.ASR:
@@ -382,19 +394,23 @@ class InferenceService:
                 serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
             else:
                 serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
-        
-        return serviceId
-    
-    async def run_pipeline_inference(
-        self, request_body: ULCAPipelineInferenceRequest
-    ) -> ULCAPipelineInferenceResponse:
 
+        return serviceId
+
+    async def run_pipeline_inference(
+        self,
+        request_body: ULCAPipelineInferenceRequest,
+        request_state,  # for request state
+    ) -> ULCAPipelineInferenceResponse:
         results = []
 
         # Check if the pipeline construction is valid
         is_pipeline_valid = True
-        for i in range(len(request_body.pipelineTasks)-1):
-            current_task_type, next_task_type = request_body.pipelineTasks[i].taskType, request_body.pipelineTasks[i+1].taskType
+        for i in range(len(request_body.pipelineTasks) - 1):
+            current_task_type, next_task_type = (
+                request_body.pipelineTasks[i].taskType,
+                request_body.pipelineTasks[i + 1].taskType,
+            )
             if current_task_type == _ULCATaskType.ASR:
                 if next_task_type not in {_ULCATaskType.TRANSLATION}:
                     is_pipeline_valid = False
@@ -409,22 +425,40 @@ class InferenceService:
 
         if not is_pipeline_valid:
             # TODO: Return proper error messages once standardized
-            return {
-                "pipelineResponse": results
-            }
-        
+            return {"pipelineResponse": results}
+
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
             if not serviceId:
-                serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
-            
+                serviceId = self.auto_select_service_id(
+                    pipeline_task.taskType, pipeline_task.config
+                )
+
+            start_time = time.perf_counter()
+            new_request = ULCAGenericInferenceRequest(
+                config=pipeline_task.config, **previous_output_json
+            )
             previous_output_json = await self.run_inference(
-                request=ULCAGenericInferenceRequest(config=pipeline_task.config, **previous_output_json),
-                serviceId=serviceId
+                request=new_request, serviceId=serviceId
+            )
+
+            log_data.apply_async(
+                (
+                    # Create the url for metering
+                    request_state.url._url.split("/")[0]
+                    + pipeline_task.taskType
+                    + "?"
+                    + serviceId,
+                    str(request_state.state.api_key_id),
+                    new_request.dict(),
+                    previous_output_json.dict(),
+                    time.perf_counter() - start_time,
+                ),
+                queue="data_log",
             )
             results.append(deepcopy(previous_output_json))
-            
+
             # Output of previous will be input for next
             previous_output_json = previous_output_json.dict()
             previous_output_json.pop("config", None)
@@ -435,7 +469,9 @@ class InferenceService:
                 if pipeline_task.taskType == _ULCATaskType.TRANSLATION:
                     # The output (target) of translation should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
-                        previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["target"]
+                        previous_output_json["input"][i][
+                            "source"
+                        ] = previous_output_json["input"][i]["target"]
                         del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
