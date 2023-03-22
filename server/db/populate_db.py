@@ -1,4 +1,5 @@
 import json
+import datetime
 from pymongo.database import Database
 
 
@@ -55,7 +56,8 @@ def seed_collection(db:Database):
                         "type": "INFERENCE",
                         "usage": 0,
                         "hits": 0,
-                        "services": []
+                        "services": [],
+                        "created_timestamp": datetime.datetime.now()
                     })
 
             collection_instance.insert_many(collection['data'])
