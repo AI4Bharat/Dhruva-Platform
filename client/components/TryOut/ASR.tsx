@@ -16,7 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { dhruvaConfig, lang2label} from "../../config/config";
+import { apiInstance } from "../../api/apiConfig";
 import { getWordCount } from "../../utils/utils";
 import {
   StreamingClient,

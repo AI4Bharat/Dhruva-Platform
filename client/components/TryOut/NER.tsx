@@ -19,9 +19,9 @@ import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import {
   dhruvaConfig,
   lang2label,
-  apiInstance,
   tag2Color,
 } from "../../config/config";
+import {apiInstance} from "../../api/apiConfig";
 
 interface LanguageConfig {
   sourceLanguage: string;
