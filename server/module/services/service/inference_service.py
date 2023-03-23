@@ -153,12 +153,21 @@ class InferenceService:
             input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
             input0.set_data_from_numpy(o[0])
             input1.set_data_from_numpy(o[1].astype("int32"))
+            input_list = [input0, input1]
+
+            if language != 'en':
+                # TODO: Standardize properly as a string similar to NMT and TTS
+                input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
+                lang_id = [language]*len(o[1])
+                input2.set_data_from_numpy(np.asarray(lang_id).astype('object').reshape(o[1].shape))
+                input_list.append(input2)
+
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 
             response = await self.inference_gateway.send_triton_request(
                 url=service.endpoint,
                 model_name="asr_am_ensemble",
-                input_list=[input0, input1],
+                input_list=input_list,
                 output_list=[output0],
                 headers=headers,
             )
@@ -166,16 +175,6 @@ class InferenceService:
             # Combine all outputs
             outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
             res["output"].append({"source": outputs})
-        
-        # Temporary patch
-        if language in {"kn", "ml", "te"}:
-            trn = Transliterator(source="tam", target=ISO_639_v2_to_v3[language])
-            for i in range(len(res["output"])):
-                res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
-        elif language in {"bn", "gu", "or", "pa", "ur"}:
-            trn = Transliterator(source="hin", target=ISO_639_v2_to_v3[language])
-            for i in range(len(res["output"])):
-                res["output"][i]["source"] = trn.transform(res["output"][i]["source"])
 
         return ULCAAsrInferenceResponse(**res)
 
@@ -398,26 +397,3 @@ class InferenceService:
         return {
             "pipelineResponse": results
         }
-
-
-###### TEMPORARY JUNK ########
-
-# ASR JUNK #
-from indictrans import Transliterator
-ISO_639_v2_to_v3 = {
-    "as": "asm",
-    "bn": "ben",
-    "en": "eng",
-    "gu": "guj",
-    "hi": "hin",
-    "kn": "kan",
-    "ml": "mal",
-    "mr": "mar",
-    "ne": "nep",
-    "or": "ori",
-    "pa": "pan",
-    "sa": "hin",
-    "ta": "tam",
-    "te": "tel",
-    "ur": "urd",
-}
