@@ -269,18 +269,19 @@ class AuthService:
 
         return keys
 
-    def get_all_api_keys_with_usage(self, page, limit) -> List:
+    def get_all_api_keys_with_usage(self, page, limit, target_user_id: str) -> List:
         """
         Fetches all API keys from the collection and calculates the total usage
         Args:
             - page: Current page
             - limit: Number of documents per page
+            - target_user_id: User id to filter api keys with
         Returns:
             - List[APIKeys]
             - total_usage
             - total_pages
         """
-        keys = self.api_key_repository.find_all()
+        keys = self.api_key_repository.find({"user_id": ObjectId(target_user_id)})
         total_usage = sum(k.usage for k in keys)
 
         return (
