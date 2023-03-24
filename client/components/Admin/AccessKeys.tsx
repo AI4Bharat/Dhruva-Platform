@@ -422,6 +422,7 @@ const AccessKeys = () =>
                           name={keysData.name}
                           type={keysData.type}
                           active={keysData.active}
+                          target_user_id = {selectedUser}
                           k={keysData.masked_key}
                         />
                       );
@@ -492,6 +493,7 @@ const AccessKeys = () =>
                       name={modalstate.name}
                       k={modalstate.masked_key}
                       active={modalstate.active}
+                      user_id={selectedUser}
                     />
                   </Box>
                 )

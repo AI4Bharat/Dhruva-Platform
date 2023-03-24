@@ -5,14 +5,14 @@ import { BiArrowBack } from 'react-icons/bi';
 import { setstatus } from '../../api/adminAPI';
 import { useMutation } from '@tanstack/react-query';
 
-const KeyModal = ({isOpen, onClose, name, k, active, onRefresh}) => {
+const KeyModal = ({isOpen, onClose, name, k, active, onRefresh, user_id}) => {
 
   const mutation = useMutation(setstatus);
   const [modal, setModal] = useState(<></>)
 
   const handleRevoke = () =>
   {
-    mutation.mutate({name : name as string, action : active ? "REVOKE" : "ACTIVATE"}, {
+    mutation.mutate({name : name as string, action : active ? "REVOKE" : "ACTIVATE", target_user_id: user_id}, {
       onSuccess: (data) => {
         setModal(
           <Box

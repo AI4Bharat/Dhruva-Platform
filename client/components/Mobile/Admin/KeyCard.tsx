@@ -69,6 +69,7 @@ const KeyCard = (props) => {
         name={modalstate.name}
         k={modalstate.masked_key}
         active={modalstate.active}
+        user_id = {props.target_user_id}
       />
       <br></br>
       <br></br>
