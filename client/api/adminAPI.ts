@@ -5,7 +5,7 @@ interface Icreatekey
   name:string;
   type:string; 
   regenerate:boolean; 
-  user_id:string;
+  target_user_id:string;
 }
 
 const listallkeys = async(user_id : string) => {

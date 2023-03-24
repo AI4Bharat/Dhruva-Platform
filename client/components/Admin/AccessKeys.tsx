@@ -65,7 +65,7 @@ const AccessKeys = () =>
     name: string;
     type: string;
     regenerate: boolean;
-    user_id: string;
+    target_user_id: string;
   }
 
   const { data: userslist } = useQuery(["users"], () => listallusers());
@@ -76,7 +76,7 @@ const AccessKeys = () =>
     name: "",
     type: "INFERENCE",
     regenerate: true,
-    user_id: selectedUser,
+    target_user_id: selectedUser,
   });
 
   const { data: allkeys, refetch: allkeysrefetch } = useQuery(
@@ -165,6 +165,7 @@ const AccessKeys = () =>
       if (!regex.test(createKeyDetails.name)) {
         mutation.mutate(createKeyDetails, {
           onSuccess: (data) => {
+            refetch();
             setModal(
               <>
                 <Box
@@ -258,7 +259,7 @@ const AccessKeys = () =>
       name: "",
       type: "INFERENCE",
       regenerate: true,
-      user_id: selectedUser,
+      target_user_id: selectedUser,
     });
   };
 
