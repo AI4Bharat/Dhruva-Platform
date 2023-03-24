@@ -25,6 +25,7 @@ import {
   Thead,
   Tr,
   useDisclosure,
+  VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -43,7 +44,8 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FaCopy } from "react-icons/fa";
 
-const AccessKeys = () => {
+const AccessKeys = () => 
+{
   interface Key {
     id: string;
     name: string;
@@ -114,7 +116,7 @@ const AccessKeys = () => {
   useEffect(() => {
     refetch();
     allkeysrefetch();
-    togglehide(false);
+    togglehide(true);
     setSearchedKeys([]);
   }, [limit, page, data]);
 
@@ -259,6 +261,18 @@ const AccessKeys = () => {
       user_id: selectedUser,
     });
   };
+
+
+  const buttons = [];
+
+  for (let i = 1; i <= totalpages; i++) 
+  {
+    buttons.push(
+      <Button key={i} onClick={() => setPage(i)}>
+       {i}
+      </Button>
+    );
+  }
 
   return (
     <>
@@ -502,9 +516,12 @@ const AccessKeys = () => {
                 </HStack>
               )}
             </Box>
-            {/* Pages */}
+            {/* Pagination */}
+            {
+              (totalpages > 0 && searchedKeys?.length > 0)?
             <Box marginLeft={smallscreen?"45vw":"0rem"}>
               <Center >
+                <VStack>
                 <HStack color={"gray.400"}>
                   <Button  color={page == 1 ? "gray.400" : "gray.600"} variant={"link"} onClick={()=>{if(page!==1){setPage(page-1)}}} >
                   <AiOutlineLeft
@@ -520,9 +537,16 @@ const AccessKeys = () => {
                   <AiOutlineRight fontSize={"x-large"} />
                   </Button>
                 </HStack>
+                <br></br>
+                <br></br>
+                <HStack>
+                {buttons}
+                </HStack>
+                </VStack>
               </Center>
               <br />
-            </Box>
+            </Box>:<></>
+            }
           </>
         ) : (
           <HStack background={"gray.50"} width={smallscreen ? "100vw" : "auto"}>
