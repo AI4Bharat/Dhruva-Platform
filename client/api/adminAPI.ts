@@ -13,6 +13,11 @@ const listallkeys = async(user_id : string) => {
       return response.data.api_keys;
   };
 
+const viewadmindashboard = async(user_id : string, limit:number, page:number) => {
+    const response = await apiInstance.get(`/services/admin/dashboard?page=${page}&limit=${limit}&target_user_id=${user_id}`);
+    return response.data.api_keys; 
+  }
+
 const createkey = async (key_details : Icreatekey) => {
     const response = await apiInstance.post(
       `/auth/api-key`,key_details
@@ -30,4 +35,4 @@ const createkey = async (key_details : Icreatekey) => {
      return response.data;
  };
 
-export {listallkeys, createkey, setstatus, listallusers};
+export {listallkeys, createkey, setstatus, listallusers, viewadmindashboard};
