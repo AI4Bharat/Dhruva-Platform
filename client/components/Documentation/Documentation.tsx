@@ -1,6 +1,6 @@
 import { OrderedList, ListItem } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { dhruvaConfig } from "../../config/config";
+import { dhruvaAPI as dhruvaConfig } from "../../api/apiConfig";
 
 const Documentation = ({ ...props }) => {
   const router = useRouter();

@@ -19,7 +19,7 @@ async def _view_admin_dashboard(
     request: ViewAdminDashboardRequest = Depends(),
     admin_service: AdminService = Depends(AdminService)
 ) -> GetAllApiKeysDetailsResponse:
-    return admin_service.view_dashboard(request.page, request.limit)
+    return admin_service.view_dashboard(request.page, request.limit, request.target_user_id)
 
 @router.post("/create/service")
 async def _create_service(request: ServiceCreateRequest, admin_service: AdminService = Depends(AdminService)):

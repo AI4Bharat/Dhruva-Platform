@@ -15,8 +15,9 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
-import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { dhruvaConfig, lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import {apiInstance} from "../../api/apiConfig";
 
 interface LanguageConfig {
   sourceLanguage: string;

@@ -34,6 +34,21 @@ const lang2label: { [key: string]: string } = {
   te : "Telugu",
   ur : "Urdu",
 };
+const dhruvaRootURL: string = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+
+const dhruvaConfig: { [key: string]: string } = {
+  listServices: `${dhruvaRootURL}/services/details/list_services`,
+  viewService: `${dhruvaRootURL}/services/details/view_service`,
+  listModels: `${dhruvaRootURL}/services/details/list_models`,
+  viewModel: `${dhruvaRootURL}/services/details/view_model`,
+  genericInference: `${dhruvaRootURL}/services/inference`,
+  translationInference: `${dhruvaRootURL}/services/inference/translation`,
+  ttsInference: `${dhruvaRootURL}/services/inference/tts`,
+  asrInference: `${dhruvaRootURL}/services/inference/asr`,
+  asrStreamingInference: `wss://api.dhruva.ai4bharat.org`,
+  stsInference: `${dhruvaRootURL}/services/inference/s2s`,
+  nerInference: `${dhruvaRootURL}/services/inference/ner`,
+};
 
 const tag2Color = {
   "B-LOC": ["#ffcccc", "#ff0000"],
@@ -45,4 +60,4 @@ const tag2Color = {
   O: ["#ffe6cc", "#ff8000"],
 };
 
-export { lang2label, tag2Color };
+export { lang2label, tag2Color,dhruvaConfig };
