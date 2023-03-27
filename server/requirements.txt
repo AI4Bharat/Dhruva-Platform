@@ -44,5 +44,3 @@ redis-om==0.1.2
 # asgiref
 jsonpickle==3.0.1
 
-# Temporary
-git+https://github.com/libindic/indic-trans
