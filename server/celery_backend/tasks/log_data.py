@@ -1,22 +1,24 @@
-import os
 import json
 import logging
-from time import time
+import os
 from datetime import datetime
+from time import time
+
 from ..celery_app import app
+from .database import LogDatabase
 from .metering import meter_usage
-from .log_db import LogDatabase
 
 logs_db = LogDatabase()
 
+
 def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
-    """ Log input output data pairs to the DB """
+    """Log input output data pairs to the DB"""
     logs_collection = logs_db[service_id]
     log_document = {
         "input": inp,
         "output": output,
         "api_key_id": api_key_id,
-        "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+        "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S"),
     }
     logs_collection.insert_one(log_document)
 
@@ -36,7 +38,7 @@ def log_data(
 
     data_usage = None
     if usage_type == "tts":
-        data_usage = resp_body["audio"]
+        data_usage = req_body["input"]
     elif usage_type == "asr":
         data_usage = req_body["audio"]
     elif usage_type == "translation":

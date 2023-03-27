@@ -1,5 +1,5 @@
-import os
 import math
+import os
 import secrets
 import time
 import traceback
@@ -31,7 +31,7 @@ from schema.auth.request.set_api_key_status_query import ApiKeyAction
 from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse
 
 from ..error import Errors
-from ..model.api_key import ApiKey
+from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
 load_dotenv()
@@ -189,15 +189,21 @@ class AuthService:
         key = secrets.token_urlsafe(48)
         api_key = ApiKey(
             name=request.name,
-            key=key,
+            api_key=key,
             masked_key=self.__mask_key(key),
             active=True,
             user_id=id,
             type=request.type.value,
+            created_timestamp=datetime.now(),
         )
 
         try:
-            self.api_key_repository.insert_one(api_key)
+            inserted_id = self.api_key_repository.insert_one(api_key)
+            api_key.id = inserted_id
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
@@ -205,23 +211,37 @@ class AuthService:
 
     def __regenerate_api_key(self, existing_api_key: ApiKey):
         key = secrets.token_urlsafe(48)
-        existing_api_key.key = key
+        existing_api_key.api_key = key
         existing_api_key.masked_key = self.__mask_key(key)
 
         try:
             self.api_key_repository.save(existing_api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**existing_api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
         return key
 
-    def get_api_key(self, api_key_name: str, user_id: ObjectId):
+    def get_api_key(self, params: GetApiKeyQuery, id: ObjectId):
         try:
-            key = self.api_key_repository.find_one(
-                {"name": api_key_name, "user_id": user_id}
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
             )
         except Exception:
-            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
+
+        try:
+            key = self.api_key_repository.find_one(
+                {"name": params.api_key_name, "user_id": user_id}
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if not key:
             raise HTTPException(
@@ -241,7 +261,6 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"message": "Invalid target user id"},
             )
-        user_id = id if not params.target_user_id else ObjectId(params.target_user_id)
 
         try:
             keys = self.api_key_repository.find({"user_id": user_id})
@@ -249,31 +268,42 @@ class AuthService:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
         return keys
-    
-    def get_all_api_keys_with_usage(self, page, limit) -> List:
+
+    def get_all_api_keys_with_usage(self, page, limit, target_user_id: str) -> List:
         """
         Fetches all API keys from the collection and calculates the total usage
         Args:
             - page: Current page
             - limit: Number of documents per page
+            - target_user_id: User id to filter api keys with
         Returns:
             - List[APIKeys]
             - total_usage
             - total_pages
         """
-        keys = self.api_key_repository.find_all()
+        keys = self.api_key_repository.find({"user_id": ObjectId(target_user_id)})
         total_usage = sum(k.usage for k in keys)
 
         return (
-            keys[(page - 1) * limit: page * limit],
+            keys[(page - 1) * limit : page * limit],
             total_usage,
-            math.ceil(len(keys) / limit)
+            math.ceil(len(keys) / limit),
         )
 
     def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
         try:
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
+
+        try:
             api_key = self.api_key_repository.find_one(
-                {"name": params.api_key_name, "user_id": id}
+                {"name": params.api_key_name, "user_id": user_id}
             )
         except Exception:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
@@ -292,13 +322,17 @@ class AuthService:
 
         try:
             self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
 
         return api_key
 
     def set_api_key_status_ulca(self, request: ULCAApiKeyRequest, id: ObjectId):
-        api_key_name = request.emailId + request.appName
+        api_key_name = request.emailId + "/" + request.appName
 
         try:
             api_key = self.api_key_repository.find_one(
@@ -314,6 +348,10 @@ class AuthService:
 
         try:
             self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
         except Exception:
             raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
 

@@ -5,10 +5,11 @@ from fastapi import Depends, Header
 from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
+from pymongo.database import Database
 
 from auth import api_key_provider, auth_token_provider
 from auth.token_type import TokenType
-from db.app_db import AppDatabase
+from db.database import AppDatabase
 
 
 def InjectRequestSession(
@@ -17,7 +18,7 @@ def InjectRequestSession(
     ),
     credentials_key: Optional[str] = Depends(APIKeyHeader(name="Authorization")),
     x_auth_source: TokenType = Header(default=TokenType.API_KEY),
-    db: AppDatabase = Depends(AppDatabase),
+    db: Database = Depends(AppDatabase),
 ):
     """
     Injects session details from request data into a view function.

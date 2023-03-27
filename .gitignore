@@ -1,11 +1,11 @@
 *.env
 *.pyc
-*.json
 server/venv
 .DS_Store
 __pycache__
 appdb
 logdb
 yarn.lock
-
 mongodb
+server/.vscode
+server/db/fixtures

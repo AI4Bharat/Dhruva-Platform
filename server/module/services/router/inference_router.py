@@ -1,6 +1,6 @@
 import time
 from typing import Union, Callable
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from ..service.inference_service import InferenceService
 
 from auth.auth_provider import AuthProvider
@@ -94,7 +94,6 @@ async def _run_inference_translation(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    print("inference")
     return await inference_service.run_translation_triton_inference(
         request, params.serviceId
     )
@@ -137,15 +136,14 @@ async def _run_inference_sts(
 ):
     if request.config.language.sourceLanguage == "en":
         serviceId = "ai4bharat/conformer-en-gpu--t4"
-    elif request.config.language.sourceLanguage == "hi":
-        serviceId = "ai4bharat/conformer-hi-gpu--t4"
+    # elif request.config.language.sourceLanguage == "hi":
+    #     serviceId = "ai4bharat/conformer-hi-gpu--t4"
     elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
         serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
     else:
         serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
 
     asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
-    asr_response = ULCAAsrInferenceResponse(**asr_response)
 
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
@@ -154,7 +152,6 @@ async def _run_inference_sts(
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
     )
-    translation_response = ULCATranslationInferenceResponse(**translation_response)
 
     for i in range(len(translation_response.output)):
         translation_response.output[i].source, translation_response.output[i].target = (
@@ -176,7 +173,65 @@ async def _run_inference_sts(
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
     )
-    tts_response = ULCATtsInferenceResponse(**tts_response)
+
+    for i in range(len(translation_response.output)):
+        translation_response.output[i].source, translation_response.output[i].target = (
+            translation_response.output[i].target,
+            translation_response.output[i].source,
+        )
+
+    response = ULCAS2SInferenceResponse(
+        output=translation_response.output,
+        audio=tts_response.audio,
+        config=tts_response.config,
+    )
+
+    return response
+
+@router.post("/s2s_new_mt", response_model=ULCAS2SInferenceResponse)
+async def _run_inference_sts_new_mt(
+    request: ULCAS2SInferenceRequest,
+    inference_service: InferenceService = Depends(InferenceService),
+):
+    if request.config.language.sourceLanguage == "en":
+        serviceId = "ai4bharat/conformer-en-gpu--t4"
+    # elif request.config.language.sourceLanguage == "hi":
+    #     serviceId = "ai4bharat/conformer-hi-gpu--t4"
+    elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
+        serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
+    else:
+        serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+
+    asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
+
+    translation_request = ULCATranslationInferenceRequest(
+        config=request.config,
+        input=asr_response.output,
+    )
+    translation_response = await inference_service.run_translation_triton_inference(
+        translation_request, "ai4bharat/indictrans-v2-all-gpu--t4"
+    )
+
+    for i in range(len(translation_response.output)):
+        translation_response.output[i].source, translation_response.output[i].target = (
+            translation_response.output[i].target,
+            translation_response.output[i].source,
+        )
+
+    request.config.language.sourceLanguage = request.config.language.targetLanguage
+    if request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
+        serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+    elif request.config.language.sourceLanguage in {"en", "brx", "mni"}:
+        serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
+    else:
+        serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
+
+    tts_request = ULCATtsInferenceRequest(
+        config=request.config, input=translation_response.output
+    )
+    tts_response = await inference_service.run_tts_triton_inference(
+        tts_request, serviceId
+    )
 
     for i in range(len(translation_response.output)):
         translation_response.output[i].source, translation_response.output[i].target = (
@@ -195,6 +250,7 @@ async def _run_inference_sts(
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
 async def _run_inference_pipeline(
     request: ULCAPipelineInferenceRequest,
+    request_state: Request,
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_pipeline_inference(request)
+    return await inference_service.run_pipeline_inference(request, request_state)

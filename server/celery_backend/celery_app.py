@@ -1,5 +1,5 @@
 from celery import Celery
-from kombu import Queue, Exchange
+from kombu import Exchange, Queue
 
 app = Celery("dhruva_celery")
 app.config_from_object("celery_backend.celeryconfig", namespace="CELERY")
@@ -7,8 +7,8 @@ app.autodiscover_tasks()
 
 
 app.conf.task_queues = (
-    Queue('data_log', exchange=Exchange('logs', type='direct')),
-
+    Queue("data_log", exchange=Exchange("logs", type="direct")),
+    Queue("metrics_log", exchange=Exchange("metrics", type="direct")),
 )
 
 # Defaults

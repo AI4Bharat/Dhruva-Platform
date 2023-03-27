@@ -3,17 +3,15 @@ from typing import Generic, List, Optional, Type, TypeVar, Union
 from bson import ObjectId
 from pydantic import BaseModel
 from pymongo.collection import Collection
+from pymongo.database import Database
 
 from exception.null_value_error import NullValueError
-
-from .app_db import AppDatabase
-from .log_db import LogDatabase
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class BaseRepository(Generic[T]):
-    def __init__(self, db: Union[AppDatabase, LogDatabase], collection_name: str) -> None:
+    def __init__(self, db: Database, collection_name: str) -> None:
         super().__init__()
         self.db = db
         self.collection: Collection = db[collection_name]
@@ -74,7 +72,7 @@ class BaseRepository(Generic[T]):
         count = self.collection.delete_many(query)
         return count.deleted_count
 
-    def insert_one(self, data: T) -> object:
+    def insert_one(self, data: T) -> str:
         document = self.__map_to_document(data)
         result = self.collection.insert_one(document)
         return str(result.inserted_id)
@@ -83,3 +81,10 @@ class BaseRepository(Generic[T]):
         id = data.pop("id")
         result = self.collection.update_one({"_id": ObjectId(id)}, {"$set": data})
         return result.modified_count
+
+    def save(self, data: T):
+        data_dict = data.dict()
+        result = self.collection.update_one(
+            {"_id": ObjectId(str(data_dict["_id"]))}, {"$set": data_dict}
+        )
+        return result

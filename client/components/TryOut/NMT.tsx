@@ -18,6 +18,7 @@ import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import {apiInstance} from "../../api/apiConfig";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -124,7 +125,7 @@ export default function NMTTry({ ...props }) {
                     key={JSON.stringify(languageConfig)}
                     value={JSON.stringify(languageConfig)}
                   >
-                    {lang2label[languageConfig.sourceLanguage]} -{" "}
+                    {lang2label[languageConfig.sourceLanguage]} -{"> "}
                     {lang2label[languageConfig.targetLanguage]}
                   </option>
                 );

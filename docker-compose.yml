@@ -32,7 +32,7 @@ services:
 
   prometheus:
     container_name: prometheus
-    image: prom/prometheus
+    image: prom/prometheus:v2.37.6
     ports:
       - "9090:9090"
     volumes:
@@ -47,9 +47,12 @@ services:
       - "--web.enable-lifecycle"
     expose:
       - 9090
+
   grafana:
     image: grafana/grafana:6.7.2
     container_name: grafana
+    ports:
+      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -57,9 +60,8 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
     restart: unless-stopped
-    ports:
-      - "3030:3000"
 
   app_db:
     image: mongo
@@ -111,6 +113,18 @@ services:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
 
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes: 
+      - redis:/data
+    env_file:
+      - .env.dev
+    command: redis-server --save 20 1 --loglevel warning
+    restart: unless-stopped
+
   celery-flower:
     container_name: celery-flower
     image: server_image
@@ -136,7 +150,17 @@ services:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
 
+  prom-aggregation-gateway:
+    container_name: prom-aggregation-gateway
+    image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
+    volumes:
+      - prometheus_data:/prom-agg-gateway
+    ports:
+      - "8080:80"
 
 volumes:
   grafana_data: {}
   prometheus_data: {}
+  cache: {}
+  redis:
+    driver: local
