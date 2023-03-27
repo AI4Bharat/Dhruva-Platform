@@ -16,12 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
-import {
-  dhruvaConfig,
-  lang2label,
-  apiInstance,
-  tag2Color,
-} from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label, tag2Color } from "../../config/config";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -42,7 +38,7 @@ export default function NERTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.nerInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.nerInference + `?serviceId=${props.serviceId}`,
         {
           input: [
             {

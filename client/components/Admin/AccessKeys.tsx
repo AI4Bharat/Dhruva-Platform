@@ -44,8 +44,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FaCopy } from "react-icons/fa";
 
-const AccessKeys = () => 
-{
+const AccessKeys = () => {
   interface Key {
     id: string;
     name: string;
@@ -263,14 +262,12 @@ const AccessKeys = () =>
     });
   };
 
-
   const buttons = [];
 
-  for (let i = 1; i <= totalpages; i++) 
-  {
+  for (let i = 1; i <= totalpages; i++) {
     buttons.push(
       <Button key={i} onClick={() => setPage(i)}>
-       {i}
+        {i}
       </Button>
     );
   }
@@ -410,10 +407,8 @@ const AccessKeys = () =>
         {selectedUser ? (
           <>
             <Box mt="1rem" mb="2rem">
-              {searchedKeys.length !== 0 ? 
-              (
-                smallscreen ? 
-                (
+              {searchedKeys.length !== 0 ? (
+                smallscreen ? (
                   <Box>
                     {Object.entries(searchedKeys).map(([id, keysData]) => {
                       return (
@@ -422,22 +417,21 @@ const AccessKeys = () =>
                           name={keysData.name}
                           type={keysData.type}
                           active={keysData.active}
-                          target_user_id = {selectedUser}
+                          target_user_id={selectedUser}
                           k={keysData.masked_key}
                         />
                       );
                     })}
                   </Box>
-                ) : 
-                (
-                  <Box bg="light.100" height={67*limit}>
+                ) : (
+                  <Box bg="light.100" height={67 * limit}>
                     <Table variant="unstyled">
                       <Thead>
                         <Tr>
                           <Th>Key Name</Th>
                           <Th>Type</Th>
                           <Th>Status</Th>
-                          <Th>Total Usage</Th>
+                          {/* <Th>Total Usage</Th> */}
                           <Th>Actions</Th>
                         </Tr>
                       </Thead>
@@ -455,7 +449,7 @@ const AccessKeys = () =>
                               >
                                 {keysData.active ? "active" : "inactive"}
                               </Td>
-                              <Td>0</Td>
+                              {/* <Td>0</Td> */}
                               <Td>
                                 <Button
                                   onClick={() => {
@@ -497,8 +491,7 @@ const AccessKeys = () =>
                     />
                   </Box>
                 )
-              ) : 
-              (
+              ) : (
                 <HStack
                   background={"gray.50"}
                   width={smallscreen ? "100vw" : "auto"}
@@ -520,36 +513,52 @@ const AccessKeys = () =>
               )}
             </Box>
             {/* Pagination */}
-            {
-              (totalpages > 0 && searchedKeys?.length > 0)?
-            <Box marginLeft={smallscreen?"45vw":"0rem"}>
-              <Center >
-                <VStack>
-                <HStack color={"gray.400"}>
-                  <Button  color={page == 1 ? "gray.400" : "gray.600"} variant={"link"} onClick={()=>{if(page!==1){setPage(page-1)}}} >
-                  <AiOutlineLeft
-                    fontSize={"x-large"}
-                  />
-                  </Button>
-                  <Spacer /><Spacer /><Spacer /> <Spacer /> <Spacer /> <Spacer />
-                  <Text fontSize={"large"}>
-                    {page}/{totalpages}
-                  </Text>
-                  <Spacer /><Spacer /> <Spacer /> <Spacer /> <Spacer /> <Spacer />
-                  <Button color={page == totalpages ? "gray.400" : "gray.600"} variant={"link"} onClick={()=>{if(page!==totalpages){setPage(page+1)}}} >
-                  <AiOutlineRight fontSize={"x-large"} />
-                  </Button>
-                </HStack>
-                <br></br>
-                <br></br>
-                <HStack>
-                {buttons}
-                </HStack>
-                </VStack>
-              </Center>
-              <br />
-            </Box>:<></>
-            }
+            {totalpages > 0 && searchedKeys?.length > 0 ? (
+              <Box marginLeft={smallscreen ? "45vw" : "0rem"}>
+                <Center>
+                  <VStack>
+                    <HStack color={"gray.400"}>
+                      <Button
+                        color={page == 1 ? "gray.400" : "gray.600"}
+                        variant={"link"}
+                        onClick={() => {
+                          if (page !== 1) {
+                            setPage(page - 1);
+                          }
+                        }}
+                      >
+                        <AiOutlineLeft fontSize={"x-large"} />
+                      </Button>
+                      <Spacer />
+                      <Spacer />
+                      <Spacer /> <Spacer /> <Spacer /> <Spacer />
+                      <Text fontSize={"large"}>
+                        {page}/{totalpages}
+                      </Text>
+                      <Spacer />
+                      <Spacer /> <Spacer /> <Spacer /> <Spacer /> <Spacer />
+                      <Button
+                        color={page == totalpages ? "gray.400" : "gray.600"}
+                        variant={"link"}
+                        onClick={() => {
+                          if (page !== totalpages) {
+                            setPage(page + 1);
+                          }
+                        }}
+                      >
+                        <AiOutlineRight fontSize={"x-large"} />
+                      </Button>
+                    </HStack>
+                    <br></br>
+                    <br></br>
+                    <HStack>{buttons}</HStack>
+                  </VStack>
+                </Center>
+                <br />
+              </Box>
+            ) : (
+              <></>
+            )}
           </>
         ) : (
           <HStack background={"gray.50"} width={smallscreen ? "100vw" : "auto"}>
