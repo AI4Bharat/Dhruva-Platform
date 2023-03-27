@@ -16,7 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import {apiInstance} from "../../api/apiConfig";
 
@@ -71,7 +72,7 @@ export default function STSTry({ ...props }) {
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
-        dhruvaConfig.stsInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.stsInference + `?serviceId=${props.serviceId}`,
         {
           audio: [
             {
@@ -136,9 +137,9 @@ export default function STSTry({ ...props }) {
   };
 
   useEffect(() => {
-    const initialLanguageConfig = props.languages[0]
-    setLanguage(JSON.stringify(initialLanguageConfig))
-  }, [])
+    const initialLanguageConfig = props.languages[0];
+    setLanguage(JSON.stringify(initialLanguageConfig));
+  }, []);
 
   return (
     <>

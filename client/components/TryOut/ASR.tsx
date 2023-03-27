@@ -16,8 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { dhruvaConfig, lang2label} from "../../config/config";
-import { apiInstance } from "../../api/apiConfig";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import {
   StreamingClient,
@@ -55,7 +55,7 @@ export default function ASRTry({ ...props }) {
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
-        dhruvaConfig.asrInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.asrInference + `?serviceId=${props.serviceId}`,
         {
           audio: [
             {
@@ -104,7 +104,7 @@ export default function ASRTry({ ...props }) {
     setStreaming(true);
     setFetching(true);
     streamingClient.connect(
-      dhruvaConfig.asrStreamingInference,
+      dhruvaAPI.asrStreamingInference,
       props.serviceId,
       process.env.NEXT_PUBLIC_API_KEY,
       language,

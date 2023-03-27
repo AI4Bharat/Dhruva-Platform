@@ -39,7 +39,7 @@ interface Service {
 }
 
 export default function Services() {
-  const { data: services } = useQuery(["services"], listServices);
+  const {data:services} = useQuery(["services"],listServices);
   const [sourceLang, setSourceLanguage] = useState<string>("");
   const [targetLang, setTargetLanguage] = useState<string>("");
   const [task, setTask] = useState<string>("");

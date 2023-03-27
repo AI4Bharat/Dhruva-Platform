@@ -16,7 +16,8 @@ import {
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import {apiInstance} from "../../api/apiConfig";
 
@@ -42,7 +43,7 @@ export default function TTSTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.ttsInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.ttsInference + `?serviceId=${props.serviceId}`,
         {
           input: [
             {

@@ -15,7 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
-import { dhruvaConfig, lang2label } from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import {apiInstance} from "../../api/apiConfig";
 
@@ -44,7 +45,7 @@ export default function NMTTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.translationInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.translationInference + `?serviceId=${props.serviceId}`,
         {
           input: [
             {
@@ -101,9 +102,9 @@ export default function NMTTry({ ...props }) {
   };
 
   useEffect(() => {
-    const initialLanguageConfig = props.languages[0]
-    setLanguage(JSON.stringify(initialLanguageConfig))
-  }, [])
+    const initialLanguageConfig = props.languages[0];
+    setLanguage(JSON.stringify(initialLanguageConfig));
+  }, []);
 
   return (
     <Grid templateRows="repeat(3)" gap={5}>

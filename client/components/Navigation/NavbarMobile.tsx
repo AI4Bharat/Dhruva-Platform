@@ -23,8 +23,8 @@ const NavbarMobile = () => {
       case "models":
         setTitle("Model Registry");
         break;
-      case "analyze":
-        setTitle("Analyze");
+      case "admin":
+        setTitle("Admin Dashboard");
         break;
       case "profile":
         setTitle("Profile");

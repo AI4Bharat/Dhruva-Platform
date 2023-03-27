@@ -19,7 +19,7 @@ import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import NERTry from "../../components/TryOut/NER";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaConfig } from "../../config/config";
+import { dhruvaAPI } from "../../api/apiConfig";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
