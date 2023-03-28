@@ -126,11 +126,14 @@ export default function ViewService() {
                     <Documentation serviceInfo={serviceInfo} />
                   </TabPanel>
                   <TabPanel>
+                    {
+                      languages?
                     <Feedback
                       serviceID={router.query["serviceId"]}
                       userID={"john_doe_dummy_id"}
                       serviceLanguages={languages}
-                    />
+                    />:<></>
+                    }
                   </TabPanel>
                 </TabPanels>
               </Tabs>
@@ -193,11 +196,14 @@ export default function ViewService() {
                     />
                   </TabPanel>
                   <TabPanel>
+                  {
+                    languages?
                     <Feedback
-                      serviceLanguages={languages}
                       serviceID={router.query["serviceId"]}
                       userID={"john_doe_dummy_id"}
-                    />
+                      serviceLanguages={languages}
+                    />:<></>
+                    }
                   </TabPanel>
                 </TabPanels>
               </Tabs>
