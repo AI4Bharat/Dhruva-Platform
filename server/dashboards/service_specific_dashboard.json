@@ -1,0 +1,1428 @@
+{
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "name": "Annotations & Alerts",
+          "enable": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "snapshotData": [],
+          "type": "dashboard",
+          "builtIn": 1,
+          "hide": true
+        }
+      ]
+    },
+    "description": "",
+    "editable": false,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": 11,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 53,
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["mean"],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "text": {}
+        },
+        "pluginVersion": "9.4.3",
+        "snapshotData": [
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {},
+                  "interval": 15000,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "reqps"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {},
+                  "displayNameFromDS": "sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)",
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "reqps"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)",
+            "refId": "A"
+          }
+        ],
+        "targets": [],
+        "title": "Requests Per Second",
+        "type": "gauge",
+        "links": []
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "ms"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 58,
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["mean"],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "text": {}
+        },
+        "pluginVersion": "9.4.3",
+        "snapshotData": [
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {},
+                  "interval": 15000,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "ms"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {},
+                  "displayNameFromDS": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)",
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "ms"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)",
+            "refId": "B"
+          }
+        ],
+        "targets": [],
+        "title": "Request Processing Time",
+        "type": "gauge",
+        "links": []
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "links": [],
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 5
+        },
+        "id": 36,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "right",
+            "showLegend": false
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.4.3",
+        "snapshotData": [
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "reqps"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "Rate",
+                  "links": [],
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "reqps"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "Rate",
+            "refId": "A"
+          }
+        ],
+        "targets": [],
+        "title": "Requests Per Second",
+        "type": "timeseries",
+        "links": []
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "links": [],
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 5
+        },
+        "id": 40,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.4.3",
+        "snapshotData": [
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "0.95",
+                  "links": [],
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "0.95",
+            "refId": "A"
+          },
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "0.9",
+                  "links": [],
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "0.9",
+            "refId": "B"
+          },
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "0.5",
+                  "links": [],
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "0.5",
+            "refId": "C"
+          },
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "0.1",
+                  "links": [],
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "0.1",
+            "refId": "D"
+          }
+        ],
+        "targets": [],
+        "title": "Requests Processing Time",
+        "type": "timeseries",
+        "links": []
+      },
+      {
+        "datasource": null,
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 30,
+              "gradientMode": "opacity",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "links": [],
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 13
+        },
+        "id": 32,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.4.3",
+        "snapshotData": [
+          {
+            "fields": [
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 30,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "showPoints": "never",
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "interval": 15000,
+                  "links": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "name": "Time",
+                "type": "time",
+                "values": [
+                  1675970445000, 1675970460000, 1675970475000, 1675970490000,
+                  1675970505000, 1675970520000, 1675970535000, 1675970550000,
+                  1675970565000, 1675970580000, 1675970595000, 1675970610000,
+                  1675970625000, 1675970640000, 1675970655000, 1675970670000,
+                  1675970685000, 1675970700000, 1675970715000, 1675970730000
+                ]
+              },
+              {
+                "config": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 30,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "displayNameFromDS": "Error Rate",
+                  "links": [],
+                  "mappings": [],
+                  "max": 100,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "labels": {},
+                "name": "Value",
+                "type": "number",
+                "values": [
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                ]
+              }
+            ],
+            "meta": {
+              "custom": {
+                "resultType": "matrix"
+              },
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m])) OR vector(0)\nStep: 15s",
+              "preferredVisualisationType": "graph",
+              "type": "timeseries-multi"
+            },
+            "name": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "targets": [],
+        "title": "Error Rate",
+        "type": "timeseries",
+        "links": []
+      }
+    ],
+    "refresh": "",
+    "revision": 1,
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "suhaas/dev",
+            "value": "suhaas/dev"
+          },
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "definition": "[object Object]",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "API Key Name",
+          "multi": false,
+          "name": "apiKeyName",
+          "options": [
+            {
+              "selected": false,
+              "text": "suhaas/dev",
+              "value": "suhaas/dev"
+            }
+          ],
+          "query": "",
+          "refresh": 0,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "641adbfecfe2dd0b411bbefe",
+            "value": "641adbfecfe2dd0b411bbefe"
+          },
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "definition": "[object Object]",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "User Id",
+          "multi": false,
+          "name": "userId",
+          "options": [
+            {
+              "selected": false,
+              "text": "641adbfecfe2dd0b411bbefe",
+              "value": "641adbfecfe2dd0b411bbefe"
+            }
+          ],
+          "query": "",
+          "refresh": 0,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "sadasda",
+            "value": "sadasda"
+          },
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "definition": "[object Object]",
+          "error": {},
+          "hide": 0,
+          "includeAll": false,
+          "label": "Inference Service Id",
+          "multi": false,
+          "name": "inferenceServiceId",
+          "options": [
+            {
+              "selected": false,
+              "text": "sadasda",
+              "value": "sadasda"
+            }
+          ],
+          "query": "",
+          "refresh": 0,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "timezone": "",
+    "title": "Dhruva Service Specific Dashboard",
+    "uid": "Zj4zOgA7y",
+    "version": 8,
+    "weekStart": ""
+  },
+  "name": "Dhruva Service Specific Dashboard",
+  "expires": 0
+}

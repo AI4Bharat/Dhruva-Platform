@@ -8,7 +8,11 @@ from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.base_error import BaseError
 from exception.http_error import HttpErrorResponse
 from schema.services.request import ModelViewRequest, ServiceViewRequest
-from schema.services.response import ServiceListResponse, ServiceViewResponse
+from schema.services.response import (
+    CreateGrafanaSnapshotResponse,
+    ServiceListResponse,
+    ServiceViewResponse,
+)
 
 from ..error import Errors
 from ..model import Model
@@ -20,7 +24,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}}
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
@@ -36,7 +40,7 @@ async def _list_services(
 async def _view_service_details(
     request: ServiceViewRequest,
     details_service: DetailsService = Depends(DetailsService),
-    session: RequestSession = Depends(InjectRequestSession)
+    session: RequestSession = Depends(InjectRequestSession),
 ):
     response = details_service.get_service_details(request, session.id)
     return response
@@ -65,4 +69,12 @@ async def _view_model_details(
     if not response:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
 
+    return response
+
+
+@router.get("/grafana_snapshot", response_model=CreateGrafanaSnapshotResponse)
+async def _get_current_grafana_snapshot(
+    details_service: DetailsService = Depends(DetailsService),
+):
+    response = details_service.get_grafana_snapshot()
     return response

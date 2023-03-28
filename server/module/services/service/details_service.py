@@ -1,16 +1,18 @@
 import copy
 import traceback
 from typing import List, Optional
+
 from bson import ObjectId
+from fastapi import Depends, HTTPException, status
 
 from exception.base_error import BaseError
-from fastapi import Depends, HTTPException, status
+from module.auth.repository.api_key_repository import ApiKeyRepository
 from schema.services.request import ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error.errors import Errors
+from ..gateway import GrafanaGateway
 from ..repository import ModelRepository, ServiceRepository
-from module.auth.repository.api_key_repository import ApiKeyRepository
 
 
 class DetailsService:
@@ -18,11 +20,13 @@ class DetailsService:
         self,
         service_repository: ServiceRepository = Depends(ServiceRepository),
         model_repository: ModelRepository = Depends(ModelRepository),
-        api_key_repository: ApiKeyRepository = Depends(ApiKeyRepository)
+        api_key_repository: ApiKeyRepository = Depends(ApiKeyRepository),
+        grafana_gateway: GrafanaGateway = Depends(GrafanaGateway),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.api_key_repository = api_key_repository
+        self.grafana_gateway = grafana_gateway
 
     def get_service_details(
         self, request: ServiceViewRequest, user_id: ObjectId
@@ -55,7 +59,9 @@ class DetailsService:
         except Exception:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
-        return ServiceViewResponse(**service.dict(), model=model, key_usage=api_keys, total_usage=total_usage)
+        return ServiceViewResponse(
+            **service.dict(), model=model, key_usage=api_keys, total_usage=total_usage
+        )
 
     def list_services(self) -> List[ServiceListResponse]:
         try:
@@ -77,3 +83,6 @@ class DetailsService:
             )
 
         return response_list
+
+    def get_grafana_snapshot(self):
+        return self.grafana_gateway.create_grafana_snapshot()
