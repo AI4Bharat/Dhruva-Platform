@@ -15,9 +15,9 @@ import {
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
-// import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
-import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 
 interface LanguageConfig {
@@ -42,7 +42,7 @@ export default function TTSTry({ ...props }) {
     setFetching(true);
     apiInstance
       .post(
-        dhruvaConfig.ttsInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.ttsInference + `?serviceId=${props.serviceId}`,
         {
           input: [
             {
@@ -114,89 +114,89 @@ export default function TTSTry({ ...props }) {
 
   return (
     <>
-    <Grid templateRows="repeat(3)" gap={5}>
-      <GridItem>
-        <Stack direction={"column"}>
-          <Stack direction={"row"}>
-            <Text className="dview-service-try-option-title">
-              Select Language:
-            </Text>
-            <Select
-              onChange={(e) => {
-                setLanguage(e.target.value);
-              }}
-            >
-              {languages.map((language) => (
-                <option key={language} value={language}>
-                  {lang2label[language]}
-                </option>
-              ))}
-            </Select>
-          </Stack>
-          <Stack direction={"row"}>
-            <Text className="dview-service-try-option-title">Voice:</Text>
-            <Select
-              onChange={(e) => {
-                setVoice(e.target.value);
-              }}
-            >
-              <option value={"male"}>Male</option>
-              <option value={"female"}>Female</option>
-            </Select>
-          </Stack>
-        </Stack>
-      </GridItem>
-      <GridItem>
-        {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
-      </GridItem>
-      {fetched ? (
+      <Grid templateRows="repeat(3)" gap={5}>
         <GridItem>
-          <SimpleGrid
-            p="1rem"
-            w="100%"
-            h="auto"
-            bg="orange.100"
-            borderRadius={15}
-            columns={2}
-            spacingX="40px"
-            spacingY="20px"
-          >
-            <Stat>
-              <StatLabel>Word Count</StatLabel>
-              <StatNumber>{requestWordCount}</StatNumber>
-              <StatHelpText>Request</StatHelpText>
-            </Stat>
-            <Stat>
-              <StatLabel>Response Time</StatLabel>
-              <StatNumber>{Number(requestTime) / 1000}</StatNumber>
-              <StatHelpText>seconds</StatHelpText>
-            </Stat>
-            <Stat>
-              <StatLabel>TTS Audio Duration</StatLabel>
-              <StatNumber>{audioDuration}</StatNumber>
-              <StatHelpText>seconds</StatHelpText>
-            </Stat>
-          </SimpleGrid>
-        </GridItem>
-      ) : (
-        <></>
-      )}
-      <GridItem>
-        <Stack>
-          {renderTransliterateComponent()}
-          <Stack direction={"column"} gap={5}>
-            <Button
-              onClick={() => {
-                getTTSAudio(tltText);
-              }}
-            >
-              <FaRegFileAudio />
-            </Button>
-            <audio style={{ width: "auto" }} src={audio} controls />
+          <Stack direction={"column"}>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">
+                Select Language:
+              </Text>
+              <Select
+                onChange={(e) => {
+                  setLanguage(e.target.value);
+                }}
+              >
+                {languages.map((language) => (
+                  <option key={language} value={language}>
+                    {lang2label[language]}
+                  </option>
+                ))}
+              </Select>
+            </Stack>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">Voice:</Text>
+              <Select
+                onChange={(e) => {
+                  setVoice(e.target.value);
+                }}
+              >
+                <option value={"male"}>Male</option>
+                <option value={"female"}>Female</option>
+              </Select>
+            </Stack>
           </Stack>
-        </Stack>
-      </GridItem>
-    </Grid>
+        </GridItem>
+        <GridItem>
+          {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
+        </GridItem>
+        {fetched ? (
+          <GridItem>
+            <SimpleGrid
+              p="1rem"
+              w="100%"
+              h="auto"
+              bg="orange.100"
+              borderRadius={15}
+              columns={2}
+              spacingX="40px"
+              spacingY="20px"
+            >
+              <Stat>
+                <StatLabel>Word Count</StatLabel>
+                <StatNumber>{requestWordCount}</StatNumber>
+                <StatHelpText>Request</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>Response Time</StatLabel>
+                <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+                <StatHelpText>seconds</StatHelpText>
+              </Stat>
+              <Stat>
+                <StatLabel>TTS Audio Duration</StatLabel>
+                <StatNumber>{audioDuration}</StatNumber>
+                <StatHelpText>seconds</StatHelpText>
+              </Stat>
+            </SimpleGrid>
+          </GridItem>
+        ) : (
+          <></>
+        )}
+        <GridItem>
+          <Stack>
+            {renderTransliterateComponent()}
+            <Stack direction={"column"} gap={5}>
+              <Button
+                onClick={() => {
+                  getTTSAudio(tltText);
+                }}
+              >
+                <FaRegFileAudio />
+              </Button>
+              <audio style={{ width: "auto" }} src={audio} controls />
+            </Stack>
+          </Stack>
+        </GridItem>
+      </Grid>
     </>
   );
 }

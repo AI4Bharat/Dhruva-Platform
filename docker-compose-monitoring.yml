@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.37.6
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+
+  grafana:
+    image: grafana/grafana:9.4.3
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
+  prom-aggregation-gateway:
+    container_name: prom-aggregation-gateway
+    image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
+    volumes: 
+      - prometheus_data:/prom-agg-gateway
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+
+volumes:
+  grafana_data: {}
+  prometheus_data: {}

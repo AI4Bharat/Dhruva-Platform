@@ -1,9 +1,13 @@
 from datetime import datetime
 from typing import Any, List, Optional
-from pydantic import BaseModel
-from schema.services.common import _ULCALanguagePair
+from pydantic import BaseModel, Field, create_model
+from redis_om import Field as RedisField
+from schema.services.common import _ULCALanguagePair, _ULCATask
+from db.MongoBaseModel import MongoBaseModel
+from cache.CacheBaseModel import CacheBaseModel, generate_cache_model
 
-class _Task(BaseModel):
+
+class Task(BaseModel):
     type: str
 
 
@@ -35,11 +39,8 @@ class _Schema(BaseModel):
 
 
 class _InferenceEndPoint(BaseModel):
-    class Config:
-        fields = {
-            'schema_': 'schema'
-        }
-    schema_: _Schema
+    
+    schema_: _Schema = Field(None, alias="schema")
 
 
 class _LanguagePair(BaseModel):
@@ -62,8 +63,7 @@ class _Benchmark(BaseModel):
     score: List[_BenchmarkMetric]
 
 
-class Model(BaseModel):
-    _id: Optional[Any]
+class Model(MongoBaseModel):
     modelId: str
     version: str
     submittedOn: int
@@ -71,10 +71,21 @@ class Model(BaseModel):
     name: str
     description: str
     refUrl: str
-    task: _Task
+    task: _ULCATask
     languages: List[dict]
     license: str
     domain: List[str]
     inferenceEndPoint: _InferenceEndPoint
     benchmarks: Optional[List[_Benchmark]]
     submitter: _Submitter
+
+    class Config:
+        allow_population_by_field_name = True
+        orm_mode = True
+
+
+ModelCache = create_model(
+    "ModelCache",
+    __base__=CacheBaseModel,
+    **generate_cache_model(Model, primary_key_field="modelId")
+)

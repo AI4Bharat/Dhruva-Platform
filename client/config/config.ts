@@ -1,6 +1,39 @@
-import { createContext } from "react";
-import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
-
+const lang2label: { [key: string]: string } = {
+  as : "Assamese",
+  awa: "Awadhi",
+  bho: "Bhojpuri",
+  bn : "Bangla",
+  brx: "Boro",
+  doi: "Dogri",
+  en : "English",
+  gom: "Goan-Konkani",
+  gu : "Gujarati",
+  hi : "Hindi",
+  hne: "Hindi-Eastern (Chhattisgarhi)",
+  kn : "Kannada",
+  ks : "Kashmiri",
+  ks_Deva: "Kashmiri (Devanagari)",
+  kha: "Khasi",
+  lus: "Lushai (Mizo)",
+  mag: "Magahi",
+  mai: "Maithili",
+  ml : "Malayalam",
+  mni: "Manipuri",
+  mni_Beng: "Manipuri (Bengali)",
+  mr : "Marathi",
+  ne : "Nepali",
+  or : "Oriya",
+  pa : "Panjabi",
+  raj: "Rajasthani",
+  sa : "Sanskrit",
+  sat: "Santali",
+  sd : "Sindhi",
+  sd_Deva: "Sindhi (Devanagari)",
+  si : "Sinhala",
+  ta : "Tamil",
+  te : "Telugu",
+  ur : "Urdu",
+};
 const dhruvaRootURL: string = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 const dhruvaConfig: { [key: string]: string } = {
@@ -17,26 +50,6 @@ const dhruvaConfig: { [key: string]: string } = {
   nerInference: `${dhruvaRootURL}/services/inference/ner`,
 };
 
-const lang2label: { [key: string]: string } = {
-  hi: "Hindi",
-  ta: "Tamil",
-  en: "English",
-  te: "Telugu",
-  as: "Assamese",
-  bn: "Bengali",
-  kn: "Kannada",
-  ml: "Malayalam",
-  mr: "Marathi",
-  pa: "Punjabi",
-  or: "Oriya",
-  gu: "Gujarati",
-  raj: "Rajasthani",
-  ur: "Urdu",
-  sa: "Sanskrit",
-  brx: "Bodo",
-  mni: "Manipuri",
-};
-
 const tag2Color = {
   "B-LOC": ["#ffcccc", "#ff0000"],
   "B-ORG": ["#cceeff", "#00aaff"],
@@ -47,18 +60,4 @@ const tag2Color = {
   O: ["#ffe6cc", "#ff8000"],
 };
 
-const apiInstance = axios.create();
-
-apiInstance.interceptors.request.use((config: any) => {
-  config.headers["request-startTime"] = new Date().getTime();
-  return config;
-});
-
-apiInstance.interceptors.response.use((response: any) => {
-  const currentTime = new Date().getTime();
-  const startTime = response.config.headers["request-startTime"];
-  response.headers["request-duration"] = currentTime - startTime;
-  return response;
-});
-
-export { dhruvaConfig, lang2label, apiInstance, tag2Color };
+export { lang2label, tag2Color,dhruvaConfig };

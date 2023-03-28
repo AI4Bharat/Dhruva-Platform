@@ -21,11 +21,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import ServiceCard from "../../components/Mobile/Services/ServiceCard";
-import { dhruvaConfig } from "../../config/config";
 import Image from "next/image";
 import Head from "next/head";
+import { useQuery } from "@tanstack/react-query";
+import { listServices } from "../../api/serviceAPI";
 
 interface Service {
   serviceId: string;
@@ -39,7 +39,7 @@ interface Service {
 }
 
 export default function Services() {
-  const [services, setServices] = useState<Service[]>([]);
+  const {data:services} = useQuery(["services"],listServices);
   const [sourceLang, setSourceLanguage] = useState<string>("");
   const [targetLang, setTargetLanguage] = useState<string>("");
   const [task, setTask] = useState<string>("");
@@ -49,7 +49,6 @@ export default function Services() {
   const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [seed, setSeed] = useState<number>(0);
-
   const clearFilters = () => {
     setTask("");
     setSeed(Math.random());
@@ -134,16 +133,12 @@ export default function Services() {
   };
 
   useEffect(() => {
-    axios({
-      method: "GET",
-      url: dhruvaConfig.listServices,
-    }).then((response) => {
-      setServices(response.data);
-      setFilteredServices(response.data);
-      setSearchedServices(response.data);
+    if (services) {
+      setFilteredServices(services);
+      setSearchedServices(services);
       togglehide(false);
-    });
-  }, []);
+    }
+  }, [services]);
 
   useEffect(() => {
     filterToggler();
@@ -274,6 +269,7 @@ export default function Services() {
                 />
                 <Input
                   borderRadius={0}
+                  color="gray.600"
                   onChange={searchToggler}
                   placeholder="Search for Services"
                 />
@@ -359,7 +355,7 @@ export default function Services() {
         <br />
         {smallscreen ? (
           // Mobile View
-          searchedservices.length > 0 ? (
+          searchedservices ? (
             <>
               {Object.entries(searchedservices).map(([id, serviceData]) => (
                 <ServiceCard
@@ -393,7 +389,7 @@ export default function Services() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedservices.length > 0 ? (
+            {searchedservices ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>

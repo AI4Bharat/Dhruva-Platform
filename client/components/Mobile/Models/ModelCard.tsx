@@ -1,4 +1,4 @@
-import { Box, Button, Heading, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import Link from "next/link";
 import React from "react";
 
@@ -24,7 +24,7 @@ const ModelCard = (props: any) => {
       <hr></hr>
       <Box mt="1rem" fontSize={"md"}>
         <Text fontWeight={"bold"}>Model ID :</Text>
-        <Text>{props.modelID}</Text>
+        <Text>{props.modelId}</Text>
       </Box>
       <Box fontSize={"md"}>
         <HStack>

@@ -1,6 +1,6 @@
 import { OrderedList, ListItem } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { dhruvaConfig } from "../../config/config";
+import { dhruvaAPI } from "../../api/apiConfig";
 
 const Documentation = ({ ...props }) => {
   const router = useRouter();
@@ -19,7 +19,7 @@ const Documentation = ({ ...props }) => {
           whiteSpace: "initial",
         }}
       >
-        endpoint_url = {dhruvaConfig.genericInference}
+        endpoint_url = {dhruvaAPI.genericInference}
       </pre>
       <ListItem>
         {" "}

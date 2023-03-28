@@ -4,16 +4,13 @@ import {
   SimpleGrid,
   Button,
   Divider,
-  Avatar,
   useColorModeValue,
   HStack,
   Spacer,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import { AiOutlineDollarCircle } from "react-icons/ai";
-import { BiHomeCircle } from "react-icons/bi";
 import { IoConstructOutline, IoGridOutline } from "react-icons/io5";
-import { MdAutoGraph } from "react-icons/md";
+import {MdOutlineAdminPanelSettings} from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -28,8 +25,8 @@ const SidebarMobile: React.FC = () => {
       case "services":
         setNumber(1);
         break;
-      case "billing":
-        setNumber(4);
+      case "admin":
+        setNumber(2);
         break;
       case "models":
         setNumber(3);
@@ -169,8 +166,8 @@ const SidebarMobile: React.FC = () => {
             </Link>
           </Box> */}
 
-          {/* <Box>
-            <Link href="/analyze">
+          <Box>
+            <Link href="/admin">
               <Button
                 mb="2"
                 ml={isOpen ? 0 : 0}
@@ -185,15 +182,16 @@ const SidebarMobile: React.FC = () => {
                 transition="width 0.2s"
               >
                 <Box>
-                  <MdAutoGraph
+                  <MdOutlineAdminPanelSettings
                     style={{ marginLeft: 12, marginRight: 12 }}
                     size={25}
                   />
                 </Box>
-                <Text fontWeight={"normal"}> Analyze</Text>
+                <Text fontWeight={"normal"}> Admin</Text>
               </Button>
             </Link>
           </Box>
+                    {/* 
           <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">

@@ -19,7 +19,8 @@ import {
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { dhruvaConfig, lang2label, apiInstance } from "../../config/config";
+import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
+import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import { CloseIcon } from "@chakra-ui/icons";
 
@@ -52,41 +53,55 @@ export default function STSTry({ ...props }) {
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [sourceAudioDuration, setSourceAudioDuration] = useState(0);
   const [targetAudioDuration, setTargetAudioDuration] = useState(0);
-  const [modal, setModal] = useState(<></>)
+  const [modal, setModal] = useState(<></>);
 
   const startRecording = () => {
     setRecording(!recording);
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setAudioStream(stream);
-      var AudioContext = window.AudioContext;
-      var audioContext = new AudioContext();
-      var input = audioContext.createMediaStreamSource(stream);
-      var Recorder = (window as any).Recorder;
-      var newRecorder = new Recorder(input, { numChannels: 1 });
-      setRecorder(newRecorder);
-      newRecorder.record();
-      console.log("Recording started");
-    })
-    .catch((e)=>{
-      setModal(
-      <Box mt="1rem" width={"100%"} minH={"3rem"} border={"1px"} borderColor={"gray.300"} background={"red.50"} >
-      <HStack  ml="1rem" mr="1rem" mt="0.6rem" >
-      <Text color={"red.600"}>Required Permissions Denied</Text>
-      <Spacer/>
-      <CloseIcon onClick={()=>setModal(<></>)} color={"red.600"} fontSize={"xs"}/>
-      </HStack>
-      </Box>)
-      // console.log((e as Error).message);
-    });
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        setAudioStream(stream);
+        var AudioContext = window.AudioContext;
+        var audioContext = new AudioContext();
+        var input = audioContext.createMediaStreamSource(stream);
+        var Recorder = (window as any).Recorder;
+        var newRecorder = new Recorder(input, { numChannels: 1 });
+        setRecorder(newRecorder);
+        newRecorder.record();
+        console.log("Recording started");
+      })
+      .catch((e) => {
+        setModal(
+          <Box
+            mt="1rem"
+            width={"100%"}
+            minH={"3rem"}
+            border={"1px"}
+            borderColor={"gray.300"}
+            background={"red.50"}
+          >
+            <HStack ml="1rem" mr="1rem" mt="0.6rem">
+              <Text color={"red.600"}>Required Permissions Denied</Text>
+              <Spacer />
+              <CloseIcon
+                onClick={() => setModal(<></>)}
+                color={"red.600"}
+                fontSize={"xs"}
+              />
+            </HStack>
+          </Box>
+        );
+        // console.log((e as Error).message);
+      });
   };
 
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
-        dhruvaConfig.stsInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.stsInference + `?serviceId=${props.serviceId}`,
         {
           audio: [
             {
@@ -151,9 +166,9 @@ export default function STSTry({ ...props }) {
   };
 
   useEffect(() => {
-    const initialLanguageConfig = props.languages[0]
-    setLanguage(JSON.stringify(initialLanguageConfig))
-  }, [])
+    const initialLanguageConfig = props.languages[0];
+    setLanguage(JSON.stringify(initialLanguageConfig));
+  }, []);
 
   return (
     <>

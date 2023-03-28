@@ -9,6 +9,8 @@ import "../styles/global.css";
 import Navbar from "../components/Navigation/Navbar";
 import NavbarMobile from "../components/Navigation/NavbarMobile";
 import Script from "next/script";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -55,20 +57,24 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/models/view",
     "/billing",
     "/profile",
-    "/analyze",
+    "/admin",
   ].includes(appProps.router.pathname);
 
+  const [queryClient] = useState(() => new QueryClient());
   const LayoutComponent = isLayoutNeeded ? Layout : React.Fragment;
 
   return (
     <ChakraProvider theme={customTheme}>
-      <LayoutComponent>
-        <Script
-          type="text/javascript"
-          src="https://ai4bharat.github.io/Recorderjs/lib/recorder.js"
-        />
-        <Component {...pageProps} />
-      </LayoutComponent>
+      <QueryClientProvider client={queryClient}>
+      <ReactQueryDevtools initialIsOpen={false} />
+        <LayoutComponent>
+          <Script
+            type="text/javascript"
+            src="https://ai4bharat.github.io/Recorderjs/lib/recorder.js"
+          />
+          <Component {...pageProps} />
+        </LayoutComponent>
+      </QueryClientProvider>
     </ChakraProvider>
   );
 }
