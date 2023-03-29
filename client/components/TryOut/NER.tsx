@@ -15,7 +15,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { IndicTransliterate } from "../indic-transliterate/dist/index.modern";
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label, tag2Color } from "../../config/config";
 

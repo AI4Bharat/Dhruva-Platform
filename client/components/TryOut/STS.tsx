@@ -13,12 +13,16 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  Box,
+  HStack,
+  Spacer,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import { CloseIcon } from "@chakra-ui/icons";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -49,23 +53,49 @@ export default function STSTry({ ...props }) {
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [sourceAudioDuration, setSourceAudioDuration] = useState(0);
   const [targetAudioDuration, setTargetAudioDuration] = useState(0);
+  const [modal, setModal] = useState(<></>);
 
   const startRecording = () => {
     setRecording(!recording);
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setAudioStream(stream);
-      var AudioContext = window.AudioContext;
-      var audioContext = new AudioContext();
-      var input = audioContext.createMediaStreamSource(stream);
-      var Recorder = (window as any).Recorder;
-      var newRecorder = new Recorder(input, { numChannels: 1 });
-      setRecorder(newRecorder);
-      newRecorder.record();
-      console.log("Recording started");
-    });
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        setAudioStream(stream);
+        var AudioContext = window.AudioContext;
+        var audioContext = new AudioContext();
+        var input = audioContext.createMediaStreamSource(stream);
+        var Recorder = (window as any).Recorder;
+        var newRecorder = new Recorder(input, { numChannels: 1 });
+        setRecorder(newRecorder);
+        newRecorder.record();
+        console.log("Recording started");
+      })
+      .catch((e) => {
+        setModal(
+          <Box
+            mt="1rem"
+            width={"100%"}
+            minH={"3rem"}
+            border={"1px"}
+            borderColor={"gray.300"}
+            background={"red.50"}
+          >
+            <HStack ml="1rem" mr="1rem" mt="0.6rem">
+              <Text color={"red.600"}>Required Permissions Denied</Text>
+              <Spacer />
+              <CloseIcon
+                onClick={() => setModal(<></>)}
+                color={"red.600"}
+                fontSize={"xs"}
+              />
+            </HStack>
+          </Box>
+        );
+        // console.log((e as Error).message);
+      });
   };
 
   const getASROutput = (asrInput: string) => {
@@ -127,9 +157,9 @@ export default function STSTry({ ...props }) {
 
   const stopRecording = () => {
     setRecording(!recording);
-    recorder.stop();
-    audioStream.getAudioTracks()[0].stop();
-    recorder.exportWAV(handleRecording, "audio/wav", 16000);
+    recorder?.stop();
+    audioStream?.getAudioTracks()[0].stop();
+    recorder?.exportWAV(handleRecording, "audio/wav", 16000);
     setPlaceHolder("Start Recording for ASR Inference...");
     setFetching(false);
     setFetched(true);
@@ -290,6 +320,7 @@ export default function STSTry({ ...props }) {
           </Stack>
         </GridItem>
       </Grid>
+      {modal}
     </>
   );
 }

@@ -28,10 +28,10 @@
 }
 
 .dview-service-description {
-  font-family: "Inter";
+  /* font-family: "Inter"; */
   font-style: normal;
   font-weight: 400;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 28px;
 }
 

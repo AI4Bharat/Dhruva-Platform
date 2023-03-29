@@ -13,6 +13,9 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  Box,
+  HStack,
+  Spacer,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -23,6 +26,7 @@ import {
   StreamingClient,
   SocketStatus,
 } from "@project-sunbird/open-speech-streaming-client";
+import { CloseIcon } from "@chakra-ui/icons";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -48,6 +52,8 @@ export default function ASRTry({ ...props }) {
   const [requestTime, setRequestTime] = useState("");
 
   const [inferenceMode, setInferenceMode] = useState("rest");
+
+  const [modal, setModal] = useState(<></>);
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -118,7 +124,26 @@ export default function ASRTry({ ...props }) {
               setStreamingText(transcript);
             },
             (e: any) => {
-              console.log("Encountered an error: ", e);
+              setModal(
+                <Box
+                  mt="1rem"
+                  width={"100%"}
+                  minH={"3rem"}
+                  border={"1px"}
+                  borderColor={"gray.300"}
+                  background={"red.50"}
+                >
+                  <HStack ml="1rem" mr="1rem" mt="0.6rem">
+                    <Text color={"red.600"}>Required Permissions Denied</Text>
+                    <Spacer />
+                    <CloseIcon
+                      onClick={() => setModal(<></>)}
+                      color={"red.600"}
+                      fontSize={"xs"}
+                    />
+                  </HStack>
+                </Box>
+              );
             }
           );
         } else if (action === SocketStatus.TERMINATED) {
@@ -352,6 +377,7 @@ export default function ASRTry({ ...props }) {
           </GridItem>
         )}
       </Grid>
+      {modal}
     </>
   );
 }
