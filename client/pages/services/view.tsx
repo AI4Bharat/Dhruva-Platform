@@ -20,14 +20,13 @@ import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import NERTry from "../../components/TryOut/NER";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaAPI } from "../../api/apiConfig";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { getService } from "../../api/serviceAPI";
 import Feedback from "../../components/Feedback/Feedback";
+import ServiceBenchmark from "../../components/Benchmarks/ServiceBenchmark";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -98,7 +97,8 @@ export default function ViewService() {
                 >
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
-                  <option value={2}>Feedback</option>
+                  <option value={2}>Performance</option>
+                  <option value={3}>Feedback</option>
                 </Select>
                 <TabPanels>
                   <TabPanel>
@@ -125,6 +125,9 @@ export default function ViewService() {
                   </TabPanel>
                   <TabPanel>
                     <Documentation serviceInfo={serviceInfo} />
+                  </TabPanel>
+                  <TabPanel>
+                    <ServiceBenchmark benchmarks={[]} />
                   </TabPanel>
                   <TabPanel>
                     {languages ? (
@@ -166,6 +169,7 @@ export default function ViewService() {
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                 </TabList>
                 <TabPanels>
@@ -196,6 +200,9 @@ export default function ViewService() {
                       serviceInfo={serviceInfo}
                       userID={"john_doe_dummy_id"}
                     />
+                  </TabPanel>
+                  <TabPanel>
+                    <ServiceBenchmark benchmarks={[]} />
                   </TabPanel>
                   <TabPanel>
                     {languages ? (
