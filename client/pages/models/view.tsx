@@ -62,6 +62,7 @@ export default function ViewModel({ ...props }) {
   const [benchmarkDatasets, setBenchmarkDatasets] = useState<string[]>([]);
   const [benchmarkDataset, setBenchmarkDataset] = useState<string>("");
   const [benchmarkValues, setBenchmarkValues] = useState<Benchmark[]>([]);
+  const [tabIndex, setTabIndex] = useState<number>(0);
 
   useEffect(() => {
     if (modelInfo !== undefined) {
@@ -139,10 +140,14 @@ export default function ViewModel({ ...props }) {
               <Stack spacing={10} direction={"row"}>
                 <Heading>{modelInfo["name"]}</Heading>
               </Stack>
-              <Tabs isFitted>
-                <TabList aria-orientation="vertical" mb="1em">
-                  <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
-                </TabList>
+              <br />
+              <Tabs index={tabIndex} isFitted>
+                <Select
+                  defaultValue={0}
+                  onChange={(e) => setTabIndex(parseInt(e.target.value))}
+                >
+                  <option value={0}>Details</option>
+                </Select>
                 <TabPanels>
                   <TabPanel>
                     <Stack spacing={5}>
