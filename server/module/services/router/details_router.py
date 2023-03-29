@@ -7,7 +7,11 @@ from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.base_error import BaseError
 from exception.http_error import HttpErrorResponse
-from schema.services.request import ModelViewRequest, ServiceViewRequest
+from schema.services.request import (
+    CreateSnapshotRequest,
+    ModelViewRequest,
+    ServiceViewRequest,
+)
 from schema.services.response import (
     CreateGrafanaSnapshotResponse,
     ServiceListResponse,
@@ -74,7 +78,8 @@ async def _view_model_details(
 
 @router.get("/grafana_snapshot", response_model=CreateGrafanaSnapshotResponse)
 async def _get_current_grafana_snapshot(
+    request: CreateSnapshotRequest,
     details_service: DetailsService = Depends(DetailsService),
 ):
-    response = details_service.get_grafana_snapshot()
+    response = details_service.get_grafana_snapshot(request)
     return response

@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+from typing import Any, Dict
 
 import requests
 
@@ -11,25 +12,13 @@ from ..error.errors import Errors
 
 
 class GrafanaGateway:
-    def __init__(self) -> None:
-        service_specific_dashboard_path = (
-            "/".join(
-                os.path.dirname(os.path.realpath(__file__))
-                .replace("\\", "/")
-                .split("/")[:-3]
-            )
-            + "/dashboards/service_specific_dashboard.json"
-        )
-        with open(service_specific_dashboard_path, "r") as fhand:
-            self.service_specific_dashboard = json.loads(fhand.read())
-
-    def create_grafana_snapshot(self):
+    def create_grafana_snapshot(self, snapshot_json: str):
         headers = {"Authorization": "Bearer " + os.environ["GRAFANA_AUTH_TOKEN"]}
 
         try:
             r = requests.post(
-                os.environ["GRAFANA_URL"],
-                json=self.service_specific_dashboard,
+                os.environ["GRAFANA_URL"] + "/api/snapshots",
+                json=json.loads(snapshot_json),
                 headers=headers,
             )
         except Exception:

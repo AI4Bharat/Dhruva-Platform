@@ -106,7 +106,7 @@
                     "mode": "thresholds"
                   },
                   "custom": {},
-                  "displayNameFromDS": "sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)",
+                  "displayNameFromDS": "sum(rate(dhruva_requests_total{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) OR vector(0)",
                   "mappings": [],
                   "thresholds": {
                     "mode": "absolute",
@@ -135,11 +135,11 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
-            "name": "sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)",
+            "name": "sum(rate(dhruva_requests_total{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) OR vector(0)",
             "refId": "A"
           }
         ],
@@ -233,7 +233,7 @@
                     "mode": "thresholds"
                   },
                   "custom": {},
-                  "displayNameFromDS": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)",
+                  "displayNameFromDS": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) * 1000 OR vector(0)",
                   "mappings": [],
                   "thresholds": {
                     "mode": "absolute",
@@ -262,11 +262,11 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) * 1000 OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
-            "name": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) * 1000 OR vector(0)",
+            "name": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) * 1000 OR vector(0)",
             "refId": "B"
           }
         ],
@@ -472,7 +472,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -682,7 +682,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -809,7 +809,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -936,7 +936,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -1063,7 +1063,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) by (le)) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -1278,7 +1278,7 @@
               "custom": {
                 "resultType": "matrix"
               },
-              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service=\"sadasda\", user_id=\"641adbfecfe2dd0b411bbefe\", api_key_name=\"suhaas/dev\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m])) OR vector(0)\nStep: 15s",
+              "executedQueryString": "Expr: sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service=\"$INFERENCE_SERVICE_ID\", user_id=\"$USER_ID\", api_key_name=\"$API_KEY_NAME\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m])) OR vector(0)\nStep: 15s",
               "preferredVisualisationType": "graph",
               "type": "timeseries-multi"
             },
@@ -1302,8 +1302,8 @@
         {
           "current": {
             "selected": false,
-            "text": "suhaas/dev",
-            "value": "suhaas/dev"
+            "text": "$API_KEY_NAME",
+            "value": "$API_KEY_NAME"
           },
           "datasource": {
             "type": "datasource",
@@ -1319,8 +1319,8 @@
           "options": [
             {
               "selected": false,
-              "text": "suhaas/dev",
-              "value": "suhaas/dev"
+              "text": "$API_KEY_NAME",
+              "value": "$API_KEY_NAME"
             }
           ],
           "query": "",
@@ -1336,8 +1336,8 @@
         {
           "current": {
             "selected": false,
-            "text": "641adbfecfe2dd0b411bbefe",
-            "value": "641adbfecfe2dd0b411bbefe"
+            "text": "$USER_ID",
+            "value": "$USER_ID"
           },
           "datasource": {
             "type": "datasource",
@@ -1353,8 +1353,8 @@
           "options": [
             {
               "selected": false,
-              "text": "641adbfecfe2dd0b411bbefe",
-              "value": "641adbfecfe2dd0b411bbefe"
+              "text": "$USER_ID",
+              "value": "$USER_ID"
             }
           ],
           "query": "",
@@ -1370,8 +1370,8 @@
         {
           "current": {
             "selected": false,
-            "text": "sadasda",
-            "value": "sadasda"
+            "text": "$INFERENCE_SERVICE_ID",
+            "value": "$INFERENCE_SERVICE_ID"
           },
           "datasource": {
             "type": "datasource",
@@ -1387,8 +1387,8 @@
           "options": [
             {
               "selected": false,
-              "text": "sadasda",
-              "value": "sadasda"
+              "text": "$INFERENCE_SERVICE_ID",
+              "value": "$INFERENCE_SERVICE_ID"
             }
           ],
           "query": "",

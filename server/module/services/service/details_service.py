@@ -1,13 +1,15 @@
 import copy
+import os
 import traceback
 from typing import List, Optional
 
 from bson import ObjectId
 from fastapi import Depends, HTTPException, status
+from pydantic import AnyHttpUrl, parse_obj_as
 
 from exception.base_error import BaseError
 from module.auth.repository.api_key_repository import ApiKeyRepository
-from schema.services.request import ServiceViewRequest
+from schema.services.request import CreateSnapshotRequest, ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error.errors import Errors
@@ -84,5 +86,28 @@ class DetailsService:
 
         return response_list
 
-    def get_grafana_snapshot(self):
-        return self.grafana_gateway.create_grafana_snapshot()
+    def get_grafana_snapshot(self, request: CreateSnapshotRequest):
+        service_specific_snapshot_path = (
+            "/".join(
+                os.path.dirname(os.path.realpath(__file__))
+                .replace("\\", "/")
+                .split("/")[:-3]
+            )
+            + "/grafana_snapshot/service_specific_snapshot.json"
+        )
+
+        with open(service_specific_snapshot_path, "r") as fhand:
+            service_specific_snapshot = fhand.read()
+
+        service_specific_snapshot.replace("$USER_ID", request.user_id)
+        service_specific_snapshot.replace(
+            "$INFERENCE_SERVICE_ID", request.inference_service_id
+        )
+        service_specific_snapshot.replace("$API_KEY_NAME", request.api_key_name)
+
+        response = self.grafana_gateway.create_grafana_snapshot(
+            service_specific_snapshot
+        )
+        response.url = parse_obj_as(AnyHttpUrl, str(response.url) + "?kiosk")
+
+        return response
