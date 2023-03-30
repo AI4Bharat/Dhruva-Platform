@@ -76,7 +76,7 @@ async def _view_model_details(
     return response
 
 
-@router.get("/grafana_snapshot", response_model=CreateGrafanaSnapshotResponse)
+@router.post("/grafana_snapshot", response_model=CreateGrafanaSnapshotResponse)
 async def _get_current_grafana_snapshot(
     request: CreateSnapshotRequest,
     details_service: DetailsService = Depends(DetailsService),
