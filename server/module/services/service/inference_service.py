@@ -148,33 +148,59 @@ class InferenceService:
             else:
                 audio_chunks.append(raw_audio)
 
-            o = self.__pad_batch(audio_chunks)
-            input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
-            input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
-            input0.set_data_from_numpy(o[0])
-            input1.set_data_from_numpy(o[1].astype("int32"))
-            input_list = [input0, input1]
+            output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 
-            if language != 'en':
+            # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
+            if serviceId == "ai4bharat/whisper-medium-en--gpu--t4":
+                for chunk in audio_chunks:
+                    o = self.__pad_batch([chunk])
+                    input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
+                    input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
+                    input0.set_data_from_numpy(o[0])
+                    input1.set_data_from_numpy(o[1].astype("int32"))
+                    input_list = [input0, input1]
+
+                    response = await self.inference_gateway.send_triton_request(
+                        url=service.endpoint,
+                        model_name="asr_am_ensemble",
+                        input_list=input_list,
+                        output_list=[output0],
+                        headers=headers,
+                    )
+                    encoded_result = response.as_numpy("TRANSCRIPTS")
+                    # Combine all outputs
+                    outputs = " ".join(
+                        [result.decode("utf-8") for result in encoded_result.tolist()]
+                    )
+                    res["output"].append({"source": outputs})
+
+            else:
+                o = self.__pad_batch(audio_chunks)
+                input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
+                input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
+                input0.set_data_from_numpy(o[0])
+                input1.set_data_from_numpy(o[1].astype("int32"))
+                input_list = [input0, input1]
+
+                # The other endpoints are non English and hence have LANG_ID as extra input
                 # TODO: Standardize properly as a string similar to NMT and TTS
                 input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
                 lang_id = [language]*len(o[1])
                 input2.set_data_from_numpy(np.asarray(lang_id).astype('object').reshape(o[1].shape))
                 input_list.append(input2)
-
-            output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
-
-            response = await self.inference_gateway.send_triton_request(
-                url=service.endpoint,
-                model_name="asr_am_ensemble",
-                input_list=input_list,
-                output_list=[output0],
-                headers=headers,
-            )
-            encoded_result = response.as_numpy("TRANSCRIPTS")
-            # Combine all outputs
-            outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
-            res["output"].append({"source": outputs})
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="asr_am_ensemble",
+                    input_list=input_list,
+                    output_list=[output0],
+                    headers=headers,
+                )
+                encoded_result = response.as_numpy("TRANSCRIPTS")
+                # Combine all outputs
+                outputs = " ".join(
+                    [result.decode("utf-8") for result in encoded_result.tolist()]
+                )
+                res["output"].append({"source": outputs})
 
         return ULCAAsrInferenceResponse(**res)
 
