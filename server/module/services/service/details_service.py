@@ -99,11 +99,11 @@ class DetailsService:
         with open(service_specific_snapshot_path, "r") as fhand:
             service_specific_snapshot = fhand.read()
 
-        service_specific_snapshot.replace("$USER_ID", request.user_id)
-        service_specific_snapshot.replace(
-            "$INFERENCE_SERVICE_ID", request.inference_service_id
+        service_specific_snapshot = (
+            service_specific_snapshot.replace("$USER_ID", request.user_id)
+            .replace("$INFERENCE_SERVICE_ID", request.inference_service_id)
+            .replace("$API_KEY_NAME", request.api_key_name)
         )
-        service_specific_snapshot.replace("$API_KEY_NAME", request.api_key_name)
 
         response = self.grafana_gateway.create_grafana_snapshot(
             service_specific_snapshot
