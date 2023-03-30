@@ -108,6 +108,6 @@ class DetailsService:
         response = self.grafana_gateway.create_grafana_snapshot(
             service_specific_snapshot
         )
-        response.url = parse_obj_as(AnyHttpUrl, str(response.url) + "?kiosk")
+        response.url = parse_obj_as(AnyHttpUrl, str(response.url) + "?kiosk=tv")
 
         return response
