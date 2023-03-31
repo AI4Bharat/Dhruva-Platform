@@ -21,7 +21,7 @@ interface LanguageConfig {
 }
 
 interface IFeedback {
-  language: string;
+  language: LanguageConfig;
   example: string;
   rating: number;
   comments: string;
@@ -35,8 +35,10 @@ const Feedback = (props) => {
   const [comment, setComment] = useState("");
   const handleCommentChange = (e) => setComment(e.target.value);
 
-  const [language, setLanguage] = useState("");
-  const handleLanguageChange = (e) => setLanguage(e.target.value);
+  const [displayLanguage, setDisplayLanguage] = useState("");
+  const handleLanguageChange = (e) => setDisplayLanguage(e.target.value);
+
+  const [language, setLanguage] = useState<LanguageConfig>({sourceLanguage:"", targetLanguage:""})
 
   const [example, setExample] = useState("");
   const handleExampleChange = (e) => setExample(e.target.value);
@@ -45,8 +47,9 @@ const Feedback = (props) => {
   const handleRatingChange = (newRating) => setRating(newRating);
 
   const [modal, setModal] = useState(<></>);
+
   const handleSubmitFeedback = () => {
-    if (comment == "" || language == "") {
+    if (comment === "" || language.sourceLanguage === "") {
       toast({
         title: "Fields Required",
         description: "Fill all the required fields",
@@ -71,7 +74,7 @@ const Feedback = (props) => {
             duration: 5000,
             isClosable: true,
           });
-          setLanguage("");
+          setLanguage({sourceLanguage:"", targetLanguage:""});
           setComment("");
           setExample("");
           setRating(0);
@@ -108,7 +111,7 @@ const Feedback = (props) => {
         <Select
           onChange={handleLanguageChange}
           borderRadius={0}
-          value={language}
+          value={displayLanguage}
         >
           <option hidden defaultChecked>
             Select Language
@@ -117,6 +120,7 @@ const Feedback = (props) => {
             return (
               <option
                 key={JSON.stringify(languageConfig)}
+                onClick={()=>{setLanguage({...languageConfig})}}
                 value={JSON.stringify(languageConfig)}
               >
                 <Text>
