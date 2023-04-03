@@ -38,3 +38,4 @@ next-env.d.ts
 # yarn
 .yarn/
 .yarnrc
+.vscode/
