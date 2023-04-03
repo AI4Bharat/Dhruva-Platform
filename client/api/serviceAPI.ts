@@ -1,15 +1,18 @@
 import { dhruvaAPI, apiInstance } from "./apiConfig";
 
+interface LanguageConfig {
+  sourceLanguage: string;
+  targetLanguage: string;
+}
+
 interface IFeedback
 {
-  language: string,
+  language: LanguageConfig,
   example: string,
   rating: number,
   comments: string,
   service_id: string
 }
-
-
 
 const listServices = async (): Promise<ServiceList[]> => {
   const response = await apiInstance({
