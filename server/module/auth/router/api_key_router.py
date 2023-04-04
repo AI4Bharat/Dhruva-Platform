@@ -1,3 +1,4 @@
+from typing import Union
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 
@@ -15,6 +16,7 @@ from schema.auth.request.create_api_key_request import ApiKeyType
 from schema.auth.response import (
     CreateApiKeyResponse,
     GetAllApiKeysResponse,
+    GetServiceLevelApiKeysResponse,
     GetApiKeyResponse,
     ULCAApiKeyDeleteResponse,
     ULCAApiKeyGenerationResponse,
@@ -31,15 +33,14 @@ router = APIRouter(
 )
 
 
-@router.get("/all", response_model=GetAllApiKeysResponse)
+@router.get("/list", response_model=Union[GetAllApiKeysResponse, GetServiceLevelApiKeysResponse])
 async def _get_all_api_keys_for_user(
     params: GetAllApiKeysRequest = Depends(GetAllApiKeysRequest),
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_keys = auth_service.get_all_api_keys(params, request_session.id)
-
-    return GetAllApiKeysResponse(api_keys=api_keys)  # type:ignore
+    api_keys_response = auth_service.get_all_api_keys(params, request_session.id)
+    return api_keys_response
 
 
 @router.post("", response_model=CreateApiKeyResponse, status_code=201)

@@ -28,7 +28,7 @@ from schema.auth.request import (
     ULCAApiKeyRequest,
 )
 from schema.auth.request.set_api_key_status_query import ApiKeyAction
-from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse
+from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse, GetServiceLevelApiKeysResponse, GetAllApiKeysDetailsResponse
 
 from ..error import Errors
 from ..model.api_key import ApiKey, ApiKeyCache
@@ -250,6 +250,19 @@ class AuthService:
             )
 
         return key
+    
+    def __filter_service_id(self, keys: List[ApiKey], service_id: str):
+        total_usage = 0
+        for key in keys:
+            service = list(filter(lambda service: service.service_id == service_id, key.services))
+            if service:
+                total_usage += service[0].usage
+                key.usage = service[0].usage
+            else:
+                key.usage = 0
+                key.services = []
+
+        return keys, total_usage
 
     def get_all_api_keys(self, params: GetAllApiKeysRequest, id: ObjectId):
         try:
@@ -264,10 +277,13 @@ class AuthService:
 
         try:
             keys = self.api_key_repository.find({"user_id": user_id})
+            if hasattr(params, "target_service_id") and params.target_service_id:
+                keys, total_usage = self.__filter_service_id(keys, params.target_service_id)
+                return GetServiceLevelApiKeysResponse(api_keys=keys, total_usage=total_usage)
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
-        return keys
+        return GetAllApiKeysDetailsResponse(api_keys=keys)
 
     def get_all_api_keys_with_usage(self, page, limit, target_user_id: str) -> List:
         """
