@@ -5,13 +5,12 @@ interface LanguageConfig {
   targetLanguage: string;
 }
 
-interface IFeedback
-{
-  language: LanguageConfig,
-  example: string,
-  rating: number,
-  comments: string,
-  service_id: string
+interface IFeedback {
+  language: LanguageConfig;
+  example: string;
+  rating: number;
+  comments: string;
+  service_id: string;
 }
 
 const listServices = async (): Promise<ServiceList[]> => {
@@ -19,6 +18,7 @@ const listServices = async (): Promise<ServiceList[]> => {
     method: "GET",
     url: dhruvaAPI.listServices,
   });
+
   return response.data;
 };
 
@@ -35,9 +35,10 @@ const getService = async (
   return response.data;
 };
 
-const submitFeedback = async (feedback : IFeedback) => {
+const submitFeedback = async (feedback: IFeedback) => {
   const response = await apiInstance.post(
-    `/services/feedback/submit`,feedback
+    `/services/feedback/submit`,
+    feedback
   );
   return response.data;
 };
