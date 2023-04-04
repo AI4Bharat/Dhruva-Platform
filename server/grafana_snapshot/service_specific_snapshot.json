@@ -505,7 +505,11 @@
     "templating": {
       "list": [
         {
-          "current": {},
+          "current": {
+            "selected": false,
+            "text": "$API_KEY_NAME",
+            "value": "$API_KEY_NAME"
+          },
           "datasource": {
             "type": "datasource",
             "uid": "-- Dashboard --"
@@ -517,9 +521,15 @@
           "label": "API Key Name",
           "multi": false,
           "name": "apiKeyName",
-          "options": [],
+          "options": [
+            {
+              "selected": false,
+              "text": "$API_KEY_NAME",
+              "value": "$API_KEY_NAME"
+            }
+          ],
           "query": "",
-          "refresh": 1,
+          "refresh": 0,
           "regex": "",
           "skipUrlSync": false,
           "sort": 0,
@@ -529,7 +539,11 @@
           "useTags": false
         },
         {
-          "current": {},
+          "current": {
+            "selected": false,
+            "text": "$USER_ID",
+            "value": "$USER_ID"
+          },
           "datasource": {
             "type": "datasource",
             "uid": "-- Dashboard --"
@@ -541,9 +555,15 @@
           "label": "User Id",
           "multi": false,
           "name": "userId",
-          "options": [],
+          "options": [
+            {
+              "selected": false,
+              "text": "$USER_ID",
+              "value": "$USER_ID"
+            }
+          ],
           "query": "",
-          "refresh": 1,
+          "refresh": 0,
           "regex": "",
           "skipUrlSync": false,
           "sort": 0,
@@ -553,7 +573,11 @@
           "useTags": false
         },
         {
-          "current": {},
+          "current": {
+            "selected": false,
+            "text": "$INFERENCE_SERVICE_ID",
+            "value": "$INFERENCE_SERVICE_ID"
+          },
           "datasource": {
             "type": "datasource",
             "uid": "-- Dashboard --"
@@ -565,9 +589,15 @@
           "label": "Inference Service Id",
           "multi": false,
           "name": "inferenceServiceId",
-          "options": [],
+          "options": [
+            {
+              "selected": false,
+              "text": "$INFERENCE_SERVICE_ID",
+              "value": "$INFERENCE_SERVICE_ID"
+            }
+          ],
           "query": "",
-          "refresh": 1,
+          "refresh": 0,
           "regex": "",
           "skipUrlSync": false,
           "sort": 0,
