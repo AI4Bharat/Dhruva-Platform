@@ -58,6 +58,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/billing",
     "/profile",
     "/admin",
+    "/pipeline",
   ].includes(appProps.router.pathname);
 
   const [queryClient] = useState(() => new QueryClient());
@@ -66,7 +67,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
   return (
     <ChakraProvider theme={customTheme}>
       <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+        <ReactQueryDevtools initialIsOpen={false} />
         <LayoutComponent>
           <Script
             type="text/javascript"

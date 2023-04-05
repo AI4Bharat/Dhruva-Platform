@@ -37,9 +37,14 @@ interface LanguageConfig {
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const serviceId =
+    typeof router.query["serviceId"] === "string"
+      ? router.query["serviceId"]
+      : "";
   const { data: serviceInfo, isLoading } = useQuery(
-    ["service", router.query["serviceId"]],
-    () => getService(router.query["serviceId"] as string)
+    ["service", serviceId],
+    () => getService(serviceId as string),
+    { enabled: serviceId.length > 0 }
   );
 
   const [languages, setLanguages] = useState<LanguageConfig[]>();
@@ -48,6 +53,7 @@ export default function ViewService() {
   useEffect(() => {
     if (serviceInfo) {
       setLanguages(serviceInfo["model"]["languages"]);
+      console.log(serviceInfo);
     }
   }, [serviceInfo]);
 
@@ -192,10 +198,10 @@ export default function ViewService() {
                     </Stack>
                   </TabPanel>
                   <TabPanel>
-                    <Documentation
+                    {/* <Documentation
                       serviceInfo={serviceInfo}
                       userID={"john_doe_dummy_id"}
-                    />
+                    /> */}
                   </TabPanel>
                   <TabPanel>
                     {languages ? (
