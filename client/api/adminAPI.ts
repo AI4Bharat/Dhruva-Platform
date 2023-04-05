@@ -9,7 +9,7 @@ interface Icreatekey
 }
 
 const listallkeys = async(user_id : string) => {
-     const response = await apiInstance.get(`/auth/api-key/all?target_user_id=${user_id}`);
+     const response = await apiInstance.get(`/auth/api-key/list?target_user_id=${user_id}`);
       return response.data.api_keys;
   };
 
