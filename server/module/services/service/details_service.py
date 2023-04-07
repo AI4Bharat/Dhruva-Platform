@@ -62,7 +62,7 @@ class DetailsService:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
         return ServiceViewResponse(
-            **service.dict(), model=model, key_usage=api_keys, total_usage=total_usage
+            **service.dict(), model=model.dict(), key_usage=api_keys, total_usage=total_usage
         )
 
     def list_services(self) -> List[ServiceListResponse]:

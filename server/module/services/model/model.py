@@ -39,8 +39,10 @@ class _Schema(BaseModel):
 
 
 class _InferenceEndPoint(BaseModel):
-    
-    schema_: _Schema = Field(None, alias="schema")
+    class Config:
+        fields = {"schema_": "schema"}
+
+    schema_: _Schema
 
 
 class _LanguagePair(BaseModel):
