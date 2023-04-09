@@ -28,6 +28,7 @@ import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { getService } from "../../api/serviceAPI";
 import Feedback from "../../components/Feedback/Feedback";
+import Usage from "../../components/Services/Usage";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -99,6 +100,7 @@ export default function ViewService() {
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
                   <option value={2}>Feedback</option>
+                  <option value={3}>Usage</option>
                 </Select>
                 <TabPanels>
                   <TabPanel>
@@ -137,6 +139,9 @@ export default function ViewService() {
                       <></>
                     )}
                   </TabPanel>
+                  <TabPanel>
+                  <Usage serviceID={router.query["serviceId"]}/>
+                  </TabPanel>
                 </TabPanels>
               </Tabs>
             </GridItem>
@@ -167,6 +172,7 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -207,6 +213,9 @@ export default function ViewService() {
                     ) : (
                       <></>
                     )}
+                  </TabPanel>
+                  <TabPanel>
+                  <Usage serviceID={router.query["serviceId"]}/>
                   </TabPanel>
                 </TabPanels>
               </Tabs>

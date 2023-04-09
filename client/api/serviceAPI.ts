@@ -22,6 +22,11 @@ const listServices = async (): Promise<ServiceList[]> => {
   return response.data;
 };
 
+const listallkeys = async(target_service_id : string) => {
+  const response = await apiInstance.get(`/auth/api-key/list?target_service_id=${target_service_id}`);
+   return response.data;
+};
+
 const getService = async (
   serviceId: string | string[]
 ): Promise<ServiceView> => {
@@ -42,4 +47,4 @@ const submitFeedback = async (feedback : IFeedback) => {
   return response.data;
 };
 
-export { listServices, getService, submitFeedback };
+export { listServices, getService, submitFeedback, listallkeys };
