@@ -7,7 +7,7 @@ import SidebarMobile from "./SidebarMobile";
 
 const NavbarMobile = () => {
   const [title, setTitle] = useState<String>("Dashboard");
-  const { isOpen, onToggle } = useDisclosure()
+  const { isOpen, onToggle } = useDisclosure();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,6 +29,9 @@ const NavbarMobile = () => {
       case "profile":
         setTitle("Profile");
         break;
+      case "pipeline":
+        setTitle("Pipeline");
+        break;
       default:
         setTitle("Dashboard");
         break;
@@ -42,17 +45,22 @@ const NavbarMobile = () => {
       height={"5rem"}
       background="white"
     >
-      <Box  ml="1rem" pt="1.5rem">
+      <Box ml="1rem" pt="1.5rem">
         <HStack>
-            <Box mr="1rem" fontSize={"2xl"} onClick={onToggle}>
-                <GiHamburgerMenu />
-            </Box>
-            <Slide direction='left' in={isOpen} style={{ zIndex: 10 }} onClick={onToggle}>
-                < SidebarMobile />
-            </Slide>
-            <Text fontWeight={"bold"} fontSize="2xl">
-                {title}
-            </Text>
+          <Box mr="1rem" fontSize={"2xl"} onClick={onToggle}>
+            <GiHamburgerMenu />
+          </Box>
+          <Slide
+            direction="left"
+            in={isOpen}
+            style={{ zIndex: 10 }}
+            onClick={onToggle}
+          >
+            <SidebarMobile />
+          </Slide>
+          <Text fontWeight={"bold"} fontSize="2xl">
+            {title}
+          </Text>
         </HStack>
       </Box>
     </Box>
