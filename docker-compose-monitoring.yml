@@ -18,25 +18,25 @@ services:
     expose:
       - 9090
 
-    grafana:
-      image: grafana/grafana:9.4.3
-      container_name: grafana
-      volumes:
-        - grafana_data:/var/lib/grafana
-        - ./grafana/provisioning:/etc/grafana/provisioning
-      environment:
-        - GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER
-        - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
-        - GF_SERVER_ROOT_URL=$GRAFANA_URL
-        - GF_USERS_ALLOW_SIGN_UP=false
-        - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
-        - GF_AUTH_ANONYMOUS_ENABLED=true
-        - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
-      restart: unless-stopped
-      ports:
-        - "3000:3000"
-      env_file:
-        - .env
+  grafana:
+    image: grafana/grafana:9.4.3
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
+      - GF_SERVER_ROOT_URL=$GRAFANA_URL
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
 
   prom-aggregation-gateway:
     container_name: prom-aggregation-gateway
