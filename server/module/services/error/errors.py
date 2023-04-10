@@ -29,3 +29,7 @@ class Errors(Enum):
         "kind": "DHRUVA-112",
         "message": "Request to create grafana snapshot responded with failed status",
     }
+    DHRUVA113 = {
+        "kind": "DHRUVA-113",
+        "message": "Failed to update health status of service",
+    }

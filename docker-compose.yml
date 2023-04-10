@@ -52,7 +52,7 @@ services:
     image: grafana/grafana:6.7.2
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -112,13 +112,32 @@ services:
       server:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+    env_file:
+      - .env.dev
+
+  celery_beat:
+    container_name: celery_beat
+    image: server_image
+    working_dir: /src
+    volumes:
+      - ./server:/src
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
+      server:
+        condition: service_started
+    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
+    env_file:
+      - .env.dev
+  
+
 
   redis:
     image: redis:latest
     container_name: redis_cache
     ports:
       - "6379:6379"
-    volumes: 
+    volumes:
       - redis:/data
     env_file:
       - .env.dev
@@ -149,7 +168,8 @@ services:
       server:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
-
+    env_file:
+      - .env.dev
   prom-aggregation-gateway:
     container_name: prom-aggregation-gateway
     image: ghcr.io/zapier/prom-aggregation-gateway:v0.7.0
