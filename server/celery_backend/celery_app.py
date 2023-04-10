@@ -6,7 +6,7 @@ app.config_from_object("celery_backend.celeryconfig", namespace="CELERY")
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-    "haertbeat" : {
+    "heartbeat" : {
         "task": "heartbeat",
         "schedule": 300.0,   
         "options":{"queue": "heartbeat"}
