@@ -49,7 +49,7 @@ const KeyCard = (props) => {
       <Box fontSize={"md"}>
         <HStack>
           <Text fontWeight={"bold"}>Total Usage:</Text>
-          <Text>0</Text>
+          <Text>{props.total_usage}</Text>
         </HStack>
       </Box>
       <Button
