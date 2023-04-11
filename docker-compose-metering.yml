@@ -25,6 +25,21 @@ services:
     env_file:
       - .env
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+  
+  celery_beat:
+    container_name: celery_beat
+    image: server_image
+    working_dir: /src
+    volumes:
+      - ./server:/src
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
+      server:
+        condition: service_started
+    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
+    env_file:
+      - .env.dev
 
   # Use Flower later for monitoring
   # celery-flower:
