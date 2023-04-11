@@ -1,7 +1,13 @@
-from pydantic import create_model
+from typing import Optional
+from pydantic import create_model,BaseModel
 from redis_om import Field as RedisField
 from db.MongoBaseModel import MongoBaseModel
 from cache.CacheBaseModel import CacheBaseModel, generate_cache_model
+
+
+class ServiceStatus(BaseModel):
+    status: str
+    lastUpdated: str
 
 class Service(MongoBaseModel):
     serviceId: str
@@ -12,6 +18,7 @@ class Service(MongoBaseModel):
     modelId: str
     endpoint: str
     api_key:str
+    healthStatus: Optional[ServiceStatus]
 
 
 ServiceCache = create_model(

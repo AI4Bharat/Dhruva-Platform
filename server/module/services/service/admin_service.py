@@ -1,3 +1,4 @@
+import datetime
 import traceback
 
 from fastapi import Depends
@@ -10,6 +11,7 @@ from schema.services.request import (
     ServiceCreateRequest,
     ServiceUpdateRequest,
 )
+from schema.services.request import ServiceHeartbeatRequest
 
 from ...auth.service.auth_service import AuthService
 from ..error.errors import Errors
@@ -105,3 +107,18 @@ class AdminService:
     def delete_model(self, id):
         ModelCache.delete(id)
         return self.model_repository.delete_one(id)
+
+    def inference_service_status(self,request_body:ServiceHeartbeatRequest):
+        try:
+            service = self.service_repository.find_by_id(request_body.serviceId)
+            if not service:
+                raise BaseError(Errors.DHRUVA104.value)
+            service = service.dict()
+            if 'healthStatus' not in service:
+                service['healthStatus'] = {}
+            service['healthStatus']['status'] = request_body.status
+            service['healthStatus']['lastUpdated'] = str(datetime.datetime.now())
+            self.service_repository.update_one(service)
+            return {"message":"Service status updated successfully"}
+        except:
+            raise BaseError(Errors.DHRUVA113.value, traceback.format_exc())
