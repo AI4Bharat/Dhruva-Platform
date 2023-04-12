@@ -12,7 +12,6 @@ import scipy.signal as sps
 import soundfile as sf
 import tritonclient.http as http_client
 from fastapi import Depends, HTTPException, status
-from indictrans import Transliterator
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 from scipy.io import wavfile
