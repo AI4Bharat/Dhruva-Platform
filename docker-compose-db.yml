@@ -43,4 +43,3 @@ volumes:
 networks:
   dhruva-network:
     name: dhruva-network
-    external: true
