@@ -22,8 +22,6 @@ services:
     working_dir: /src
     volumes:
       - ./server:/src
-    env_file:
-      - .env
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
   
   celery_beat:
@@ -38,8 +36,6 @@ services:
       server:
         condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
-    env_file:
-      - .env
 
   # Use Flower later for monitoring
   # celery-flower:
