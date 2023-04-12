@@ -34,7 +34,7 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "4000:3000"
     env_file:
       - .env
     networks:
