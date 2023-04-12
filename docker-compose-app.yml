@@ -39,5 +39,5 @@ volumes:
   app_data: {}
 
 networks:
-  dhruva_network:
+  dhruva-network:
     name: dhruva-network

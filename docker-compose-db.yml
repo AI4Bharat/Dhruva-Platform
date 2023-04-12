@@ -41,6 +41,6 @@ volumes:
   redis: {}
 
 networks:
-  dhruva_network:
+  dhruva-network:
     name: dhruva-network
     external: true
