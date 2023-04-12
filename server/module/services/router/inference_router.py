@@ -50,7 +50,7 @@ class InferenceLoggingRoute(APIRoute):
             start_time = time.time()
             response: Response = await original_route_handler(request)
             res_body = response.body
-            if request.url._url.split("/")[-1].split("?")[0] in ("asr", "translation", "tts"):
+            if request.url._url.split("?")[0].split("/")[-1] in ("asr", "translation", "tts"):
                 log_data.apply_async(
                     (
                         request.url._url,
