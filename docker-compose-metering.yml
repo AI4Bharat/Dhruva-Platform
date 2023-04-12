@@ -5,14 +5,14 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     hostname: rabbithost
-    environment:
-      - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
-      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
-      - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
-      - RABBITMQ_ERLANG_COOKIE=COOKIE
     ports:
       - "15672:15672"
       - "5672:5672"
+    volumes:
+      - ./server/celery_backend/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./server/celery_backend/definitions.json:/etc/rabbitmq/definitions.json:ro
+    env_file:
+      - .env
 
   celery:
     container_name: celery
@@ -22,20 +22,25 @@ services:
     working_dir: /src
     volumes:
       - ./server:/src
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+    env_file:
+      - .env
   
   celery_beat:
     container_name: celery_beat
-    image: server_image
+    image: celery_image
     working_dir: /src
     volumes:
       - ./server:/src
     depends_on:
       rabbitmq_server:
         condition: service_started
-      server:
-        condition: service_started
     command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
+    env_file:
+      - .env
 
   # Use Flower later for monitoring
   # celery-flower:
