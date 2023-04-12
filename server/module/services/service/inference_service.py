@@ -19,7 +19,7 @@ from tritonclient.utils import np_to_triton_dtype
 
 from celery_backend.tasks import log_data
 from exception.base_error import BaseError
-from schema.services.common import _ULCATaskType
+from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
@@ -34,19 +34,15 @@ from schema.services.response import (
     ULCAPipelineInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATtsInferenceResponse,
-    ULCANerInferenceResponse,
-    ULCAPipelineInferenceResponse,
 )
-from schema.services.common import (
-    _ULCATaskType,
-    LANG_CODE_TO_SCRIPT_CODE,
-)
-from ..utils.audio import webrtc_vad_chunking, silero_vad_chunking
+
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
 from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
+from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking
+
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
     service = service_repository.find_by_id(serviceId)
@@ -299,7 +295,7 @@ class InferenceService:
     ) -> ULCATtsInferenceResponse:
         
         service = self.service_repository.find_by_id(serviceId)
-        headers = {"Authorization": "Bearer " + service.key}
+        headers = {"Authorization": "Bearer " + service.api_key}
 
         ip_language = request_body.config.language.sourceLanguage
         ip_gender = request_body.config.gender
