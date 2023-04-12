@@ -47,6 +47,10 @@ services:
       - prometheus_data:/prom-agg-gateway
     ports:
       - "8080:80"
+    env_file:
+      - .env
+    environment:
+      - PAG_AUTHUSERS=$PAG_AUTHUSERS
     networks:
       - dhruva-network
 
