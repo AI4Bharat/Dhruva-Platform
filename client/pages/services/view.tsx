@@ -12,6 +12,7 @@ import {
   Grid,
   GridItem,
   Select,
+  HStack,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -122,6 +123,15 @@ export default function ViewService() {
                           Published On :{" "}
                           {new Date(serviceInfo["publishedOn"]).toDateString()}
                         </Text>
+                        <HStack>
+                        <Text className="dview-service-info-item"> Health : </Text>
+                        <Text fontWeight={"bold"} color={serviceInfo["healthStatus"]["status"]=="healthy"?"green.300":"red.300"}>
+                         {serviceInfo["healthStatus"]["status"]} 
+                        </Text>
+                        </HStack>
+                        <Text className="dview-service-info-item">
+                        (updated: {new Date(serviceInfo["healthStatus"]["lastUpdated"]).toDateString()} )
+                        </Text>
                       </Stack>
                     </Stack>
                   </TabPanel>
@@ -194,6 +204,17 @@ export default function ViewService() {
                           Published On :{" "}
                           {new Date(serviceInfo["publishedOn"]).toDateString()}
                         </Text>
+                        <HStack>
+                        <Text className="dview-service-info-item">
+                          Health : 
+                        </Text>
+                        <Text fontWeight={"bold"} color={serviceInfo["healthStatus"]["status"]=="healthy"?"green.300":"red.300"}>
+                         {serviceInfo["healthStatus"]["status"]} 
+                        </Text>
+                        <Text className="dview-service-info-item">
+                        (updated : {new Date(serviceInfo["healthStatus"]["lastUpdated"]).toDateString()} )
+                        </Text>
+                        </HStack>
                       </Stack>
                     </Stack>
                   </TabPanel>
