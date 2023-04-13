@@ -304,7 +304,7 @@ export default function Services() {
         <br />
         {smallscreen ? (
           // Mobile View
-          searchedservices ? (
+          searchedservices.length !== 0? (
             <>
               {Object.entries(searchedservices).map(([id, serviceData]) => (
                 <ServiceCard
@@ -338,7 +338,7 @@ export default function Services() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedservices ? (
+            {searchedservices.length !== 0 ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>

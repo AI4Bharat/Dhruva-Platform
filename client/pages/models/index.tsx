@@ -168,7 +168,7 @@ export default function Models() {
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
-                  placeholder="Search for Services"
+                  placeholder="Search for Models"
                 />
               </InputGroup>{" "}
               <Select
@@ -233,7 +233,7 @@ export default function Models() {
                 <Input
                   borderRadius={0}
                   onChange={searchToggler}
-                  placeholder="Search for Services"
+                  placeholder="Search for Models"
                 />
               </InputGroup>
               <Select
@@ -289,7 +289,7 @@ export default function Models() {
         <br />
         {smallscreen ? (
           // Mobile View
-          searchedModels ? (
+          searchedModels.length !== 0? (
             <Box>
               {Object.entries(searchedModels).map(([id, modelData]) => (
                 <ModelCard
@@ -323,7 +323,7 @@ export default function Models() {
         ) : (
           // Desktop View
           <Box bg="light.100">
-            {searchedModels ? (
+            {searchedModels.length !== 0 ? (
               <Table variant="unstyled">
                 <Thead>
                   <Tr>
