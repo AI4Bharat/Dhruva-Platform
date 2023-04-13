@@ -5,14 +5,10 @@ import {
   Stack,
   Tabs,
   TabList,
-  TabPanels,
   Tab,
-  TabPanel,
-  Text,
   Grid,
   GridItem,
   Select,
-  HStack,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -24,12 +20,10 @@ import useMediaQuery from "../../hooks/useMediaQuery";
 import { dhruvaAPI } from "../../api/apiConfig";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { getService } from "../../api/serviceAPI";
-import Feedback from "../../components/Feedback/Feedback";
-import Usage from "../../components/Services/Usage";
+import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -71,7 +65,7 @@ export default function ViewService() {
     }
   };
 
-  if (isLoading || !serviceInfo) return <div>Loading...</div>;
+  if (isLoading || !serviceInfo) return ;
 
   return (
     <>
@@ -103,56 +97,7 @@ export default function ViewService() {
                   <option value={2}>Feedback</option>
                   <option value={3}>Usage</option>
                 </Select>
-                <TabPanels>
-                  <TabPanel>
-                    <Stack spacing={5}>
-                      <Text className="dview-service-description">
-                        {serviceInfo["serviceDescription"]}
-                      </Text>
-                      <Stack>
-                        <Text className="dview-service-info-item">
-                          Model Version : {serviceInfo["model"]["version"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Model Type : {serviceInfo["model"]["task"]["type"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Running On : {serviceInfo["hardwareDescription"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Published On :{" "}
-                          {new Date(serviceInfo["publishedOn"]).toDateString()}
-                        </Text>
-                        <HStack>
-                        <Text className="dview-service-info-item"> Health : </Text>
-                        <Text fontWeight={"bold"} color={serviceInfo["healthStatus"]["status"]=="healthy"?"green.300":"red.300"}>
-                         {serviceInfo["healthStatus"]["status"]} 
-                        </Text>
-                        </HStack>
-                        <Text className="dview-service-info-item">
-                        (updated: {new Date(serviceInfo["healthStatus"]["lastUpdated"]).toDateString()} )
-                        </Text>
-                      </Stack>
-                    </Stack>
-                  </TabPanel>
-                  <TabPanel>
-                    <Documentation serviceInfo={serviceInfo} />
-                  </TabPanel>
-                  <TabPanel>
-                    {languages ? (
-                      <Feedback
-                        serviceID={router.query["serviceId"]}
-                        userID={"john_doe_dummy_id"}
-                        serviceLanguages={languages}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                  <Usage serviceID={router.query["serviceId"]}/>
-                  </TabPanel>
-                </TabPanels>
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
               </Tabs>
             </GridItem>
             <GridItem p="1rem" bg="white">
@@ -184,61 +129,7 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <Stack spacing={5}>
-                      <Text className="dview-service-description">
-                        {serviceInfo["serviceDescription"]}
-                      </Text>
-                      <Stack>
-                        <Text className="dview-service-info-item">
-                          Model Version : {serviceInfo["model"]["version"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Model Type : {serviceInfo["model"]["task"]["type"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Running On : {serviceInfo["hardwareDescription"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Published On :{" "}
-                          {new Date(serviceInfo["publishedOn"]).toDateString()}
-                        </Text>
-                        <HStack>
-                        <Text className="dview-service-info-item">
-                          Health : 
-                        </Text>
-                        <Text fontWeight={"bold"} color={serviceInfo["healthStatus"]["status"]=="healthy"?"green.300":"red.300"}>
-                         {serviceInfo["healthStatus"]["status"]} 
-                        </Text>
-                        <Text className="dview-service-info-item">
-                        (updated : {new Date(serviceInfo["healthStatus"]["lastUpdated"]).toDateString()} )
-                        </Text>
-                        </HStack>
-                      </Stack>
-                    </Stack>
-                  </TabPanel>
-                  <TabPanel>
-                    <Documentation
-                      serviceInfo={serviceInfo}
-                      userID={"john_doe_dummy_id"}
-                    />
-                  </TabPanel>
-                  <TabPanel>
-                    {languages ? (
-                      <Feedback
-                        serviceID={router.query["serviceId"]}
-                        userID={"john_doe_dummy_id"}
-                        serviceLanguages={languages}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                  <Usage serviceID={router.query["serviceId"]}/>
-                  </TabPanel>
-                </TabPanels>
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
               </Tabs>
             </GridItem>
             <GridItem>
