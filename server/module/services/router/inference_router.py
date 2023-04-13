@@ -136,8 +136,8 @@ async def _run_inference_sts(
 ):
     if request.config.language.sourceLanguage == "en":
         serviceId = "ai4bharat/conformer-en-gpu--t4"
-    # elif request.config.language.sourceLanguage == "hi":
-    #     serviceId = "ai4bharat/conformer-hi-gpu--t4"
+    elif request.config.language.sourceLanguage == "hi":
+        serviceId = "ai4bharat/conformer-hi-gpu--t4"
     elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
         serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
     else:
@@ -195,8 +195,8 @@ async def _run_inference_sts_new_mt(
 ):
     if request.config.language.sourceLanguage == "en":
         serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
-    # elif request.config.language.sourceLanguage == "hi":
-    #     serviceId = "ai4bharat/conformer-hi-gpu--t4"
+    elif request.config.language.sourceLanguage == "hi":
+        serviceId = "ai4bharat/conformer-hi-gpu--t4"
     elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
         serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
     else:
