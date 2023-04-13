@@ -8,7 +8,11 @@ from ..celery_app import app
 from .database import LogDatabase
 from .metering import meter_usage
 
-logs_db = LogDatabase()
+
+logs_db = None
+LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None)
+if LOG_REQUEST_RESPONSE_DATA_FLAG:
+    logs_db = LogDatabase()
 
 
 def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
@@ -46,8 +50,7 @@ def log_data(
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 
-    if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
-        print("not here")
+    if LOG_REQUEST_RESPONSE_DATA_FLAG:
         log_to_db(req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
