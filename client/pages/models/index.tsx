@@ -1,12 +1,11 @@
 import {
   Box,
   Button,
-  HStack,
   Input,
   InputGroup,
   InputLeftElement,
   Select,
-  VStack,
+  Stack,
 } from "@chakra-ui/react";
 import { IoSearchOutline } from "react-icons/io5";
 import {taskOptions, languageOptions} from "../../components/Utils/Options"
@@ -146,9 +145,8 @@ export default function Models() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          {smallscreen ? (
-            <VStack width="90vw" background={"gray.50"}>
-              <InputGroup
+          <Stack background={"gray.50"} direction={['column','column','column','column', 'row']}>
+          <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
@@ -210,73 +208,7 @@ export default function Models() {
               >
                 Clear Filters
               </Button>
-            </VStack>
-          ) : (
-            <HStack background={"gray.50"}>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
-                <Input
-                  borderRadius={0}
-                  onChange={searchToggler}
-                  placeholder="Search for Models"
-                />
-              </InputGroup>
-              <Select
-                value={task}
-                width={smallscreen ? "90vw" : "20rem"}
-                background={"white"}
-                borderRadius={0}
-                color="gray.600"
-                onChange={taskToggler}
-              >
-                <option hidden defaultChecked>
-                  Select Task Type
-                </option>
-                {taskOptions}
-              </Select>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <Select
-                  background={"white"}
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={sourceLangToggler}
-                >
-                  <option hidden defaultChecked>
-                    Source Language
-                  </option>
-                  {languageOptions}
-                </Select>
-                <Select
-                  background={"white"}
-                  borderRadius={0}
-                  display={hideTarget ? "none" : "block"}
-                  onChange={targetLangToggler}
-                  color="gray.600"
-                >
-                  <option hidden defaultChecked>
-                    Target Language
-                  </option>
-                  {languageOptions}
-                </Select>
-              </InputGroup>
-              <Button
-                width={smallscreen ? "90vw" : "8rem"}
-                onClick={clearFilters}
-              >
-                Clear Filters
-              </Button>
-            </HStack>
-          )}
+          </Stack>
         </Box>
         <br />
         {searchedModels?

@@ -1,21 +1,16 @@
 import {
   Box,
   Button,
-  HStack,
   Input,
   InputGroup,
   InputLeftElement,
   Select,
-  Spacer,
-  Text,
-  VStack,
+  Stack,
 } from "@chakra-ui/react";
 import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
-import ServiceCard from "../../components/Mobile/Services/ServiceCard";
-import Image from "next/image";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { listServices } from "../../api/serviceAPI";
@@ -148,9 +143,8 @@ export default function Services() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          {smallscreen ? (
-            <VStack width={"90vw"} background={"gray.50"}>
-              <InputGroup
+          <Stack background={"gray.50"} direction={['column','column','column','column', 'row']}>
+          <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
@@ -215,76 +209,7 @@ export default function Services() {
               >
                 Clear Filters
               </Button>
-            </VStack>
-          ) : (
-            <HStack background={"gray.50"}>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
-                <Input
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={searchToggler}
-                  placeholder="Search for Services"
-                />
-              </InputGroup>
-              <Select
-                value={task}
-                width={smallscreen ? "90vw" : "20rem"}
-                background={"white"}
-                borderRadius={0}
-                color="gray.600"
-                onChange={taskToggler}
-              >
-                <option hidden defaultChecked>
-                  Select Task Type
-                </option>
-                {taskOptions}
-              </Select>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <Select
-                  value={sourceLang}
-                  background={"white"}
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={sourceLangToggler}
-                >
-                  <option hidden defaultChecked>
-                    Source Language
-                  </option>
-                  {languageOptions}
-                </Select>
-                <Select
-                  value={targetLang}
-                  background={"white"}
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={targetLangToggler}
-                  display={hideTarget ? "none" : "block"}
-                >
-                  <option hidden defaultChecked>
-                    Target Language
-                  </option>
-                  {languageOptions}
-                </Select>
-              </InputGroup>
-              <Button
-                width={smallscreen ? "90vw" : "8rem"}
-                onClick={clearFilters}
-              >
-                Clear Filters
-              </Button>
-            </HStack>
-          )}
+          </Stack>
         </Box>
         <br />
         {
