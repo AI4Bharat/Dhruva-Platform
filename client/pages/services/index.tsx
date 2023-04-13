@@ -7,16 +7,9 @@ import {
   InputLeftElement,
   Select,
   Spacer,
-  Table,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   VStack,
 } from "@chakra-ui/react";
-import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
@@ -27,25 +20,17 @@ import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { listServices } from "../../api/serviceAPI";
 import {taskOptions, languageOptions} from "../../components/Utils/Options"
-
-interface Service {
-  serviceId: string;
-  name: string;
-  serviceDescription: string;
-  hardwareDescription: string;
-  publishedOn: number;
-  modelId: string;
-  task: any;
-  languages: any;
-}
+import ServicesTable from "../../components/Services/ServicesTable";
+import ServicesList from "../../components/Mobile/Services/ServicesList";
+import NotFound from "../../components/Utils/NotFound";
 
 export default function Services() {
   const { data: services } = useQuery(["services"], listServices);
   const [sourceLang, setSourceLanguage] = useState<string>("");
   const [targetLang, setTargetLanguage] = useState<string>("");
   const [task, setTask] = useState<string>("");
-  const [filteredservices, setFilteredServices] = useState<Service[]>([]);
-  const [searchedservices, setSearchedServices] = useState<Service[]>([]);
+  const [filteredservices, setFilteredServices] = useState<ServiceList[]>([]);
+  const [searchedservices, setSearchedServices] = useState<ServiceList[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
@@ -302,102 +287,13 @@ export default function Services() {
           )}
         </Box>
         <br />
-        {smallscreen ? (
-          // Mobile View
-          searchedservices.length !== 0? (
-            <>
-              {Object.entries(searchedservices).map(([id, serviceData]) => (
-                <ServiceCard
-                  key={id}
-                  name={serviceData.name}
-                  serviceID={serviceData.serviceId}
-                  modelID={serviceData.modelId}
-                  date={new Date(serviceData.publishedOn).toDateString()}
-                />
-              ))}
-            </>
-          ) : (
-            <>
-              <HStack background={"gray.50"} width="100vw" height="50vh">
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={300}
-                    width={300}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            </>
-          )
-        ) : (
-          // Desktop View
-          <Box bg="light.100">
-            {searchedservices.length !== 0 ? (
-              <Table variant="unstyled">
-                <Thead>
-                  <Tr>
-                    <Th>Name</Th>
-                    <Th>Service ID</Th>
-                    <Th>Model ID</Th>
-                    <Th>Published On</Th>
-                    <Th>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {Object.entries(searchedservices).map(([id, serviceData]) => {
-                    const publishedOn = new Date(serviceData.publishedOn);
-                    return (
-                      <Tr key={id} fontSize={"sm"}>
-                        <Td>{serviceData.name}</Td>
-                        <Td>{serviceData.serviceId}</Td>
-                        <Td>{serviceData.modelId}</Td>
-                        <Td>{publishedOn.toDateString()}</Td>
-                        <Td>
-                          {" "}
-                          <Link
-                            href={{
-                              pathname: `/services/view`,
-                              query: {
-                                serviceId: serviceData.serviceId,
-                              },
-                            }}
-                          >
-                            {" "}
-                            <Button size={"sm"} variant={"outline"}>
-                              View
-                            </Button>
-                          </Link>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-                </Tbody>
-              </Table>
-            ) : (
-              <HStack background={"gray.50"}>
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={400}
-                    width={400}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            )}
-          </Box>
-        )}
+        {
+          searchedservices?
+          searchedservices.length!==0?
+          smallscreen? <ServicesList data={searchedservices}/>:<ServicesTable data = {searchedservices}/>
+          :<NotFound hide={hide}/>
+          :<></>
+        }
       </ContentLayout>
     </>
   );

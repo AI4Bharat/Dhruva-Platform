@@ -6,27 +6,19 @@ import {
   InputGroup,
   InputLeftElement,
   Select,
-  Spacer,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
   VStack,
 } from "@chakra-ui/react";
-import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
 import {taskOptions, languageOptions} from "../../components/Utils/Options"
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
-import ModelCard from "../../components/Mobile/Models/ModelCard";
-import Image from "next/image";
 import Head from "next/head";
 import { listModels } from "../../api/modelAPI";
 import { useQuery } from "@tanstack/react-query";
+import ModelsTable from "../../components/Models/ModelsTable";
+import NotFound from "../../components/Utils/NotFound";
+import ModelsList from "../../components/Mobile/Models/ModelsList";
 
 export default function Models() {
   const { data: models } = useQuery(["models"], listModels);
@@ -287,101 +279,12 @@ export default function Models() {
           )}
         </Box>
         <br />
-        {smallscreen ? (
-          // Mobile View
-          searchedModels.length !== 0? (
-            <Box>
-              {Object.entries(searchedModels).map(([id, modelData]) => (
-                <ModelCard
-                  key={id}
-                  name={modelData.name}
-                  modelId={modelData.modelId}
-                  version={modelData.version}
-                  taskType={modelData.task.type}
-                />
-              ))}
-            </Box>
-          ) : (
-            <>
-              <HStack background={"gray.50"} width="100vw" height="50vh">
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={300}
-                    width={300}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            </>
-          )
-        ) : (
-          // Desktop View
-          <Box bg="light.100">
-            {searchedModels.length !== 0 ? (
-              <Table variant="unstyled">
-                <Thead>
-                  <Tr>
-                    <Th>Name</Th>
-                    <Th>Model ID</Th>
-                    <Th>Version</Th>
-                    <Th>Task Type</Th>
-                    <Th>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {Object.entries(searchedModels).map(([id, modelData]) => {
-                    return (
-                      <Tr key={id} fontSize={"sm"}>
-                        <Td>{modelData.name}</Td>
-                        <Td>{modelData.modelId}</Td>
-                        <Td>{modelData.version}</Td>
-                        <Td>{modelData.task.type}</Td>
-                        <Td>
-                          {" "}
-                          <Link
-                            href={{
-                              pathname: `/models/view`,
-                              query: {
-                                modelId: modelData.modelId,
-                              },
-                            }}
-                          >
-                            {" "}
-                            <Button size={"sm"} variant={"outline"}>
-                              View
-                            </Button>
-                          </Link>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-                </Tbody>
-              </Table>
-            ) : (
-              <HStack background={"gray.50"}>
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={400}
-                    width={400}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            )}
-          </Box>
-        )}
+        {searchedModels?
+        searchedModels.length !== 0?
+        smallscreen? <ModelsList data={searchedModels}/>:<ModelsTable data = {searchedModels}/>
+        :<NotFound hide={hide}/>
+        :<></>
+      }
       </ContentLayout>
     </>
   );
