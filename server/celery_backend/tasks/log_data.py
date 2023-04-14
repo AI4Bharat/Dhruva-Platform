@@ -25,14 +25,11 @@ def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
 
 @app.task(name="log.data")
 def log_data(
-    url: str, api_key_id: str, req_body: str, resp_body: str, response_time: time
+    usage_type: str, service_id: str, api_key_id: str, req_body: str, resp_body: str, response_time: time
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
-    print("url: ", url)
-    usage_type, service_component = url.split("/")[-1].split("?")
-    service_id = service_component.split("serviceId=")[-1].replace("%2F", "/")
-
+    print("service_id: ", service_id)
     resp_body = json.loads(resp_body)
     req_body = json.loads(req_body)
 
