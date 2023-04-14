@@ -6,7 +6,6 @@ from bson.objectid import ObjectId
 from dotenv import load_dotenv
 from fastapi import Request
 from pymongo.database import Database
-from module.auth.repository import ApiKeyRepository
 load_dotenv()
 
 
