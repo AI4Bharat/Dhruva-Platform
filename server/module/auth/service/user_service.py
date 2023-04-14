@@ -12,14 +12,18 @@ from schema.auth.response.get_user_response import GetUserResponse
 from ..error.errors import Errors
 from ..model.user import User
 from ..repository import UserRepository
-
-
+from .auth_service import AuthService
+from schema.auth.request import (
+    CreateApiKeyRequest)
+from schema.auth.common import ApiKeyType
 class UserService:
     def __init__(
         self,
         user_repository: UserRepository = Depends(UserRepository),
+        auth_service: AuthService = Depends(AuthService),
     ) -> None:
         self.user_repository = user_repository
+        self.auth_service = auth_service
 
     def create_user(self, request: CreateUserRequest):
         existing_user = self.user_repository.find_one({"email": request.email})
@@ -50,7 +54,19 @@ class UserService:
             created_user = self.user_repository.get_by_id(ObjectId(str(id)))
         except Exception:
             raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
-
+        try:
+            api_request = CreateApiKeyRequest(
+                name="default",
+                type=ApiKeyType.INFERENCE,
+                regenerate=False,
+                target_user_id=str(created_user.id)
+            )
+            self.auth_service.create_api_key(
+                request=api_request,
+                id=ObjectId(str(created_user.id)),
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA207.value, traceback.format_exc())
         return created_user
 
     def list_users(self):
