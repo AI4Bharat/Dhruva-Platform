@@ -16,7 +16,6 @@ if LOG_REQUEST_RESPONSE_DATA_FLAG:
     logs_db = LogDatabase()
 
 
-# def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
 def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
     logs_collection = logs_db[service_id]
