@@ -210,9 +210,9 @@ class InferenceService:
                 input1.set_data_from_numpy(o[1].astype("int32"))
                 input_list = [input0, input1]
 
-                if "conformer-hi" not in serviceId and language != "en":
+                if "conformer-hi" not in serviceId and "whisper" not in serviceId and language != "en":
                     # The other endpoints are multilingual and hence have LANG_ID as extra input
-                    # TODO: Standardize properly as a string similar to NMT and TTS
+                    # TODO: Standardize properly as a string similar to NMT and TTS, in all Triton repos
                     input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
                     lang_id = [language]*len(o[1])
                     input2.set_data_from_numpy(np.asarray(lang_id).astype('object').reshape(o[1].shape))
@@ -434,10 +434,10 @@ class InferenceService:
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
-            if not serviceId:
-                serviceId = self.auto_select_service_id(
-                    pipeline_task.taskType, pipeline_task.config
-                )
+#             if not serviceId:
+#                 serviceId = self.auto_select_service_id(
+#                     pipeline_task.taskType, pipeline_task.config
+#                 )
 
             start_time = time.perf_counter()
             new_request = ULCAGenericInferenceRequest(
