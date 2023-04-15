@@ -65,6 +65,7 @@ def validate_service_id(serviceId: str, service_repository):
         try:
             service = populate_service_cache(serviceId, service_repository)
         except Exception:
+            print("serviceId: ", serviceId)
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
     if not service:
@@ -382,8 +383,8 @@ class InferenceService:
             else:
                 serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
         elif task_type == _ULCATaskType.TRANSLATION:
-        #     serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
-            serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
+            serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
+            # serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
         # elif task_type == _ULCATaskType.TRANSLATION:
         #     if config["language"]["sourceLanguage"] == "en":
         #         serviceId = "ai4bharat/indictrans-v2-e2i-gpu--t4"
@@ -447,11 +448,12 @@ class InferenceService:
                 request=new_request, serviceId=serviceId
             )
 
-            # print("request url: ", request_state.url._url)
             log_data.apply_async(
                 (
                     pipeline_task.taskType,
                     serviceId,
+                    request_state.client.host,
+                    # request.state.data_collection_consent,
                     str(request_state.state.api_key_id),
                     new_request.dict(),
                     previous_output_json.dict(),
