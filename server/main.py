@@ -22,7 +22,7 @@ from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = FastAPI(
     title="Dhruva API",

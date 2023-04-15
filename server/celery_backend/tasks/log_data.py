@@ -8,13 +8,20 @@ from ..celery_app import app
 from .database import LogDatabase
 from .metering import meter_usage
 
-logs_db = LogDatabase()
+
+logs_db = None
+LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get(
+    "LOG_REQUEST_RESPONSE_DATA_FLAG", None)
+if LOG_REQUEST_RESPONSE_DATA_FLAG:
+    logs_db = LogDatabase()
 
 
-def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
+# def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
+def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
     logs_collection = logs_db[service_id]
     log_document = {
+        "client_ip": client_ip,
         "input": inp,
         "output": output,
         "api_key_id": api_key_id,
@@ -25,7 +32,14 @@ def log_to_db(inp: str, output: str, api_key_id: str, service_id: str):
 
 @app.task(name="log.data")
 def log_data(
-    usage_type: str, service_id: str, api_key_id: str, req_body: str, resp_body: str, response_time: time
+    usage_type: str,
+    service_id: str,
+    client_ip: str,
+    # data_collection_consent: bool,
+    api_key_id: str,
+    req_body: str,
+    resp_body: str,
+    response_time: time
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
@@ -43,9 +57,8 @@ def log_data(
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 
-    if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
-        print("not here")
-        log_to_db(req_body, resp_body, api_key_id, service_id)
+    if LOG_REQUEST_RESPONSE_DATA_FLAG:  # and data_collection_consent:
+        log_to_db(client_ip, req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
     meter_usage(api_key_id, data_usage, usage_type, service_id)

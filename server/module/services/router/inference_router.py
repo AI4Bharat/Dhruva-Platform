@@ -61,6 +61,8 @@ class InferenceLoggingRoute(APIRoute):
                         (
                             usage_type,
                             service_id,
+                            request.client.host,
+                            # request.state.data_collection_consent,
                             str(request.state.api_key_id),
                             req_body.decode("utf-8"),
                             res_body.decode("utf-8"),
