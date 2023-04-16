@@ -9,7 +9,7 @@ import {
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { login } from "../api/authAPI";
@@ -20,6 +20,13 @@ export default function Login() {
   const [isMobile] = useMediaQuery("(max-width: 768px)");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    if(localStorage.getItem("refresh_token") && localStorage.getItem("access_token"))
+    {
+      router.push('/services');
+    }
+  }, []);
 
   const validateCredentials = async () => {
     try {
