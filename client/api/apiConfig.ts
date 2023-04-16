@@ -52,7 +52,8 @@ apiInstance.interceptors.response.use(
               "Bearer " + localStorage.getItem("access_token");
             return apiInstance(originalRequest);
           }
-        });
+        })
+        .catch(()=>window.location.replace("/"));
     }
     else{
      throw error;
