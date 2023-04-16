@@ -54,6 +54,9 @@ apiInstance.interceptors.response.use(
           }
         });
     }
+    else{
+     throw error;
+    }
   }
 );
 

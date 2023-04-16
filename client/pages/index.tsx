@@ -7,7 +7,7 @@ import {
   Input,
   Button,
   useMediaQuery,
-  Box,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -16,7 +16,7 @@ import { login } from "../api/authAPI";
 
 export default function Login() {
   const router = useRouter();
-
+  const toast = useToast();
   const [isMobile] = useMediaQuery("(max-width: 768px)");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,12 +24,30 @@ export default function Login() {
   const validateCredentials = async () => {
     try {
       await login(username, password);
-      router.push("/services");
-    } catch {
-      alert("Invalid Credentials");
+      router.push('/services');
+    } catch(error)  {
+        if(error.response.status === 401 || error.response.status === 422)
+        {
+          toast({
+            title: "Error",
+            description: "Invalid Credentials",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+        else
+        {
+          toast({
+            title: "Error",
+            description: "Something went wrong, please try again later",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
     }
   };
-
   return (
     <>
       <Head>
