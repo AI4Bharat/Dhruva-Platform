@@ -32,6 +32,7 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     restart: unless-stopped
     ports:
       - "4000:3000"
