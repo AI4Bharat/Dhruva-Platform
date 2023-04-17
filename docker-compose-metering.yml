@@ -30,7 +30,6 @@ services:
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
     env_file:
       - .env
-    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
     networks:
       - dhruva-network
   
