@@ -153,7 +153,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.5, sum(rate(dhruva_request_duration_seconds_bucket[5m])) by (le)) * 1000 OR vector(0)",
+          "expr": "sum(rate(dhruva_request_duration_seconds_bucket[5m])) * 1000 OR vector(0)",
           "interval": "",
           "legendFormat": "{{ pod }}",
           "range": true,
@@ -501,7 +501,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m]))) OR vector(0)",
+          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\", status_code!=\"404\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m]))) OR vector(0)",
           "interval": "",
           "legendFormat": "Error Rate",
           "range": true,
@@ -570,8 +570,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -581,32 +580,7 @@
           },
           "unit": "reqps"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "/services/inference/translation"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -692,8 +666,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -833,8 +806,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -926,8 +898,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -996,8 +967,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1066,8 +1036,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1150,6 +1119,6 @@
   "timezone": "",
   "title": "Dhruva Global Dashboard",
   "uid": "Zj4zOgA7z",
-  "version": 5,
+  "version": 11,
   "weekStart": ""
 }
