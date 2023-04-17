@@ -145,7 +145,7 @@ def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: 
     inference_units = 0
     if usage_type == "asr":
         inference_units = calculate_asr_usage(input_data)
-    elif usage_type == "translation":
+    elif usage_type == "translation" or usage_type == "transliteration":
         inference_units = calculate_translation_usage(input_data)
     elif usage_type == "tts":
         inference_units = calculate_tts_usage(input_data)

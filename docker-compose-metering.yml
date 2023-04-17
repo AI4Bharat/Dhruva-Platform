@@ -13,6 +13,8 @@ services:
       - ./server/celery_backend/definitions.json:/etc/rabbitmq/definitions.json:ro
     env_file:
       - .env
+    networks:
+      - dhruva-network
 
   celery:
     container_name: celery
@@ -30,6 +32,8 @@ services:
     env_file:
       - .env
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+    networks:
+      - dhruva-network
   
   celery_beat:
     container_name: celery_beat
@@ -44,6 +48,8 @@ services:
     env_file:
       - .env
     command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
+    networks:
+      - dhruva-network
 
   # Use Flower later for monitoring
   # celery-flower:
@@ -65,3 +71,7 @@ services:
   #   ports:
   #     - "5555:5555"
   #   command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
+
+networks:
+  dhruva-network:
+    name: dhruva-network

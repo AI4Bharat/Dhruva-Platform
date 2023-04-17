@@ -15,8 +15,8 @@ services:
       - "--web.enable-lifecycle"
     ports:
       - "9090:9090"
-    expose:
-      - 9090
+    networks:
+      - dhruva-network
 
   grafana:
     image: grafana/grafana:9.4.3
@@ -32,11 +32,14 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "4000:3000"
     env_file:
       - .env
+    networks:
+      - dhruva-network
 
   prom-aggregation-gateway:
     container_name: prom-aggregation-gateway
@@ -44,10 +47,18 @@ services:
     volumes: 
       - prometheus_data:/prom-agg-gateway
     ports:
-      - "8080:80"
+      - "8081:80"
     env_file:
       - .env
+    environment:
+      - PAG_AUTHUSERS=$PAG_AUTHUSERS
+    networks:
+      - dhruva-network
 
 volumes:
   grafana_data: {}
   prometheus_data: {}
+
+networks:
+  dhruva-network:
+    name: dhruva-network
