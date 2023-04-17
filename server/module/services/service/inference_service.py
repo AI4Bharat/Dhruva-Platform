@@ -143,7 +143,7 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-        
+
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
@@ -516,11 +516,10 @@ class InferenceService:
 
             log_data.apply_async(
                 (
-                    # Create the url for metering
-                    request_state.url._url.split("/")[0]
-                    + pipeline_task.taskType
-                    + "?"
-                    + serviceId,
+                    pipeline_task.taskType,
+                    serviceId,
+                    request_state.client.host,
+                    # request.state.data_collection_consent,
                     str(request_state.state.api_key_id),
                     new_request.dict(),
                     previous_output_json.dict(),

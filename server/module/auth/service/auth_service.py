@@ -39,7 +39,7 @@ from ..error import Errors
 from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class AuthService:
@@ -202,6 +202,7 @@ class AuthService:
             user_id=id,
             type=request.type.value,
             created_timestamp=datetime.now(),
+            # data_collection_consent=request.data_collection_consent,
         )
 
         try:

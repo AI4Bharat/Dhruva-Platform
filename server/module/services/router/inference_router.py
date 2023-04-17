@@ -41,17 +41,26 @@ class InferenceLoggingRoute(APIRoute):
             start_time = time.time()
             response: Response = await original_route_handler(request)
             res_body = response.body
-            if request.url._url.split("?")[0].split("/")[-1] in ("asr", "translation", "tts", "transliteration"):
-                log_data.apply_async(
-                    (
-                        request.url._url,
-                        str(request.state.api_key_id),
-                        req_body.decode("utf-8"),
-                        res_body.decode("utf-8"),
-                        time.time() - start_time
-                    ),
-                    queue="data_log"
-                )
+
+            url_components = request.url._url.split("?serviceId=")
+            if len(url_components) == 2:
+                usage_type, service_component = url_components
+                usage_type = usage_type.split("/")[-1]
+                service_id = service_component.replace("%2F", "/")
+                if usage_type in ("asr", "translation", "tts"):
+                    log_data.apply_async(
+                        (
+                            usage_type,
+                            service_id,
+                            request.client.host,
+                            # request.state.data_collection_consent,
+                            str(request.state.api_key_id),
+                            req_body.decode("utf-8"),
+                            res_body.decode("utf-8"),
+                            time.time() - start_time
+                        ),
+                        queue="data_log"
+                    )
             return response
         return logging_route_handler
 
@@ -65,18 +74,19 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=ULCAGenericInferenceResponse)
-async def _run_inference_generic(
-    request: Union[
-        ULCAGenericInferenceRequest,
-        ULCAAsrInferenceRequest,
-        ULCATranslationInferenceRequest,
-        ULCATtsInferenceRequest,
-    ],
-    params: ULCAInferenceQuery = Depends(),
-    inference_service: InferenceService = Depends(InferenceService),
-):
-    return await inference_service.run_inference(request, params.serviceId)
+# For ULCA compatibility. Commenting it out temporarily
+# @router.post("", response_model=ULCAGenericInferenceResponse)
+# async def _run_inference_generic(
+#     request: Union[
+#         ULCAGenericInferenceRequest,
+#         ULCAAsrInferenceRequest,
+#         ULCATranslationInferenceRequest,
+#         ULCATtsInferenceRequest,
+#     ],
+#     params: ULCAInferenceQuery = Depends(),
+#     inference_service: InferenceService = Depends(InferenceService),
+# ):
+#     return await inference_service.run_inference(request, params.serviceId)
 
 
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)

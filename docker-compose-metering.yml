@@ -22,14 +22,16 @@ services:
     build:
       context: ./server
     working_dir: /src
+    # Not having the depends clause due to version issues in production
+    # TODO: Prod docker-compose version upgrade
+    # depends_on:
+    #   rabbitmq_server:
+    #     condition: service_started
     volumes:
       - ./server:/src
-    depends_on:
-      rabbitmq_server:
-        condition: service_started
-    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
     env_file:
       - .env
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
     networks:
       - dhruva-network
   
@@ -37,14 +39,15 @@ services:
     container_name: celery_beat
     image: celery_image
     working_dir: /src
+    # Not having the depends clause due to version issues in production
+    # depends_on:
+    #   rabbitmq_server:
+    #     condition: service_started
     volumes:
       - ./server:/src
-    depends_on:
-      rabbitmq_server:
-        condition: service_started
-    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
     env_file:
       - .env
+    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
     networks:
       - dhruva-network
 
