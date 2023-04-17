@@ -83,18 +83,19 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=ULCAGenericInferenceResponse)
-async def _run_inference_generic(
-    request: Union[
-        ULCAGenericInferenceRequest,
-        ULCAAsrInferenceRequest,
-        ULCATranslationInferenceRequest,
-        ULCATtsInferenceRequest,
-    ],
-    params: ULCAInferenceQuery = Depends(),
-    inference_service: InferenceService = Depends(InferenceService),
-):
-    return await inference_service.run_inference(request, params.serviceId)
+# For ULCA compatibility. Commenting it out temporarily
+# @router.post("", response_model=ULCAGenericInferenceResponse)
+# async def _run_inference_generic(
+#     request: Union[
+#         ULCAGenericInferenceRequest,
+#         ULCAAsrInferenceRequest,
+#         ULCATranslationInferenceRequest,
+#         ULCATtsInferenceRequest,
+#     ],
+#     params: ULCAInferenceQuery = Depends(),
+#     inference_service: InferenceService = Depends(InferenceService),
+# ):
+#     return await inference_service.run_inference(request, params.serviceId)
 
 
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)
