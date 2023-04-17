@@ -34,7 +34,7 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
             claims = jwt.decode(credentials, key=os.environ['JWT_SECRET_KEY'], algorithms=["HS256"])
             user_id = claims["sub"]
             api_key_collection = db["api_key"]
-            api_key = api_key_collection.find_one({"name": "default",user_id:ObjectId(user_id)})
+            api_key = api_key_collection.find_one({"name": "default", "user_id": ObjectId(user_id)})
             if api_key is not None:
                 request.state.api_key_id = api_key['_id']
 

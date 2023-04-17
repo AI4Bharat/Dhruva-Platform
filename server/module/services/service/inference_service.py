@@ -26,6 +26,7 @@ from schema.services.request import (
     ULCANerInferenceRequest,
     ULCAPipelineInferenceRequest,
     ULCATranslationInferenceRequest,
+    ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
 )
 from schema.services.response import (
@@ -33,6 +34,7 @@ from schema.services.response import (
     ULCANerInferenceResponse,
     ULCAPipelineInferenceResponse,
     ULCATranslationInferenceResponse,
+    ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
 
@@ -107,6 +109,7 @@ class InferenceService:
             ULCAGenericInferenceRequest,
             ULCAAsrInferenceRequest,
             ULCATranslationInferenceRequest,
+            ULCATransliterationInferenceRequest,
             ULCATtsInferenceRequest,
         ],
         serviceId: str,
@@ -121,6 +124,9 @@ class InferenceService:
         if task_type == _ULCATaskType.TRANSLATION:
             request_obj = ULCATranslationInferenceRequest(**request_body)
             return await self.run_translation_triton_inference(request_obj, serviceId)
+        elif task_type == _ULCATaskType.TRANSLITERATION:
+            request_obj = ULCATransliterationInferenceRequest(**request_body)
+            return await self.run_transliteration_triton_inference(request_obj, serviceId)
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
             return await self.run_asr_triton_inference(request_obj, serviceId)
@@ -179,7 +185,7 @@ class InferenceService:
 
             batch_size = 32
             chunk_size = 20
-            if serviceId == "ai4bharat/whisper-medium-en--gpu--t4":
+            if "whisper" in serviceId:
                 # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
                 batch_size = 1
                 chunk_size = 16
@@ -290,6 +296,53 @@ class InferenceService:
         }
         return ULCATranslationInferenceResponse(**res)
 
+    async def run_transliteration_triton_inference(
+        self, request_body: ULCATransliterationInferenceRequest, serviceId: str
+    ) -> ULCATransliterationInferenceResponse:
+        
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
+
+        results = []
+        source_lang = request_body.config.language.sourceLanguage
+        target_lang = request_body.config.language.targetLanguage
+        is_word_level = not request_body.config.isSentence
+        top_k = request_body.config.numSuggestions
+
+        for input in request_body.input:
+            input_string = input.source.replace("\n", " ").strip()
+            if input_string:
+                inputs = [
+                    self.__get_string_tensor(input_string, "INPUT_TEXT"),
+                    self.__get_string_tensor(
+                        source_lang, "INPUT_LANGUAGE_ID"
+                    ),
+                    self.__get_string_tensor(
+                        target_lang, "OUTPUT_LANGUAGE_ID"
+                    ),
+                    self.__get_bool_tensor(is_word_level, "IS_WORD_LEVEL"),
+                    self.__get_uint8_tensor(top_k, "TOP_K"),
+                ]
+                output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="transliteration",
+                    input_list=inputs,
+                    output_list=[output0],
+                    headers=headers,
+                )
+                encoded_result = response.as_numpy("OUTPUT_TEXT")
+                result = encoded_result.tolist()[0]
+                result = [r.decode("utf-8") for r in result]
+            else:
+                result = [input_string]
+            results.append({"source": input_string, "target": result})
+        res = {
+            # "config": request_body.config,
+            "output": results
+        }
+        return ULCATransliterationInferenceResponse(**res)
+
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
@@ -367,6 +420,20 @@ class InferenceService:
             tensor_name, string_obj.shape, np_to_triton_dtype(string_obj.dtype)
         )
         input_obj.set_data_from_numpy(string_obj)
+        return input_obj
+    
+    def __get_bool_tensor(self, bool_value: bool, tensor_name: str):
+        bool_obj = np.array([bool_value], dtype="bool")
+        input_obj = http_client.InferInput(
+            tensor_name, bool_obj.shape, np_to_triton_dtype(bool_obj.dtype)
+        )
+        input_obj.set_data_from_numpy(bool_obj)
+        return input_obj
+    
+    def __get_uint8_tensor(self, uint8_value, tensor_name):
+        uint8_obj = np.array([uint8_value], dtype="uint8")
+        input_obj = http_client.InferInput(tensor_name, uint8_obj.shape, np_to_triton_dtype(uint8_obj.dtype))
+        input_obj.set_data_from_numpy(uint8_obj)
         return input_obj
 
     def auto_select_service_id(self, task_type: str, config: dict) -> str:
