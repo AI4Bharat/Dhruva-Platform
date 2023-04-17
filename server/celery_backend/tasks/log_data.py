@@ -42,7 +42,6 @@ def log_data(
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
-    print("service_id: ", service_id)
     resp_body = json.loads(resp_body)
     req_body = json.loads(req_body)
 

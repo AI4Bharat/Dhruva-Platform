@@ -17,10 +17,6 @@ if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
     logs_db = LogDatabase()
 
 
-if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
-    logs_db = LogDatabase()
-
-
 def prom_agg_gateway_auth_handler(url, method, timeout, headers, data):
     try:
         username = os.environ["PROM_AGG_GATEWAY_USERNAME"]
