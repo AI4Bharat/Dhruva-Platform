@@ -10,7 +10,7 @@ const login = async (email: string, password: string) => {
   if (token) {
     localStorage.setItem("refresh_token", token);
   }
-  await timeout(500);
+  await timeout(1000);
   await getNewAccessToken();
 };
 

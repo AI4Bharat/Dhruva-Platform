@@ -22,44 +22,40 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    if(localStorage.getItem("refresh_token") && localStorage.getItem("access_token"))
-    {
-      router.push(localStorage.getItem("current_page"))
+    if (
+      localStorage.getItem("refresh_token") &&
+      localStorage.getItem("access_token")
+    ) {
+      router.push(localStorage.getItem("current_page"));
     }
   }, []);
 
   const validateCredentials = async () => {
     try {
       await login(username, password);
-      if(localStorage.getItem("current_page"))
-      {
-        router.push(localStorage.getItem("current_page"))
+      if (localStorage.getItem("current_page")) {
+        router.push(localStorage.getItem("current_page"));
+      } else {
+        router.push("/services");
       }
-      else
-      {
-      router.push('/services');
+    } catch (error) {
+      if (error.response.status === 401 || error.response.status === 422) {
+        toast({
+          title: "Error",
+          description: "Invalid Credentials",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong, please try again later",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
-    } catch(error)  {
-        if(error.response.status === 401 || error.response.status === 422)
-        {
-          toast({
-            title: "Error",
-            description: "Invalid Credentials",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-          });
-        }
-        else
-        {
-          toast({
-            title: "Error",
-            description: "Something went wrong, please try again later",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-          });
-        }
     }
   };
   return (
