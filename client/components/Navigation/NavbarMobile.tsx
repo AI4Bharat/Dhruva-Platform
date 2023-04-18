@@ -17,6 +17,7 @@ const NavbarMobile = () => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("current_page");
+      localStorage.removeItem("email");
       router.push('/')
   }
 
