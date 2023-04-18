@@ -1,8 +1,8 @@
 import { Box } from '@chakra-ui/react'
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 import ModelCard from './ModelCard'
 
-const ModelsList = (props) => {
+const ModelsList: FunctionComponent<{data:ModelList[]}> = (props) => {
   
   const searchedModels : ModelList[] = props.data;
   return (

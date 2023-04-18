@@ -1,8 +1,8 @@
 import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import Link from 'next/link';
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 
-const ModelsTable = (props) => {
+const ModelsTable: FunctionComponent<{data:ModelList[]}> = (props) => {
 
   const searchedModels : ModelList[] = props.data;
   return (

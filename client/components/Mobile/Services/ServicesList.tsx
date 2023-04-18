@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 import ServiceCard from './ServiceCard'
 
-const ServicesList = (props) => {
+const ServicesList: FunctionComponent<{data:ServiceList[]}> = (props) => {
 
   const searchedservices : ServiceList[] = props.data
   return (

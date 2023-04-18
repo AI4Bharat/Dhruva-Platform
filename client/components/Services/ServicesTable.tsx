@@ -1,8 +1,8 @@
 import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import Link from 'next/link';
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 
-const ServicesTable = (props) => {
+const ServicesTable: FunctionComponent<{data:ServiceList[]}> = (props) => {
 
 const searchedservices : ServiceList[] = props.data;
   return (

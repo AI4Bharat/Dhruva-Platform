@@ -215,7 +215,7 @@ export default function Services() {
         {
           searchedservices?
           searchedservices.length!==0?
-          smallscreen? <ServicesList data={searchedservices}/>:<ServicesTable data = {searchedservices}/>
+          smallscreen? <ServicesList data={searchedservices}/>:<ServicesTable data={searchedservices} />
           :<NotFound hide={hide}/>
           :<></>
         }
