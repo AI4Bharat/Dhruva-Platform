@@ -19,6 +19,10 @@ const dhruvaAPI: { [key: string]: string } = {
 const apiInstance = axios.create({baseURL: dhruvaRootURL});
 
 apiInstance.interceptors.request.use((config: any) => {
+  if(window.location.pathname !== "/")
+  {
+    localStorage.setItem("current_page", window.location.href);
+  }
   config.headers["request-startTime"] = new Date().getTime();
   config.headers["Authorization"] = `Bearer ${localStorage.getItem(
     "access_token"
@@ -53,7 +57,9 @@ apiInstance.interceptors.response.use(
             return apiInstance(originalRequest);
           }
         })
-        .catch(()=>window.location.replace("/"));
+        .catch(()=>{
+          window.location.replace("/");
+        });
     }
     else{
      throw error;
