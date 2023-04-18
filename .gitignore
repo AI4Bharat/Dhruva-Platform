@@ -9,3 +9,4 @@ yarn.lock
 mongodb
 server/.vscode
 server/db/fixtures
+celerybeat-schedule

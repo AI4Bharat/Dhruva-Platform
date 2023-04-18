@@ -31,6 +31,7 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
     request.state.api_key_name = api_key.name
     request.state.user_id = api_key.user_id
     request.state.api_key_id = api_key.id
+    # request.state.data_collection_consent = bool(api_key.data_collection_consent)
 
     return True
 
