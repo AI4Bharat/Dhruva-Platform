@@ -12,6 +12,15 @@ import {
   Grid,
   GridItem,
   Select,
+  Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ASRTry from "../../components/TryOut/ASR";
@@ -28,15 +37,54 @@ import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { getService } from "../../api/serviceAPI";
 import Feedback from "../../components/Feedback/Feedback";
+import { SlGraph } from "react-icons/sl";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
+function ServicePerformanceModal() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <Button onClick={onOpen}>
+        <SlGraph />
+      </Button>
+
+      <Modal isOpen={isOpen} size={"full"} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Service Specific Performance</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack direction={"column"}>
+              <Select></Select>
+            </Stack>
+            <iframe
+              src={
+                "https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&kiosk=tv"
+              }
+              width={"100%"}
+              height={500}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { data: serviceInfo, isLoading } = useQuery(
     ["service", router.query["serviceId"]],
     () => getService(router.query["serviceId"] as string)
@@ -89,6 +137,7 @@ export default function ViewService() {
             <GridItem p="1rem" bg="white">
               <Stack spacing={10} direction={"row"}>
                 <Heading>{serviceInfo["name"]}</Heading>
+                <ServicePerformanceModal />
               </Stack>
               <br />
               <Tabs index={tabIndex} isFitted>
@@ -161,6 +210,7 @@ export default function ViewService() {
             <GridItem>
               <Stack spacing={10} direction={"row"} mb="1rem">
                 <Heading>{serviceInfo["name"]}</Heading>
+                <ServicePerformanceModal />
               </Stack>
               <Tabs isFitted>
                 <TabList mb="1em">
