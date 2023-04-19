@@ -16,6 +16,11 @@ const login = async (email: string, password: string) => {
   await getNewAccessToken();
 };
 
+const getUser= async(email:string)=>{
+  const res = await apiInstance.get(`/auth/user?email=${email}`);
+  return res.data;
+}
+
 const getNewAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
   const response = await apiInstance.post("/auth/refresh", {
@@ -27,4 +32,4 @@ const getNewAccessToken = async () => {
   }
 };
 
-export { login, getNewAccessToken };
+export { login, getNewAccessToken,getUser };
