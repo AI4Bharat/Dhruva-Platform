@@ -29,9 +29,7 @@ import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import NERTry from "../../components/TryOut/NER";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaAPI } from "../../api/apiConfig";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
@@ -39,14 +37,28 @@ import { getService } from "../../api/serviceAPI";
 import Feedback from "../../components/Feedback/Feedback";
 import { SlGraph } from "react-icons/sl";
 import Usage from "../../components/Services/Usage";
+import { listalluserkeys } from "../../api/serviceAPI";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-function ServicePerformanceModal() {
+function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const user_id = localStorage.getItem("user_id");
+  const service_id = props.service_id;
+  const { data: keylist } = useQuery(["keys"], () =>
+    listalluserkeys(service_id, user_id)
+  );
+  const [apiKeyName, setAPIKeyName] = useState("");
+
+  useEffect(() => {
+    if (keylist) {
+      setAPIKeyName(keylist["api_keys"][0]["name"]);
+    }
+  }, [keylist]);
+
   return (
     <>
       <Button onClick={onOpen}>
@@ -64,14 +76,29 @@ function ServicePerformanceModal() {
             <Stack direction={"column"}>
               <Stack direction="row">
                 <Heading size={"md"}>API Key Name:</Heading>
-                <Select></Select>
+                {keylist ? (
+                  <Select
+                    value={apiKeyName}
+                    onChange={(e) => {
+                      setAPIKeyName(e.target.value);
+                    }}
+                  >
+                    {keylist["api_keys"].map((key) => {
+                      return (
+                        <option key={key.name} value={key.name}>
+                          {key.name}
+                        </option>
+                      );
+                    })}
+                  </Select>
+                ) : (
+                  <></>
+                )}
               </Stack>
             </Stack>
             <br />
             <iframe
-              src={
-                "https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&kiosk=tv"
-              }
+              src={`https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${user_id}&var-inferenceServiceId=${service_id}`}
               width={"100%"}
               height={600}
             />
@@ -144,7 +171,9 @@ export default function ViewService() {
             <GridItem p="1rem" bg="white">
               <Stack spacing={10} direction={"row"}>
                 <Heading>{serviceInfo["name"]}</Heading>
-                <ServicePerformanceModal />
+                <ServicePerformanceModal
+                  service_id={router.query["serviceId"]}
+                />
               </Stack>
               <br />
               <Tabs index={tabIndex} isFitted>

@@ -63,6 +63,22 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
 
   const [queryClient] = useState(() => new QueryClient());
   const LayoutComponent = isLayoutNeeded ? Layout : React.Fragment;
+  const router = useRouter();
+
+  const Logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("current_page");
+    localStorage.removeItem("email");
+    router.push("/");
+  };
+
+  useEffect(() => {
+    const user_id = localStorage.getItem("user_id");
+    if (user_id === null) {
+      Logout();
+    }
+  }, []);
 
   return (
     <ChakraProvider theme={customTheme}>
