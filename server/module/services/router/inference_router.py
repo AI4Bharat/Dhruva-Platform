@@ -44,22 +44,12 @@ class InferenceLoggingRoute(APIRoute):
 
             if request.state._state.get("api_key_tracking"):
                 req_json: Dict[str, Any] = json.loads(req_body)
-                enable_tracking = req_json.get("controlConfig", dict()).get(
-                    "dataTracking", True
-                )
+                enable_tracking = req_json["controlConfig"]["dataTracking"]
 
             start_time = time.time()
             response: Response = await original_route_handler(request)
             res_body = response.body
-            if (
-                request.url._url.split("?")[0].split("/")[-1]
-                in (
-                    "asr",
-                    "translation",
-                    "tts",
-                )
-                and enable_tracking
-            ):
+            if enable_tracking:
                 log_data.apply_async(
                     (
                         request.url._url,
