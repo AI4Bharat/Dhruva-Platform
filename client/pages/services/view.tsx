@@ -56,18 +56,24 @@ function ServicePerformanceModal() {
       <Modal isOpen={isOpen} size={"full"} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Service Specific Performance</ModalHeader>
+          <ModalHeader>
+            <Heading>Service Specific Dashboard</Heading>
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Stack direction={"column"}>
-              <Select></Select>
+              <Stack direction="row">
+                <Heading size={"md"}>API Key Name:</Heading>
+                <Select></Select>
+              </Stack>
             </Stack>
+            <br />
             <iframe
               src={
                 "https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&kiosk=tv"
               }
               width={"100%"}
-              height={500}
+              height={600}
             />
           </ModalBody>
 

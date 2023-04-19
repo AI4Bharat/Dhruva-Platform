@@ -3,7 +3,7 @@ import { ChakraProvider, Grid, GridItem, Box } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import { customTheme } from "../themes/index";
 import Sidebar from "../components/Navigation/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../styles/global.css";
 import Navbar from "../components/Navigation/Navbar";
@@ -11,6 +11,7 @@ import NavbarMobile from "../components/Navigation/NavbarMobile";
 import Script from "next/script";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useRouter } from "next/router";
 
 interface ContentLayoutProps {
   children: React.ReactNode;
@@ -66,7 +67,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
   return (
     <ChakraProvider theme={customTheme}>
       <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+        <ReactQueryDevtools initialIsOpen={false} />
         <LayoutComponent>
           <Script
             type="text/javascript"
