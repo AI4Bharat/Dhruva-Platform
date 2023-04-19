@@ -7,7 +7,8 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - db:/app
+      - 'mongodb_data:/bitnami/mongodb'
+      - db/app:/bitnami/mongodb
     restart: unless-stopped
     environment:
       - MONGODB_ROOT_USER=$MONGO_APP_DB_USERNAME
@@ -24,7 +25,8 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - db:/log
+      - 'mongodb_data:/bitnami/mongodb'
+      - db/app:/bitnami/mongodb
     restart: unless-stopped
     environment:
       - MONGODB_ROOT_USER=$MONGO_LOG_DB_USERNAME
