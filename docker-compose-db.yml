@@ -35,32 +35,29 @@ services:
       - dhruva-network
   
   redis:
-    image: bitnami/redis:7.0.11
+    image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
     volumes:
-      - redis:/bitnami/redis/data
+      - redis:/data
+    command: redis-server --save 20 1 --loglevel warning
     restart: unless-stopped
-    environment:
-      - REDIS_PASSWORD=$REDIS_PASSWORD
-    env_file:
-      - .env
     networks:
       - dhruva-network
 
-  mongo-admin:
+  mongo_admin:
     image: adicom/admin-mongo
-    container_name: mongo-admin
+    container_name: mongo_admin
     ports:
       - "1234:1234"
     volumes:
-      - mongo-admin:/app
+      - mongo_admin:/app
     restart: unless-stopped
     command: "/bin/sh -c 'echo $$CONFIG > config/config.json ; echo $$APP > config/app.json ; node app.js'"
     environment:
       - APP={"app":{"password":"$ADMIN_MONGO_PASSWORD"}}
-      - CONFIG={}
+      - CONFIG={"connections":{"APP":{"connection_string":"$APP_DB_CONNECTION_STRING","connection_options":{}}, "LOG":{"connection_string":"$LOG_DB_CONNECTION_STRING","connection_options":{}}}}
     env_file:
       - .env
     networks:
@@ -71,7 +68,7 @@ volumes:
   app_db: {}
   log_db: {}
   redis: {}
-  mongo-admin: {}
+  mongo_admin: {}
 
 networks:
   dhruva-network:
