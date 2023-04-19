@@ -55,10 +55,12 @@ services:
     ports:
       - "1234:1234"
     volumes:
-      - mongo-admin:/data
+      - mongo-admin:/app
     restart: unless-stopped
+    command: "/bin/sh -c 'echo $$CONFIG > config/config.json ; echo $$APP > config/app.json ; node app.js'"
     environment:
-      - PASSWORD=$ADMIN_MONGO_PASSWORD
+      - APP={"app":{"password":"$ADMIN_MONGO_PASSWORD"}}
+      - CONFIG={}
     env_file:
       - .env
     networks:
