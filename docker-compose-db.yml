@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app_db:
-    image: mongo:4.2
+    image: bitnami/mongodb:4.2.0
     container_name: app_db
     ports:
       - "27017:27017"
@@ -10,8 +10,8 @@ services:
       - db:/app
     restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=$MONGO_APP_DB_USERNAME
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_APP_DB_PASSWORD
+      - MONGODB_ROOT_USER=$MONGO_APP_DB_USERNAME
+      - MONGODB_ROOT_PASSWORD=$MONGO_APP_DB_PASSWORD
     env_file:
       - .env
     networks:
@@ -19,7 +19,7 @@ services:
 
 
   log_db:
-    image: mongo:4.2
+    image: bitnami/mongodb:4.2.0
     container_name: log_db
     ports:
       - "27018:27017"
@@ -27,8 +27,8 @@ services:
       - db:/log
     restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=$MONGO_LOG_DB_USERNAME
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_LOG_DB_PASSWORD
+      - MONGODB_ROOT_USER=$MONGO_LOG_DB_USERNAME
+      - MONGODB_ROOT_PASSWORD=$MONGO_LOG_DB_PASSWORD
     env_file:
       - .env
     networks:
@@ -46,10 +46,22 @@ services:
     networks:
       - dhruva-network
 
+  mongo-admin:
+    image: adicom/admin-mongo
+    container_name: mongo-admin
+    ports:
+      - "1234:1234"
+    volumes:
+      - mongo-admin:/data
+    restart: unless-stopped
+    networks:
+      - dhruva-network
+    
 
 volumes:
   db: {}
   redis: {}
+  mongo-admin: {}
 
 networks:
   dhruva-network:
