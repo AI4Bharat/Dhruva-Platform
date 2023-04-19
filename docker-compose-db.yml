@@ -2,24 +2,35 @@ version: "3"
 
 services:
   app_db:
-    image: mongo
+    image: mongo:4.2
     container_name: app_db
     ports:
       - "27017:27017"
     volumes:
       - db:/app
     restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME: $MONGO_APP_DB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD: $MONGO_APP_DB_PASSWORD
+    env_file:
+      - .env
     networks:
       - dhruva-network
 
+
   log_db:
-    image: mongo
+    image: mongo:4.2
     container_name: log_db
     ports:
       - "27018:27017"
     volumes:
       - db:/log
     restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME: $MONGO_LOG_DB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD: $MONGO_LOG_DB_PASSWORD
+    env_file:
+      - .env
     networks:
       - dhruva-network
   
