@@ -7,7 +7,6 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - 'mongodb_data:/bitnami/mongodb'
       - db/app:/bitnami/mongodb
     restart: unless-stopped
     environment:
@@ -25,7 +24,6 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - 'mongodb_data:/bitnami/mongodb'
       - db/app:/bitnami/mongodb
     restart: unless-stopped
     environment:
