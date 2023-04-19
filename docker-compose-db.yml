@@ -35,7 +35,7 @@ services:
       - dhruva-network
   
   redis:
-    image: redis:latest
+    image: bitnami/redis:7.0.11
     container_name: redis
     ports:
       - "6379:6379"
@@ -54,6 +54,10 @@ services:
     volumes:
       - mongo-admin:/data
     restart: unless-stopped
+    environment:
+      - PASSWORD=$ADMIN_MONGO_PASSWORD
+    env_file:
+      - .env
     networks:
       - dhruva-network
     
