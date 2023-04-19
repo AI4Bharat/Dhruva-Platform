@@ -12,11 +12,16 @@ from argon2.exceptions import VerifyMismatchError
 from bson import ObjectId
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
-from pydantic import EmailStr
 
 from exception.base_error import BaseError
-from exception.ulca_api_key_client_error import ULCAApiKeyClientError
-from exception.ulca_api_key_server_error import ULCAApiKeyServerError
+from exception.ulca_create_api_key_client_error import ULCACreateApiKeyClientError
+from exception.ulca_create_api_key_server_error import ULCACreateApiKeyServerError
+from exception.ulca_set_api_key_tracking_client_error import (
+    ULCASetApiKeyTrackingClientError,
+)
+from exception.ulca_set_api_key_tracking_server_error import (
+    ULCASetApiKeyTrackingServerError,
+)
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
@@ -24,15 +29,22 @@ from schema.auth.request import (
     GetApiKeyQuery,
     RefreshRequest,
     SetApiKeyStatusQuery,
+    SetApiKeyTrackingQuery,
     SignInRequest,
-    ULCAApiKeyRequest,
+    ULCACreateApiKeyRequest,
+    ULCASetApiKeyTrackingQuery,
 )
 from schema.auth.request.set_api_key_status_query import ApiKeyAction
+from schema.auth.request.set_api_key_tracking_query import ApiKeyTrackingAction
 from schema.auth.response import (
     GetAllApiKeysDetailsResponse,
     GetServiceLevelApiKeysResponse,
     SignInResponse,
     ULCAApiKeyDeleteResponse,
+    ULCAApiKeyTrackingResponse,
+)
+from schema.auth.response.ulca_api_key_tracking_response import (
+    ULCAApiKeyTrackingResponseStatus,
 )
 
 from ..error import Errors
@@ -202,7 +214,7 @@ class AuthService:
             user_id=id,
             type=request.type.value,
             created_timestamp=datetime.now(),
-            # data_collection_consent=request.data_collection_consent,
+            data_tracking=request.dataTracking,
         )
 
         try:
@@ -221,6 +233,7 @@ class AuthService:
         key = secrets.token_urlsafe(48)
         existing_api_key.api_key = key
         existing_api_key.masked_key = self.__mask_key(key)
+        existing_api_key.created_timestamp = datetime.now()
 
         try:
             self.api_key_repository.save(existing_api_key)
@@ -361,7 +374,48 @@ class AuthService:
 
         return api_key
 
-    def set_api_key_status_ulca(self, request: ULCAApiKeyRequest, id: ObjectId):
+    def set_api_key_tracking(self, params: SetApiKeyTrackingQuery, id: ObjectId):
+        try:
+            user_id = (
+                id if not params.target_user_id else ObjectId(params.target_user_id)
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Invalid target user id"},
+            )
+
+        try:
+            api_key = self.api_key_repository.find_one(
+                {"name": params.api_key_name, "user_id": user_id}
+            )
+        except Exception:
+            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
+
+        if not api_key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "Api key not found"},
+            )
+
+        match params.action:
+            case ApiKeyTrackingAction.ENABLE:
+                api_key.enable_tracking()
+            case ApiKeyTrackingAction.DISABLE:
+                api_key.disable_tracking()
+
+        try:
+            self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
+        except Exception:
+            raise BaseError(Errors.DHRUVA210.value, traceback.format_exc())
+
+        return api_key
+
+    def set_api_key_status_ulca(self, request: ULCACreateApiKeyRequest, id: ObjectId):
         api_key_name = request.emailId + "/" + request.appName
 
         try:
@@ -369,10 +423,14 @@ class AuthService:
                 {"name": api_key_name, "user_id": id}
             )
         except Exception:
-            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
+            raise ULCACreateApiKeyServerError(
+                Errors.DHRUVA208.value, traceback.format_exc()
+            )
 
         if not api_key:
-            raise ULCAApiKeyClientError(status.HTTP_404_NOT_FOUND, "API Key not found")
+            raise ULCACreateApiKeyClientError(
+                status.HTTP_404_NOT_FOUND, "API Key not found"
+            )
 
         api_key.revoke()
 
@@ -383,8 +441,50 @@ class AuthService:
             api_key_cache = ApiKeyCache(**api_key.dict())
             api_key_cache.save()
         except Exception:
-            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
+            raise ULCACreateApiKeyServerError(
+                Errors.DHRUVA209.value, traceback.format_exc()
+            )
 
         return ULCAApiKeyDeleteResponse(
             isRevoked=True, message="API Key successfully deleted"
+        )
+
+    def set_api_key_tracking_ulca(
+        self, params: ULCASetApiKeyTrackingQuery, id: ObjectId
+    ):
+        api_key_name = params.emailId + "/" + params.appName
+
+        try:
+            api_key = self.api_key_repository.find_one(
+                {"name": api_key_name, "user_id": id}
+            )
+        except Exception:
+            raise ULCASetApiKeyTrackingServerError(
+                Errors.DHRUVA208.value, traceback.format_exc()
+            )
+
+        if not api_key:
+            raise ULCASetApiKeyTrackingClientError(
+                status.HTTP_404_NOT_FOUND, "API Key not found"
+            )
+
+        if params.dataTracking:
+            api_key.enable_tracking()
+        else:
+            api_key.disable_tracking()
+
+        try:
+            self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
+        except Exception:
+            raise ULCASetApiKeyTrackingServerError(
+                Errors.DHRUVA210.value, traceback.format_exc()
+            )
+
+        return ULCAApiKeyTrackingResponse(
+            status=ULCAApiKeyTrackingResponseStatus.SUCCESS,
+            message="API Key tracking status successfully changed",
         )

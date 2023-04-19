@@ -1,68 +1,79 @@
+import json
 import time
-from typing import Union, Callable
+from typing import Any, Callable, Dict, Union
+
 from fastapi import APIRouter, Depends, Request
-from ..service.inference_service import InferenceService
+from fastapi.routing import APIRoute, Request, Response
 
 from auth.auth_provider import AuthProvider
-from fastapi.routing import APIRoute, Response, Request
+from celery_backend.tasks import log_data
 from exception.http_error import HttpErrorResponse
 from schema.services.request import (
-    ULCAInferenceQuery,
-    ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCAInferenceQuery,
+    ULCANerInferenceRequest,
+    ULCAPipelineInferenceRequest,
+    ULCAS2SInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
-    ULCANerInferenceRequest,
-    ULCAS2SInferenceRequest,
-    ULCAPipelineInferenceRequest,
 )
 from schema.services.response import (
-    ULCAGenericInferenceResponse,
     ULCAAsrInferenceResponse,
-    ULCATranslationInferenceResponse,
-    ULCATransliterationInferenceResponse,
-    ULCATtsInferenceResponse,
+    ULCAGenericInferenceResponse,
     ULCANerInferenceResponse,
-    ULCAS2SInferenceResponse,
     ULCAPipelineInferenceResponse,
+    ULCAS2SInferenceResponse,
+    ULCATranslationInferenceResponse,
+    ULCATtsInferenceResponse,
 )
+
 # from ..repository import ServiceRepository, ModelRepository
 from ..service.inference_service import InferenceService
-from celery_backend.tasks import log_data
+
 
 class InferenceLoggingRoute(APIRoute):
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
-            req_body = await request.body()
+            req_body_bytes = await request.body()
+            req_body = req_body_bytes.decode("utf-8")
+            enable_tracking = False
+
+            if request.state._state.get("api_key_tracking"):
+                req_json: Dict[str, Any] = json.loads(req_body)
+                enable_tracking = req_json.get("controlConfig", dict()).get(
+                    "dataTracking", True
+                )
 
             start_time = time.time()
             response: Response = await original_route_handler(request)
             res_body = response.body
-
-            url_components = request.url._url.split("?serviceId=")
-            if len(url_components) == 2:
-                usage_type, service_component = url_components
-                usage_type = usage_type.split("/")[-1]
-                service_id = service_component.replace("%2F", "/")
-                if usage_type in ("asr", "translation", "tts"):
-                    log_data.apply_async(
-                        (
-                            usage_type,
-                            service_id,
-                            request.client.host,
-                            # request.state.data_collection_consent,
-                            str(request.state.api_key_id),
-                            req_body.decode("utf-8"),
-                            res_body.decode("utf-8"),
-                            time.time() - start_time
-                        ),
-                        queue="data_log"
-                    )
+            if (
+                request.url._url.split("?")[0].split("/")[-1]
+                in (
+                    "asr",
+                    "translation",
+                    "tts",
+                )
+                and enable_tracking
+            ):
+                log_data.apply_async(
+                    (
+                        request.url._url,
+                        str(request.state.api_key_id),
+                        req_body,
+                        res_body.decode("utf-8"),
+                        time.time() - start_time,
+                    ),
+                    queue="data_log",
+                )
             return response
+
         return logging_route_handler
+
 
 router = APIRouter(
     prefix="/inference",
@@ -70,7 +81,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}}
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
@@ -136,7 +147,6 @@ async def _run_inference_ner(
     return await inference_service.run_ner_triton_inference(request, params.serviceId)
 
 
-
 # Temporary endpoint; will be removed/standardized soon
 
 
@@ -199,6 +209,7 @@ async def _run_inference_sts(
 
     return response
 
+
 @router.post("/s2s_new_mt", response_model=ULCAS2SInferenceResponse)
 async def _run_inference_sts_new_mt(
     request: ULCAS2SInferenceRequest,
@@ -257,6 +268,7 @@ async def _run_inference_sts_new_mt(
     )
 
     return response
+
 
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
 async def _run_inference_pipeline(
