@@ -26,6 +26,7 @@ from schema.services.response import (
     ULCAPipelineInferenceResponse,
     ULCAS2SInferenceResponse,
     ULCATranslationInferenceResponse,
+    ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
 
@@ -100,6 +101,7 @@ async def _run_inference_translation(
         request, params.serviceId
     )
 
+
 @router.post("/transliteration", response_model=ULCATransliterationInferenceResponse)
 async def _run_inference_transliteration(
     request: ULCATransliterationInferenceRequest,
@@ -109,6 +111,7 @@ async def _run_inference_transliteration(
     return await inference_service.run_transliteration_triton_inference(
         request, params.serviceId
     )
+
 
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
@@ -159,6 +162,7 @@ async def _run_inference_sts(
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
         input=asr_response.output,
+        controlConfig=request.controlConfig,
     )
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
@@ -179,7 +183,9 @@ async def _run_inference_sts(
         serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
 
     tts_request = ULCATtsInferenceRequest(
-        config=request.config, input=translation_response.output
+        config=request.config,
+        input=translation_response.output,
+        controlConfig=request.controlConfig,
     )
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
@@ -219,6 +225,7 @@ async def _run_inference_sts_new_mt(
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
         input=asr_response.output,
+        controlConfig=request.controlConfig,
     )
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-v2-all-gpu--t4"
@@ -239,7 +246,9 @@ async def _run_inference_sts_new_mt(
         serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
 
     tts_request = ULCATtsInferenceRequest(
-        config=request.config, input=translation_response.output
+        config=request.config,
+        input=translation_response.output,
+        controlConfig=request.controlConfig,
     )
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
