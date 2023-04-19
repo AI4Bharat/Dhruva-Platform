@@ -250,7 +250,9 @@ export default function ViewService() {
             <GridItem>
               <Stack spacing={10} direction={"row"} mb="1rem">
                 <Heading>{serviceInfo["name"]}</Heading>
-                <ServicePerformanceModal />
+                <ServicePerformanceModal
+                  service_id={router.query["serviceId"]}
+                />
               </Stack>
               <Tabs isFitted>
                 <TabList mb="1em">
