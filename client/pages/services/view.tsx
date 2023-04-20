@@ -19,10 +19,9 @@ import TTSTry from "../../components/TryOut/TTS";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import NERTry from "../../components/TryOut/NER";
+import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaAPI } from "../../api/apiConfig";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Documentation from "../../components/Documentation/Documentation";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
@@ -66,6 +65,8 @@ export default function ViewService() {
           return <STSTry languages={languages} serviceId={serviceId} />;
         case "ner":
           return <NERTry languages={languages} serviceId={serviceId} />;
+        case "transliteration":
+          return <XLITTry languages={languages} serviceId={serviceId} />;
       }
     }
   };
@@ -140,7 +141,7 @@ export default function ViewService() {
                     )}
                   </TabPanel>
                   <TabPanel>
-                  <Usage serviceID={router.query["serviceId"]}/>
+                    <Usage serviceID={router.query["serviceId"]} />
                   </TabPanel>
                 </TabPanels>
               </Tabs>
@@ -215,7 +216,7 @@ export default function ViewService() {
                     )}
                   </TabPanel>
                   <TabPanel>
-                  <Usage serviceID={router.query["serviceId"]}/>
+                    <Usage serviceID={router.query["serviceId"]} />
                   </TabPanel>
                 </TabPanels>
               </Tabs>

@@ -31,7 +31,7 @@ export default function XLITTry({ ...props }) {
     })
   );
   const [tltText, setTltText] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
+  const [transliteratedText, settransliteratedText] = useState("");
   const [fetching, setFetching] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [requestWordCount, setRequestWordCount] = useState(0);
@@ -47,11 +47,22 @@ export default function XLITTry({ ...props }) {
         {
           input: [
             {
-              source: source,
+              source: tltText,
             },
           ],
           config: {
-            language: JSON.parse(language),
+            serviceId: props.serviceId,
+            language: {
+              sourceLanguage: JSON.parse(language)["sourceLanguage"],
+              sourceScriptCode: "",
+              targetLanguage: JSON.parse(language)["targetLanguage"],
+              targetScriptCode: "",
+            },
+            isSentence: true,
+            numSuggestions: 5,
+          },
+          controlConfig: {
+            dataTracking: true,
           },
         },
         {
@@ -63,8 +74,9 @@ export default function XLITTry({ ...props }) {
         }
       )
       .then((response) => {
-        var output = response.data["output"][0]["target"];
-        setTranslatedText(output);
+        console.log(response);
+        var output = response.data["output"][0]["target"][0];
+        settransliteratedText(output);
         setFetching(false);
         setFetched(true);
         setRequestWordCount(getWordCount(tltText));
@@ -75,28 +87,7 @@ export default function XLITTry({ ...props }) {
 
   const clearIO = () => {
     setTltText("");
-    setTranslatedText("");
-  };
-
-  const renderTransliterateComponent = () => {
-    const currentLanguage: LanguageConfig = JSON.parse(language);
-    return (
-      <IndicTransliterate
-        renderComponent={(props) => (
-          <Textarea resize="none" h={200} {...props} />
-        )}
-        onChangeText={(text: string) => {
-          setTltText(text);
-        }}
-        value={tltText}
-        placeholder="Type your text here to transliterate...."
-        lang={currentLanguage.sourceLanguage}
-        onChange={undefined}
-        onBlur={undefined}
-        onKeyDown={undefined}
-        enabled={currentLanguage.sourceLanguage !== "en"}
-      />
-    );
+    settransliteratedText("");
   };
 
   useEffect(() => {
@@ -169,21 +160,30 @@ export default function XLITTry({ ...props }) {
       )}
       <GridItem>
         <Stack>
-          {renderTransliterateComponent()}
           <Textarea
-            readOnly
-            value={translatedText}
+            value={tltText}
+            onChange={(e) => {
+              setTltText(e.target.value);
+            }}
             w={"auto"}
             resize="none"
             h={200}
-            placeholder="View Translation Here..."
+            placeholder="Type in Source Language Here..."
+          />
+          <Textarea
+            readOnly
+            value={transliteratedText}
+            w={"auto"}
+            resize="none"
+            h={200}
+            placeholder="View Transliteration Here..."
           />
           <Button
             onClick={() => {
-              getTranslation(tltText);
+              getTransliteration(tltText);
             }}
           >
-            Translate
+            Transliterate
           </Button>
         </Stack>
       </GridItem>

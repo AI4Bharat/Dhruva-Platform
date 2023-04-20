@@ -113,6 +113,9 @@ export default function STSTry({ ...props }) {
             audioFormat: "wav",
             gender: voiceGender,
           },
+          controlConfig: {
+            dataTracking: true,
+          },
         },
         {
           headers: {

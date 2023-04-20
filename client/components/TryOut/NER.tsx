@@ -50,6 +50,9 @@ export default function NERTry({ ...props }) {
               sourceLanguage: language,
             },
           },
+          controlConfig: {
+            dataTracking: true,
+          },
         },
         {
           headers: {

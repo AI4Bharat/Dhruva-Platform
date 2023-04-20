@@ -55,6 +55,9 @@ export default function TTSTry({ ...props }) {
             },
             gender: voice,
           },
+          controlConfig: {
+            dataTracking: true,
+          },
         },
         {
           headers: {

@@ -54,6 +54,9 @@ export default function NMTTry({ ...props }) {
           config: {
             language: JSON.parse(language),
           },
+          controlConfig: {
+            dataTracking: true,
+          },
         },
         {
           headers: {

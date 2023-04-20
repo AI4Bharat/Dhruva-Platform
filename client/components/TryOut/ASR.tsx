@@ -76,6 +76,9 @@ export default function ASRTry({ ...props }) {
             encoding: "base64",
             samplingRate: sampleRate,
           },
+          controlConfig: {
+            dataTracking: true,
+          },
         },
         {
           headers: {
