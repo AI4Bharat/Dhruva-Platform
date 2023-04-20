@@ -33,6 +33,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_NAME=PublicMonitoring
       - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SECURE=$GRAFANA_SECURE_COOKIE
     restart: unless-stopped
     ports:
       - "4000:3000"
