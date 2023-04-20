@@ -150,10 +150,7 @@ class InferenceService:
         language = request_body.config.language.sourceLanguage
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
-            if input.audioContent is None and input.audioUri is not None:
-                file_bytes = urlopen(input.audioUri).read()
-            else:
-                file_bytes = base64.b64decode(input.audioContent)
+            file_bytes = base64.b64decode(input.audioContent)  # type: ignore
 
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
