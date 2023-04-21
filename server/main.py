@@ -88,7 +88,6 @@ async def ulca_set_api_key_tracking_client_error_handler(
         status_code=exc.error_code,
         content={
             "status": "failure",
-            "dataTracking": True,
             "message": exc.message,
         },
     )
@@ -104,7 +103,6 @@ async def ulca_set_api_key_tracking_server_error_handler(
         status_code=500,
         content={
             "status": "failure",
-            "dataTracking": True,
             "message": exc.error_kind + " - Internal Server Error",
         },
     )
