@@ -8,17 +8,16 @@ from ..celery_app import app
 from .database import LogDatabase
 from .metering import meter_usage
 
-
 logs_db = None
-LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get(
-    "LOG_REQUEST_RESPONSE_DATA_FLAG", None)
+LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None)
 if LOG_REQUEST_RESPONSE_DATA_FLAG:
     logs_db = LogDatabase()
 
 
 def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
-    logs_collection = logs_db[service_id]
+    sanitized_service_id = service_id.replace("/", "~")
+    logs_collection = logs_db[sanitized_service_id]
     log_document = {
         "client_ip": client_ip,
         "input": inp,
@@ -38,7 +37,7 @@ def log_data(
     api_key_id: str,
     req_body: str,
     resp_body: str,
-    response_time: time
+    response_time: time,
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 

@@ -1,68 +1,70 @@
+import json
 import time
-from typing import Union, Callable
+from typing import Any, Callable, Dict, Union
+
 from fastapi import APIRouter, Depends, Request
-from ..service.inference_service import InferenceService
+from fastapi.routing import APIRoute, Request, Response
 
 from auth.auth_provider import AuthProvider
-from fastapi.routing import APIRoute, Response, Request
+from celery_backend.tasks import log_data
 from exception.http_error import HttpErrorResponse
 from schema.services.request import (
-    ULCAInferenceQuery,
-    ULCAGenericInferenceRequest,
     ULCAAsrInferenceRequest,
+    ULCAGenericInferenceRequest,
+    ULCAInferenceQuery,
+    ULCANerInferenceRequest,
+    ULCAPipelineInferenceRequest,
+    ULCAS2SInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
-    ULCANerInferenceRequest,
-    ULCAS2SInferenceRequest,
-    ULCAPipelineInferenceRequest,
 )
 from schema.services.response import (
-    ULCAGenericInferenceResponse,
     ULCAAsrInferenceResponse,
+    ULCAGenericInferenceResponse,
+    ULCANerInferenceResponse,
+    ULCAPipelineInferenceResponse,
+    ULCAS2SInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
-    ULCANerInferenceResponse,
-    ULCAS2SInferenceResponse,
-    ULCAPipelineInferenceResponse,
 )
+
 # from ..repository import ServiceRepository, ModelRepository
 from ..service.inference_service import InferenceService
-from celery_backend.tasks import log_data
+
 
 class InferenceLoggingRoute(APIRoute):
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
-            req_body = await request.body()
+            req_body_bytes = await request.body()
+            req_body = req_body_bytes.decode("utf-8")
+            enable_tracking = False
+
+            if request.state._state.get("api_key_data_tracking"):
+                req_json: Dict[str, Any] = json.loads(req_body)
+                enable_tracking = req_json["controlConfig"]["dataTracking"]
 
             start_time = time.time()
             response: Response = await original_route_handler(request)
             res_body = response.body
-
-            url_components = request.url._url.split("?serviceId=")
-            if len(url_components) == 2:
-                usage_type, service_component = url_components
-                usage_type = usage_type.split("/")[-1]
-                service_id = service_component.replace("%2F", "/")
-                if usage_type in ("asr", "translation", "tts"):
-                    log_data.apply_async(
-                        (
-                            usage_type,
-                            service_id,
-                            request.client.host,
-                            # request.state.data_collection_consent,
-                            str(request.state.api_key_id),
-                            req_body.decode("utf-8"),
-                            res_body.decode("utf-8"),
-                            time.time() - start_time
-                        ),
-                        queue="data_log"
-                    )
+            if enable_tracking:
+                log_data.apply_async(
+                    (
+                        request.url._url,
+                        str(request.state.api_key_id),
+                        req_body,
+                        res_body.decode("utf-8"),
+                        time.time() - start_time,
+                    ),
+                    queue="data_log",
+                )
             return response
+
         return logging_route_handler
+
 
 router = APIRouter(
     prefix="/inference",
@@ -70,7 +72,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}}
+    responses={"401": {"model": HttpErrorResponse}},
 )
 
 
@@ -99,6 +101,7 @@ async def _run_inference_translation(
         request, params.serviceId
     )
 
+
 @router.post("/transliteration", response_model=ULCATransliterationInferenceResponse)
 async def _run_inference_transliteration(
     request: ULCATransliterationInferenceRequest,
@@ -108,6 +111,7 @@ async def _run_inference_transliteration(
     return await inference_service.run_transliteration_triton_inference(
         request, params.serviceId
     )
+
 
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
@@ -136,7 +140,6 @@ async def _run_inference_ner(
     return await inference_service.run_ner_triton_inference(request, params.serviceId)
 
 
-
 # Temporary endpoint; will be removed/standardized soon
 
 
@@ -159,6 +162,7 @@ async def _run_inference_sts(
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
         input=asr_response.output,
+        controlConfig=request.controlConfig,
     )
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
@@ -179,7 +183,9 @@ async def _run_inference_sts(
         serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
 
     tts_request = ULCATtsInferenceRequest(
-        config=request.config, input=translation_response.output
+        config=request.config,
+        input=translation_response.output,
+        controlConfig=request.controlConfig,
     )
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
@@ -198,6 +204,7 @@ async def _run_inference_sts(
     )
 
     return response
+
 
 @router.post("/s2s_new_mt", response_model=ULCAS2SInferenceResponse)
 async def _run_inference_sts_new_mt(
@@ -218,6 +225,7 @@ async def _run_inference_sts_new_mt(
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
         input=asr_response.output,
+        controlConfig=request.controlConfig,
     )
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request, "ai4bharat/indictrans-v2-all-gpu--t4"
@@ -238,7 +246,9 @@ async def _run_inference_sts_new_mt(
         serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
 
     tts_request = ULCATtsInferenceRequest(
-        config=request.config, input=translation_response.output
+        config=request.config,
+        input=translation_response.output,
+        controlConfig=request.controlConfig,
     )
     tts_response = await inference_service.run_tts_triton_inference(
         tts_request, serviceId
@@ -257,6 +267,7 @@ async def _run_inference_sts_new_mt(
     )
 
     return response
+
 
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
 async def _run_inference_pipeline(
