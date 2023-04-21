@@ -194,41 +194,25 @@ function PipelineInterface() {
         {
           pipelineTasks: [
             {
-              taskType: "asr",
-              config: {
-                serviceId: currentASRService,
-                language: {
-                  sourceLanguage: sourceLanguage,
-                },
-              },
-            },
-            {
               taskType: "translation",
               config: {
-                serviceId: currentNMTService,
+                serviceId: "",
                 language: {
-                  sourceLanguage: sourceLanguage,
-                  targetLanguage: targetLanguage,
+                  sourceLanguage: "en",
+                  sourceScriptCode: "",
+                  targetLanguage: "ta",
+                  targetScriptCode: "",
                 },
-              },
-            },
-            {
-              taskType: "tts",
-              config: {
-                serviceId: currentTTSService,
-                language: {
-                  sourceLanguage: targetLanguage,
-                },
-                gender: "male",
               },
             },
           ],
           inputData: {
-            audio: [
+            input: [
               {
-                audioContent: asrInput,
+                source: "who is there?",
               },
             ],
+            audio: [{}],
           },
         },
         {
