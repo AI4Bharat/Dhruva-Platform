@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 
 from exception.base_error import BaseError
-from exception.ulca_create_api_key_client_error import ULCACreateApiKeyClientError
-from exception.ulca_create_api_key_server_error import ULCACreateApiKeyServerError
+from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
+from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
 from exception.ulca_set_api_key_tracking_client_error import (
     ULCASetApiKeyTrackingClientError,
 )
@@ -383,12 +383,12 @@ class AuthService:
                 {"name": api_key_name, "user_id": id}
             )
         except Exception:
-            raise ULCACreateApiKeyServerError(
+            raise ULCADeleteApiKeyServerError(
                 Errors.DHRUVA208.value, traceback.format_exc()
             )
 
         if not api_key:
-            raise ULCACreateApiKeyClientError(
+            raise ULCADeleteApiKeyClientError(
                 status.HTTP_404_NOT_FOUND, "API Key not found"
             )
 
@@ -401,7 +401,7 @@ class AuthService:
             api_key_cache = ApiKeyCache(**api_key.dict())
             api_key_cache.save()
         except Exception:
-            raise ULCACreateApiKeyServerError(
+            raise ULCADeleteApiKeyServerError(
                 Errors.DHRUVA209.value, traceback.format_exc()
             )
 

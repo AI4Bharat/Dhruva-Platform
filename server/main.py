@@ -12,8 +12,8 @@ from cache.app_cache import cache
 from db.database import db_clients
 from db.populate_db import seed_collection
 from exception.base_error import BaseError
-from exception.ulca_create_api_key_client_error import ULCACreateApiKeyClientError
-from exception.ulca_create_api_key_server_error import ULCACreateApiKeyServerError
+from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
+from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
 from exception.ulca_set_api_key_tracking_client_error import (
     ULCASetApiKeyTrackingClientError,
 )
@@ -82,7 +82,7 @@ async def flush_cache():
 
 @app.exception_handler(ULCASetApiKeyTrackingClientError)
 async def ulca_set_api_key_tracking_client_error_handler(
-    request: Request, exc: ULCACreateApiKeyClientError
+    request: Request, exc: ULCASetApiKeyTrackingClientError
 ):
     return JSONResponse(
         status_code=exc.error_code,
@@ -95,7 +95,7 @@ async def ulca_set_api_key_tracking_client_error_handler(
 
 @app.exception_handler(ULCASetApiKeyTrackingServerError)
 async def ulca_set_api_key_tracking_server_error_handler(
-    request: Request, exc: ULCACreateApiKeyServerError
+    request: Request, exc: ULCASetApiKeyTrackingServerError
 ):
     logger.error(exc)
 
@@ -108,9 +108,9 @@ async def ulca_set_api_key_tracking_server_error_handler(
     )
 
 
-@app.exception_handler(ULCACreateApiKeyClientError)
-async def ulca_create_api_key_client_error_handler(
-    request: Request, exc: ULCACreateApiKeyClientError
+@app.exception_handler(ULCADeleteApiKeyClientError)
+async def ulca_delete_api_key_client_error_handler(
+    request: Request, exc: ULCADeleteApiKeyClientError
 ):
     return JSONResponse(
         status_code=exc.error_code,
@@ -121,9 +121,9 @@ async def ulca_create_api_key_client_error_handler(
     )
 
 
-@app.exception_handler(ULCACreateApiKeyServerError)
-async def ulca_create_api_key_server_error_handler(
-    request: Request, exc: ULCACreateApiKeyServerError
+@app.exception_handler(ULCADeleteApiKeyServerError)
+async def ulca_delete_api_key_server_error_handler(
+    request: Request, exc: ULCADeleteApiKeyServerError
 ):
     logger.error(exc)
 
