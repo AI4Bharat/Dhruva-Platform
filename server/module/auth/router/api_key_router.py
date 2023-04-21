@@ -102,7 +102,7 @@ async def _create_ulca_api_key(
         name=(request.emailId + "/" + request.appName),
         type=ApiKeyType.INFERENCE,
         regenerate=True,
-        dataTracking=request.dataTracking
+        data_tracking=request.dataTracking
     )
     api_key = auth_service.create_api_key(create_api_key_req, request_session.id)
     return ULCAApiKeyGenerationResponse(value=api_key)

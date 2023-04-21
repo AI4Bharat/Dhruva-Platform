@@ -214,7 +214,7 @@ class AuthService:
             user_id=id,
             type=request.type.value,
             created_timestamp=datetime.now(),
-            data_tracking=request.dataTracking,
+            data_tracking=request.data_tracking,
         )
 
         try:
