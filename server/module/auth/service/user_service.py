@@ -6,16 +6,16 @@ from bson import ObjectId
 from fastapi import Depends, HTTPException, status
 
 from exception.base_error import BaseError
-from schema.auth.request import CreateUserRequest
+from schema.auth.common import ApiKeyType
+from schema.auth.request import CreateApiKeyRequest, CreateUserRequest
 from schema.auth.response.get_user_response import GetUserResponse
 
 from ..error.errors import Errors
 from ..model.user import User
 from ..repository import UserRepository
 from .auth_service import AuthService
-from schema.auth.request import (
-    CreateApiKeyRequest)
-from schema.auth.common import ApiKeyType
+
+
 class UserService:
     def __init__(
         self,
@@ -59,8 +59,10 @@ class UserService:
                 name="default",
                 type=ApiKeyType.INFERENCE,
                 regenerate=False,
-                target_user_id=str(created_user.id)
+                target_user_id=str(created_user.id),
+                data_tracking=True,
             )
+
             self.auth_service.create_api_key(
                 request=api_request,
                 id=ObjectId(str(created_user.id)),
