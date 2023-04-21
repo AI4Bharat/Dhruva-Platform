@@ -27,15 +27,12 @@ from schema.auth.request import (
     CreateApiKeyRequest,
     GetAllApiKeysRequest,
     GetApiKeyQuery,
+    ModifyApiKeyParamsQuery,
     RefreshRequest,
-    SetApiKeyStatusQuery,
-    SetApiKeyTrackingQuery,
     SignInRequest,
     ULCACreateApiKeyRequest,
     ULCASetApiKeyTrackingQuery,
 )
-from schema.auth.request.set_api_key_status_query import ApiKeyAction
-from schema.auth.request.set_api_key_tracking_query import ApiKeyTrackingAction
 from schema.auth.response import (
     GetAllApiKeysDetailsResponse,
     GetServiceLevelApiKeysResponse,
@@ -333,7 +330,7 @@ class AuthService:
             math.ceil(len(keys) / limit),
         )
 
-    def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
+    def modify_api_key(self, params: ModifyApiKeyParamsQuery, id: ObjectId):
         try:
             user_id = (
                 id if not params.target_user_id else ObjectId(params.target_user_id)
@@ -357,11 +354,15 @@ class AuthService:
                 detail={"message": "Api key not found"},
             )
 
-        match params.action:
-            case ApiKeyAction.ACTIVATE:
-                api_key.activate()
-            case ApiKeyAction.REVOKE:
-                api_key.revoke()
+        if params.data_tracking:
+            api_key.enable_tracking()
+        elif params.data_tracking == False:
+            api_key.disable_tracking()
+
+        if params.active:
+            api_key.activate()
+        elif params.data_tracking == False:
+            api_key.revoke()
 
         try:
             self.api_key_repository.save(api_key)
@@ -370,48 +371,7 @@ class AuthService:
             api_key_cache = ApiKeyCache(**api_key.dict())
             api_key_cache.save()
         except Exception:
-            raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
-
-        return api_key
-
-    def set_api_key_tracking(self, params: SetApiKeyTrackingQuery, id: ObjectId):
-        try:
-            user_id = (
-                id if not params.target_user_id else ObjectId(params.target_user_id)
-            )
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid target user id"},
-            )
-
-        try:
-            api_key = self.api_key_repository.find_one(
-                {"name": params.api_key_name, "user_id": user_id}
-            )
-        except Exception:
-            raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
-
-        if not api_key:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "Api key not found"},
-            )
-
-        match params.action:
-            case ApiKeyTrackingAction.ENABLE:
-                api_key.enable_tracking()
-            case ApiKeyTrackingAction.DISABLE:
-                api_key.disable_tracking()
-
-        try:
-            self.api_key_repository.save(api_key)
-
-            # Cache write
-            api_key_cache = ApiKeyCache(**api_key.dict())
-            api_key_cache.save()
-        except Exception:
-            raise BaseError(Errors.DHRUVA210.value, traceback.format_exc())
+            raise BaseError(Errors.DHRUVA211.value, traceback.format_exc())
 
         return api_key
 

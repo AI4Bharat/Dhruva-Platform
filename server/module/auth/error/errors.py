@@ -36,3 +36,7 @@ class Errors(Enum):
         "kind": "DHRUVA-210",
         "message": "Failed to update api key tracking status",
     }
+    DHRUVA211 = {
+        "kind": "DHRUVA-211",
+        "message": "Failed to modify api key params",
+    }
