@@ -520,7 +520,7 @@ class InferenceService:
             )
 
             if (
-                request_state.state._state.get("api_key_tracking")
+                request_state.state._state.get("api_key_data_tracking")
                 and request_body.controlConfig.dataTracking
             ):
                 log_data.apply_async(

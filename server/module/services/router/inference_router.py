@@ -43,7 +43,7 @@ class InferenceLoggingRoute(APIRoute):
             req_body = req_body_bytes.decode("utf-8")
             enable_tracking = False
 
-            if request.state._state.get("api_key_tracking"):
+            if request.state._state.get("api_key_data_tracking"):
                 req_json: Dict[str, Any] = json.loads(req_body)
                 enable_tracking = req_json["controlConfig"]["dataTracking"]
 
