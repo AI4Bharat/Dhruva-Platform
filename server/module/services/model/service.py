@@ -10,7 +10,7 @@ class _Benchmark(BaseModel):
     output_length: int
     generate: int
     actual: int
-    tks: int
+    throughput: int
     fifty: float = Field(
         alias="50%",
     )
