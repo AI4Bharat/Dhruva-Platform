@@ -11,20 +11,17 @@ const login = async (email: string, password: string) => {
   if (token) {
     localStorage.setItem("refresh_token", token);
   }
-<<<<<<< HEAD
   if (role) {
     localStorage.setItem("user_role", role);
   }
-=======
->>>>>>> e594d78738e096fb66091b94981cce1373e74ae1
   await timeout(500);
   await getNewAccessToken();
 };
 
-const getUser= async(email:string)=>{
+const getUser = async (email: string) => {
   const res = await apiInstance.get(`/auth/user?email=${email}`);
   return res.data;
-}
+};
 
 const getNewAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
@@ -41,4 +38,4 @@ const getNewAccessToken = async () => {
   }
 };
 
-export { login, getNewAccessToken,getUser };
+export { login, getNewAccessToken, getUser };

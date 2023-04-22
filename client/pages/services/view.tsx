@@ -99,7 +99,8 @@ export default function ViewService() {
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
                   <option value={2}>Feedback</option>
-                  <option value={3}>Usage</option>
+                  <option value={3}>Performance</option>
+                  <option value={4}>Usage</option>
                 </Select>
                 <TabPanels>
                   <TabPanel>
@@ -127,9 +128,7 @@ export default function ViewService() {
                   <TabPanel>
                     <Documentation serviceInfo={serviceInfo} />
                   </TabPanel>
-                  <TabPanel>
-                    <ServiceBenchmark benchmarks={[]} />
-                  </TabPanel>
+
                   <TabPanel>
                     {languages ? (
                       <Feedback
@@ -140,6 +139,9 @@ export default function ViewService() {
                     ) : (
                       <></>
                     )}
+                  </TabPanel>
+                  <TabPanel>
+                    <ServiceBenchmark benchmarks={[]} />
                   </TabPanel>
                   <TabPanel>
                     <Usage serviceID={router.query["serviceId"]} />
