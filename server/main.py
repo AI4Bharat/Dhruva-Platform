@@ -12,8 +12,14 @@ from cache.app_cache import cache
 from db.database import db_clients
 from db.populate_db import seed_collection
 from exception.base_error import BaseError
-from exception.ulca_api_key_client_error import ULCAApiKeyClientError
-from exception.ulca_api_key_server_error import ULCAApiKeyServerError
+from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
+from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
+from exception.ulca_set_api_key_tracking_client_error import (
+    ULCASetApiKeyTrackingClientError,
+)
+from exception.ulca_set_api_key_tracking_server_error import (
+    ULCASetApiKeyTrackingServerError,
+)
 from log.logger import LogConfig
 from metrics import api_key_name_callback, inference_service_callback, user_id_callback
 from middleware import PrometheusMetricsMiddleware
@@ -22,7 +28,7 @@ from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = FastAPI(
     title="Dhruva API",
@@ -74,8 +80,38 @@ async def flush_cache():
     cache.flushall()
 
 
-@app.exception_handler(ULCAApiKeyClientError)
-async def ulca_api_key_client_error_handler(request: Request, exc: ULCAApiKeyClientError):
+@app.exception_handler(ULCASetApiKeyTrackingClientError)
+async def ulca_set_api_key_tracking_client_error_handler(
+    request: Request, exc: ULCASetApiKeyTrackingClientError
+):
+    return JSONResponse(
+        status_code=exc.error_code,
+        content={
+            "status": "failure",
+            "message": exc.message,
+        },
+    )
+
+
+@app.exception_handler(ULCASetApiKeyTrackingServerError)
+async def ulca_set_api_key_tracking_server_error_handler(
+    request: Request, exc: ULCASetApiKeyTrackingServerError
+):
+    logger.error(exc)
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "failure",
+            "message": exc.error_kind + " - Internal Server Error",
+        },
+    )
+
+
+@app.exception_handler(ULCADeleteApiKeyClientError)
+async def ulca_delete_api_key_client_error_handler(
+    request: Request, exc: ULCADeleteApiKeyClientError
+):
     return JSONResponse(
         status_code=exc.error_code,
         content={
@@ -85,8 +121,10 @@ async def ulca_api_key_client_error_handler(request: Request, exc: ULCAApiKeyCli
     )
 
 
-@app.exception_handler(ULCAApiKeyServerError)
-async def ulca_api_key_server_error_handler(request: Request, exc: ULCAApiKeyServerError):
+@app.exception_handler(ULCADeleteApiKeyServerError)
+async def ulca_delete_api_key_server_error_handler(
+    request: Request, exc: ULCADeleteApiKeyServerError
+):
     logger.error(exc)
 
     return JSONResponse(

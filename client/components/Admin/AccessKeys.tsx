@@ -122,14 +122,14 @@ const AccessKeys = () => {
   useEffect(() => {
     if (data) {
       togglehide(false);
-      setSearchedKeys(data);
+      setSearchedKeys(data.api_keys);
     }
   }, [data]);
 
   const searchToggler = (event: any) => {
     if (data) {
       setSearchedKeys(
-        data.filter((k) =>
+        data.api_keys.filter((k) =>
           k.name.toLowerCase().includes(event.target.value.toLowerCase())
         )
       );
@@ -270,6 +270,21 @@ const AccessKeys = () => {
         {i}
       </Button>
     );
+  }
+
+  const findPerKeyUsage = (key : Key) =>
+  {
+    if(key.services.length > 0)
+    {
+      let count = 0
+      for(let i=0; i< key.services.length; i++)
+      {
+        count += key.services[i].usage;
+      }
+      return count;
+    }
+    else
+      return 0;
   }
 
   return (
@@ -413,6 +428,7 @@ const AccessKeys = () => {
                     {Object.entries(searchedKeys).map(([id, keysData]) => {
                       return (
                         <KeyCard
+                          total_usage = {findPerKeyUsage(keysData)}
                           refreshCard={refetch}
                           name={keysData.name}
                           type={keysData.type}
@@ -431,7 +447,7 @@ const AccessKeys = () => {
                           <Th>Key Name</Th>
                           <Th>Type</Th>
                           <Th>Status</Th>
-                          {/* <Th>Total Usage</Th> */}
+                          <Th>Total Usage</Th>
                           <Th>Actions</Th>
                         </Tr>
                       </Thead>
@@ -449,7 +465,7 @@ const AccessKeys = () => {
                               >
                                 {keysData.active ? "active" : "inactive"}
                               </Td>
-                              {/* <Td>0</Td> */}
+                              <Td>{findPerKeyUsage(keysData)}</Td>
                               <Td>
                                 <Button
                                   onClick={() => {

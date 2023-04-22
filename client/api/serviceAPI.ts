@@ -1,15 +1,18 @@
 import { dhruvaAPI, apiInstance } from "./apiConfig";
 
+interface LanguageConfig {
+  sourceLanguage: string;
+  targetLanguage: string;
+}
+
 interface IFeedback
 {
-  language: string,
+  language: LanguageConfig,
   example: string,
   rating: number,
   comments: string,
   service_id: string
 }
-
-
 
 const listServices = async (): Promise<ServiceList[]> => {
   const response = await apiInstance({
@@ -17,6 +20,11 @@ const listServices = async (): Promise<ServiceList[]> => {
     url: dhruvaAPI.listServices,
   });
   return response.data;
+};
+
+const listallkeys = async(target_service_id : string) => {
+  const response = await apiInstance.get(`/auth/api-key/list?target_service_id=${target_service_id}`);
+   return response.data;
 };
 
 const getService = async (
@@ -39,4 +47,4 @@ const submitFeedback = async (feedback : IFeedback) => {
   return response.data;
 };
 
-export { listServices, getService, submitFeedback };
+export { listServices, getService, submitFeedback, listallkeys };

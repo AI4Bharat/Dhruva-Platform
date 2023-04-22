@@ -1,0 +1,75 @@
+version: "3"
+
+services:
+  app_db:
+    image: bitnami/mongodb:4.2.0
+    container_name: app_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - app_db:/bitnami/mongodb
+    restart: unless-stopped
+    environment:
+      - MONGODB_ROOT_USER=$MONGO_APP_DB_USERNAME
+      - MONGODB_ROOT_PASSWORD=$MONGO_APP_DB_PASSWORD
+    env_file:
+      - .env
+    networks:
+      - dhruva-network
+
+
+  log_db:
+    image: bitnami/mongodb:4.2.0
+    container_name: log_db
+    ports:
+      - "27018:27017"
+    volumes:
+      - log_db:/bitnami/mongodb
+    restart: unless-stopped
+    environment:
+      - MONGODB_ROOT_USER=$MONGO_LOG_DB_USERNAME
+      - MONGODB_ROOT_PASSWORD=$MONGO_LOG_DB_PASSWORD
+    env_file:
+      - .env
+    networks:
+      - dhruva-network
+  
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+    command: redis-server --save 20 1 --loglevel warning
+    restart: unless-stopped
+    networks:
+      - dhruva-network
+
+  mongo_admin:
+    image: adicom/admin-mongo
+    container_name: mongo_admin
+    ports:
+      - "1234:1234"
+    volumes:
+      - mongo_admin:/app
+    restart: unless-stopped
+    command: "/bin/sh -c 'echo $$CONFIG > config/config.json ; echo $$APP > config/app.json ; node app.js'"
+    environment:
+      - APP={"app":{"password":"$ADMIN_MONGO_PASSWORD"}}
+      - CONFIG={"connections":{"APP":{"connection_string":"$APP_DB_CONNECTION_STRING","connection_options":{}}, "LOG":{"connection_string":"$LOG_DB_CONNECTION_STRING","connection_options":{}}}}
+    env_file:
+      - .env
+    networks:
+      - dhruva-network
+    
+
+volumes:
+  app_db: {}
+  log_db: {}
+  redis: {}
+  mongo_admin: {}
+
+networks:
+  dhruva-network:
+    name: dhruva-network

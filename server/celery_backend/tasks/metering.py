@@ -119,11 +119,11 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
                 break
         else:
             # Insert service sub document
-            doc["services"].append({"service_id": service_id, "usage": inference_units})
+            doc["services"].append({"service_id": service_id, "usage": inference_units, "hits": 1})
 
         doc["usage"] += inference_units
         doc["hits"] += 1
-        metering_collection.replace_one({"_id": doc["_id"]}, doc)
+        res = metering_collection.replace_one({"_id": doc["_id"]}, doc)
 
     else:
         # Create the serviceId and set usage
@@ -145,7 +145,7 @@ def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: 
     inference_units = 0
     if usage_type == "asr":
         inference_units = calculate_asr_usage(input_data)
-    elif usage_type == "translation":
+    elif usage_type == "translation" or usage_type == "transliteration":
         inference_units = calculate_translation_usage(input_data)
     elif usage_type == "tts":
         inference_units = calculate_tts_usage(input_data)

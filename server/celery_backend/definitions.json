@@ -1,0 +1,30 @@
+{
+ "rabbit_version": "3",
+ "users": [
+  {
+   "name": "admin",
+   "password_hash": "Sgx4foUt1dvFVXoVw93B1RNQoiVXWBrZYMWPe7N8KR0nPzxF",
+   "hashing_algorithm": "rabbit_password_hashing_sha256",
+   "tags": "administrator"
+  }
+ ],
+ "vhosts": [
+  {
+   "name": "dhruva_host"
+  }
+ ],
+ "permissions": [
+  {
+   "user": "admin",
+   "vhost": "dhruva_host",
+   "configure": ".*",
+   "write": ".*",
+   "read": ".*"
+  }
+ ],
+ "parameters": [],
+ "policies": [],
+ "queues": [],
+ "exchanges": [],
+ "bindings": []
+}
