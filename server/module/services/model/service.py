@@ -8,7 +8,7 @@ from db.MongoBaseModel import MongoBaseModel
 
 class _Benchmark(BaseModel):
     output_length: int
-    generate: int
+    generated: int
     actual: int
     throughput: int
     fifty: float = Field(
