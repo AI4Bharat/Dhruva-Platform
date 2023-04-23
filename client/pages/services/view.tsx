@@ -37,10 +37,11 @@ interface LanguageConfig {
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const { data: serviceInfo, isLoading } = useQuery(
-    ["service", router.query["serviceId"]],
-    () => getService(router.query["serviceId"] as string)
-  );
+  const { data: serviceInfo, isLoading } = useQuery({
+    queryKey: ["service", router.query["serviceId"]],
+    queryFn: () => getService(router.query["serviceId"] as string),
+    enabled: router.isReady,
+  });
 
   const [languages, setLanguages] = useState<LanguageConfig[]>();
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -141,7 +142,25 @@ export default function ViewService() {
                     )}
                   </TabPanel>
                   <TabPanel>
-                    <ServiceBenchmark benchmarks={[]} />
+                    {serviceInfo["benchmarks"] !== null &&
+                    serviceInfo["benchmarks"] !== undefined ? (
+                      <ServiceBenchmark
+                        benchmarks={serviceInfo["benchmarks"]}
+                        modelType={serviceInfo["model"]["task"]["type"]}
+                      />
+                    ) : (
+                      <Box
+                        borderRadius={15}
+                        height={100}
+                        width="auto"
+                        bg={"orange.100"}
+                        display="flex"
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                      >
+                        <Text fontWeight={"bold"}>No Benchmarks Found.</Text>
+                      </Box>
+                    )}
                   </TabPanel>
                   <TabPanel>
                     <Usage serviceID={router.query["serviceId"]} />
@@ -209,7 +228,25 @@ export default function ViewService() {
                     />
                   </TabPanel>
                   <TabPanel>
-                    <ServiceBenchmark benchmarks={[]} />
+                    {serviceInfo["benchmarks"] !== null &&
+                    serviceInfo["benchmarks"] !== undefined ? (
+                      <ServiceBenchmark
+                        benchmarks={serviceInfo["benchmarks"]}
+                        modelType={serviceInfo["model"]["task"]["type"]}
+                      />
+                    ) : (
+                      <Box
+                        borderRadius={15}
+                        height={100}
+                        width="auto"
+                        bg={"orange.100"}
+                        display="flex"
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                      >
+                        <Text fontWeight={"bold"}>No Benchmarks Found.</Text>
+                      </Box>
+                    )}
                   </TabPanel>
                   <TabPanel>
                     {languages ? (
