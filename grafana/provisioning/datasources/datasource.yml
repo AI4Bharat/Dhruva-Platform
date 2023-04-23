@@ -9,3 +9,11 @@ datasources:
     basicAuth: false
     isDefault: true
     editable: true
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 2
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: true
+    editable: true
