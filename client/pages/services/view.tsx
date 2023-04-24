@@ -98,7 +98,7 @@ function ServicePerformanceModal({ ...props }) {
             </Stack>
             <br />
             <iframe
-              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}&var-apiKeyName=${apiKeyName}&var-userId=${user_id}&var-inferenceServiceId=${service_id}&kiosk=tv`}
+              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${user_id}&var-inferenceServiceId=${service_id}&kiosk=tv`}
               width={"100%"}
               height={600}
             />
