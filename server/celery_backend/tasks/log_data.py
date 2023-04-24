@@ -14,10 +14,10 @@ if LOG_REQUEST_RESPONSE_DATA_FLAG:
     logs_db = LogDatabase()
 
 
-def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
+def log_to_db(client_ip: str, error_msg: str, inp: str, output: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
     sanitized_service_id = service_id.replace("/", "~")
-    logs_collection = logs_db[sanitized_service_id]
+    # logs_collection = logs_db[sanitized_service_id]
     log_document = {
         "client_ip": client_ip,
         "input": inp,
@@ -25,7 +25,12 @@ def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id
         "api_key_id": api_key_id,
         "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S"),
     }
-    logs_collection.insert_one(log_document)
+    if error_msg:
+        errors_collection = logs_db["errors-" + sanitized_service_id]
+        errors_collection.insert_one(log_document)
+    else:
+        logs_collection = logs_db[sanitized_service_id]
+        logs_collection.insert_one(log_document)
 
 
 @app.task(name="log.data")
@@ -33,7 +38,8 @@ def log_data(
     usage_type: str,
     service_id: str,
     client_ip: str,
-    # data_collection_consent: bool,
+    data_tracking_consent: bool,
+    error_msg,
     api_key_id: str,
     req_body: str,
     resp_body: str,
@@ -41,7 +47,7 @@ def log_data(
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
-    resp_body = json.loads(resp_body)
+    resp_body = json.loads(resp_body) if resp_body else None
     req_body = json.loads(req_body)
 
     data_usage = None
@@ -54,8 +60,8 @@ def log_data(
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 
-    if LOG_REQUEST_RESPONSE_DATA_FLAG:  # and data_collection_consent:
-        log_to_db(client_ip, req_body, resp_body, api_key_id, service_id)
+    if data_tracking_consent:
+        log_to_db(client_ip, error_msg, req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
     meter_usage(api_key_id, data_usage, usage_type, service_id)

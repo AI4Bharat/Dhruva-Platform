@@ -13,7 +13,7 @@ services:
       - app_data:/server
     ports:
       - "$BACKEND_PORT:$BACKEND_PORT"
-    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0
+    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0 --proxy-headers True
     networks:
       - dhruva-network
 
