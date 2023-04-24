@@ -8,7 +8,8 @@ datasources:
     url: http://prometheus:9090
     basicAuth: false
     isDefault: true
-    editable: true
+    editable: false
+    uid: kdjfS_R7c
   - name: Prometheus
     type: prometheus
     access: proxy
@@ -16,4 +17,5 @@ datasources:
     url: http://prometheus:9090
     basicAuth: false
     isDefault: true
-    editable: true
+    editable: false
+    uid: vowwS_B4k
