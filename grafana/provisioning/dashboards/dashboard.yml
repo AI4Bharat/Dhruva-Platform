@@ -1,13 +1,21 @@
-
 apiVersion: 1
 
 providers:
-  - name: 'Prometheus'
+  - name: "Dhruva Global"
     orgId: 1
-    folder: ''
+    folder: ""
     type: file
     disableDeletion: false
     editable: true
     allowUiUpdates: true
     options:
-      path: /etc/grafana/provisioning/dashboards
+      path: /etc/grafana/provisioning/dashboards/dhruva_global.json
+  - name: "Dhruva Service Specific"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    editable: true
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/dhruva_service_specific.json
