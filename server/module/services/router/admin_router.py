@@ -3,6 +3,7 @@ from schema.services.request import ServiceCreateRequest, ModelCreateRequest, Mo
 from auth.auth_provider import AuthProvider
 from exception.http_error import HttpErrorResponse
 from schema.services.request.admin_dashboard import ViewAdminDashboardRequest
+from schema.services.request import ServiceHeartbeatRequest
 from schema.auth.response.get_all_api_keys_response import GetAllApiKeysDetailsResponse
 from ..service import AdminService
 
@@ -49,3 +50,8 @@ async def _delete_service(id: str, admin_service: AdminService = Depends(AdminSe
 @router.delete("/delete/model")
 async def _delete_model(id: str, admin_service: AdminService = Depends(AdminService)):
     return admin_service.delete_model(id)
+
+@router.patch("/health")
+def _update_service_health(
+    request: ServiceHeartbeatRequest,admin_service: AdminService = Depends(AdminService)):
+    return admin_service.inference_service_status(request)

@@ -7,12 +7,19 @@ function timeout(delay: number) {
 const login = async (email: string, password: string) => {
   const response = await apiInstance.post("/auth/signin", { email, password });
   let token = response.data.token;
+  let user_id = response.data.id;
   if (token) {
     localStorage.setItem("refresh_token", token);
+    localStorage.setItem("user_id", user_id);
   }
-  await timeout(500)
+  await timeout(500);
   await getNewAccessToken();
 };
+
+const getUser= async(email:string)=>{
+  const res = await apiInstance.get(`/auth/user?email=${email}`);
+  return res.data;
+}
 
 const getNewAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
@@ -25,4 +32,4 @@ const getNewAccessToken = async () => {
   }
 };
 
-export { login, getNewAccessToken };
+export { login, getNewAccessToken,getUser };

@@ -1,11 +1,23 @@
-import { Box, Text } from "@chakra-ui/react";
+import { Box, HStack, Menu, MenuButton, MenuItem, MenuList, Select, Spacer, Text } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { BiUser } from "react-icons/bi";
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "../../api/authAPI";
+
 
 const Navbar = () => {
   const [title, setTitle] = useState<String>("Dashboard");
   const router = useRouter();
-
+  const {data:user} = useQuery(['User'], ()=>getUser(localStorage.getItem('email')))
+  const Logout = () =>
+  {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("current_page");
+      localStorage.removeItem("email");
+      router.push('/')
+  }
   useEffect(() => {
     let url = router.pathname.split("/");
     switch (url[1]) {
@@ -41,9 +53,30 @@ const Navbar = () => {
       background="white"
       marginLeft={"-2rem"}
     >
-      <Text fontWeight={"bold"} fontSize="3xl" ml="2rem" pt="2rem">
-        {title}
-      </Text>
+      <HStack>
+        <Text fontWeight={"bold"} fontSize="3xl" ml="2rem" pt="2rem">
+          {title}
+        </Text>
+        <Spacer/>
+        <Box pt="2rem" pr="25rem">
+        <Menu>
+        <MenuButton
+          width="10rem" 
+          px={4}
+          py={2}
+          transition='all 0.2s'
+        >
+          <HStack>
+          <BiUser/>
+          <Text>{user?.name}</Text>
+          </HStack>
+        </MenuButton>
+        <MenuList>
+          <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
+        </MenuList>
+      </Menu>
+      </Box>
+      </HStack>
     </Box>
   );
 };

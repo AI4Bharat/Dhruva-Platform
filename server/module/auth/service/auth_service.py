@@ -12,29 +12,43 @@ from argon2.exceptions import VerifyMismatchError
 from bson import ObjectId
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
-from pydantic import EmailStr
 
 from exception.base_error import BaseError
-from exception.ulca_api_key_client_error import ULCAApiKeyClientError
-from exception.ulca_api_key_server_error import ULCAApiKeyServerError
+from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
+from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
+from exception.ulca_set_api_key_tracking_client_error import (
+    ULCASetApiKeyTrackingClientError,
+)
+from exception.ulca_set_api_key_tracking_server_error import (
+    ULCASetApiKeyTrackingServerError,
+)
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
     GetAllApiKeysRequest,
     GetApiKeyQuery,
+    ModifyApiKeyParamsQuery,
     RefreshRequest,
-    SetApiKeyStatusQuery,
     SignInRequest,
-    ULCAApiKeyRequest,
+    ULCACreateApiKeyRequest,
+    ULCASetApiKeyTrackingQuery,
 )
-from schema.auth.request.set_api_key_status_query import ApiKeyAction
-from schema.auth.response import SignInResponse, ULCAApiKeyDeleteResponse
+from schema.auth.response import (
+    GetAllApiKeysDetailsResponse,
+    GetServiceLevelApiKeysResponse,
+    SignInResponse,
+    ULCAApiKeyDeleteResponse,
+    ULCAApiKeyTrackingResponse,
+)
+from schema.auth.response.ulca_api_key_tracking_response import (
+    ULCAApiKeyTrackingResponseStatus,
+)
 
 from ..error import Errors
 from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class AuthService:
@@ -98,7 +112,9 @@ class AuthService:
         )
 
         # create and return jwt
-        return SignInResponse(email=user.email, token=token, role=user.role)
+        return SignInResponse(
+            id=str(user.id), email=user.email, token=token, role=user.role
+        )
 
     def get_refresh_token(self, request: RefreshRequest):
         try:
@@ -195,6 +211,7 @@ class AuthService:
             user_id=id,
             type=request.type.value,
             created_timestamp=datetime.now(),
+            data_tracking=request.data_tracking,
         )
 
         try:
@@ -213,6 +230,7 @@ class AuthService:
         key = secrets.token_urlsafe(48)
         existing_api_key.api_key = key
         existing_api_key.masked_key = self.__mask_key(key)
+        existing_api_key.created_timestamp = datetime.now()
 
         try:
             self.api_key_repository.save(existing_api_key)
@@ -251,6 +269,21 @@ class AuthService:
 
         return key
 
+    def __filter_service_id(self, keys: List[ApiKey], service_id: str):
+        total_usage = 0
+        for key in keys:
+            service = list(
+                filter(lambda service: service.service_id == service_id, key.services)
+            )
+            if service:
+                total_usage += service[0].usage
+                key.usage = service[0].usage
+            else:
+                key.usage = 0
+                key.services = []
+
+        return keys, total_usage
+
     def get_all_api_keys(self, params: GetAllApiKeysRequest, id: ObjectId):
         try:
             user_id = (
@@ -264,10 +297,17 @@ class AuthService:
 
         try:
             keys = self.api_key_repository.find({"user_id": user_id})
+            if hasattr(params, "target_service_id") and params.target_service_id:
+                keys, total_usage = self.__filter_service_id(
+                    keys, params.target_service_id
+                )
+                return GetServiceLevelApiKeysResponse(
+                    api_keys=keys, total_usage=total_usage
+                )
         except Exception:
             raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
 
-        return keys
+        return GetAllApiKeysDetailsResponse(api_keys=keys)
 
     def get_all_api_keys_with_usage(self, page, limit, target_user_id: str) -> List:
         """
@@ -290,7 +330,7 @@ class AuthService:
             math.ceil(len(keys) / limit),
         )
 
-    def set_api_key_status(self, params: SetApiKeyStatusQuery, id: ObjectId):
+    def modify_api_key(self, params: ModifyApiKeyParamsQuery, id: ObjectId):
         try:
             user_id = (
                 id if not params.target_user_id else ObjectId(params.target_user_id)
@@ -314,11 +354,15 @@ class AuthService:
                 detail={"message": "Api key not found"},
             )
 
-        match params.action:
-            case ApiKeyAction.ACTIVATE:
-                api_key.activate()
-            case ApiKeyAction.REVOKE:
-                api_key.revoke()
+        if params.data_tracking:
+            api_key.enable_tracking()
+        elif params.data_tracking == False:
+            api_key.disable_tracking()
+
+        if params.active:
+            api_key.activate()
+        elif params.data_tracking == False:
+            api_key.revoke()
 
         try:
             self.api_key_repository.save(api_key)
@@ -327,11 +371,11 @@ class AuthService:
             api_key_cache = ApiKeyCache(**api_key.dict())
             api_key_cache.save()
         except Exception:
-            raise BaseError(Errors.DHRUVA209.value, traceback.format_exc())
+            raise BaseError(Errors.DHRUVA211.value, traceback.format_exc())
 
         return api_key
 
-    def set_api_key_status_ulca(self, request: ULCAApiKeyRequest, id: ObjectId):
+    def set_api_key_status_ulca(self, request: ULCACreateApiKeyRequest, id: ObjectId):
         api_key_name = request.emailId + "/" + request.appName
 
         try:
@@ -339,10 +383,14 @@ class AuthService:
                 {"name": api_key_name, "user_id": id}
             )
         except Exception:
-            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
+            raise ULCADeleteApiKeyServerError(
+                Errors.DHRUVA208.value, traceback.format_exc()
+            )
 
         if not api_key:
-            raise ULCAApiKeyClientError(status.HTTP_404_NOT_FOUND, "API Key not found")
+            raise ULCADeleteApiKeyClientError(
+                status.HTTP_404_NOT_FOUND, "API Key not found"
+            )
 
         api_key.revoke()
 
@@ -353,8 +401,50 @@ class AuthService:
             api_key_cache = ApiKeyCache(**api_key.dict())
             api_key_cache.save()
         except Exception:
-            raise ULCAApiKeyServerError(Errors.DHRUVA208.value, traceback.format_exc())
+            raise ULCADeleteApiKeyServerError(
+                Errors.DHRUVA209.value, traceback.format_exc()
+            )
 
         return ULCAApiKeyDeleteResponse(
             isRevoked=True, message="API Key successfully deleted"
+        )
+
+    def set_api_key_tracking_ulca(
+        self, params: ULCASetApiKeyTrackingQuery, id: ObjectId
+    ):
+        api_key_name = params.emailId + "/" + params.appName
+
+        try:
+            api_key = self.api_key_repository.find_one(
+                {"name": api_key_name, "user_id": id}
+            )
+        except Exception:
+            raise ULCASetApiKeyTrackingServerError(
+                Errors.DHRUVA208.value, traceback.format_exc()
+            )
+
+        if not api_key:
+            raise ULCASetApiKeyTrackingClientError(
+                status.HTTP_404_NOT_FOUND, "API Key not found"
+            )
+
+        if params.dataTracking:
+            api_key.enable_tracking()
+        else:
+            api_key.disable_tracking()
+
+        try:
+            self.api_key_repository.save(api_key)
+
+            # Cache write
+            api_key_cache = ApiKeyCache(**api_key.dict())
+            api_key_cache.save()
+        except Exception:
+            raise ULCASetApiKeyTrackingServerError(
+                Errors.DHRUVA210.value, traceback.format_exc()
+            )
+
+        return ULCAApiKeyTrackingResponse(
+            status=ULCAApiKeyTrackingResponseStatus.SUCCESS,
+            message="API Key tracking status successfully changed",
         )
