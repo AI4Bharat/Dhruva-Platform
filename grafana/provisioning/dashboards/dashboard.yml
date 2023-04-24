@@ -11,7 +11,7 @@ providers:
     options:
       path: /etc/grafana/provisioning/dashboards/dhruva_global.json
   - name: "Dhruva Service Specific"
-    orgId: 1
+    orgId: 2
     folder: ""
     type: file
     disableDeletion: false
