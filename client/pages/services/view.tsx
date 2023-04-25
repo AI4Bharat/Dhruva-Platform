@@ -1,43 +1,42 @@
-import { useRouter } from "next/router";
 import {
   Box,
-  Heading,
-  Stack,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Text,
+  Button,
   Grid,
   GridItem,
-  Select,
-  Button,
+  Heading,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Select,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useQuery } from "@tanstack/react-query";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { SlGraph } from "react-icons/sl";
+import { getService, listalluserkeys } from "../../api/serviceAPI";
+import Documentation from "../../components/Documentation/Documentation";
+import Feedback from "../../components/Feedback/Feedback";
 import ContentLayout from "../../components/Layouts/ContentLayout";
+import Usage from "../../components/Services/Usage";
 import ASRTry from "../../components/TryOut/ASR";
-import TTSTry from "../../components/TryOut/TTS";
+import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
-import NERTry from "../../components/TryOut/NER";
+import TTSTry from "../../components/TryOut/TTS";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { useState, useEffect } from "react";
-import Documentation from "../../components/Documentation/Documentation";
-import Head from "next/head";
-import { useQuery } from "@tanstack/react-query";
-import { getService } from "../../api/serviceAPI";
-import Feedback from "../../components/Feedback/Feedback";
-import { SlGraph } from "react-icons/sl";
-import Usage from "../../components/Services/Usage";
-import { listalluserkeys } from "../../api/serviceAPI";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -47,9 +46,10 @@ interface LanguageConfig {
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const user_id = localStorage.getItem("user_id");
+  const [userId, setUserId] = useState(user_id);
   const service_id = props.service_id;
   const { data: keylist } = useQuery(["keys"], () =>
-    listalluserkeys(service_id, user_id)
+    listalluserkeys(service_id, userId)
   );
   const [apiKeyName, setAPIKeyName] = useState("");
 
@@ -80,9 +80,17 @@ function ServicePerformanceModal({ ...props }) {
                   <Select
                     value={apiKeyName}
                     onChange={(e) => {
+                      if (e.target.value === ".*") {
+                        setUserId(".*");
+                      } else {
+                        setUserId(user_id);
+                      }
                       setAPIKeyName(e.target.value);
                     }}
                   >
+                    <option key={"overall"} value=".*">
+                      Overall
+                    </option>
                     {keylist["api_keys"].map((key) => {
                       return (
                         <option key={key.name} value={key.name}>
@@ -98,7 +106,7 @@ function ServicePerformanceModal({ ...props }) {
             </Stack>
             <br />
             <iframe
-              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${user_id}&var-inferenceServiceId=${service_id}&kiosk=tv`}
+              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${userId}&var-inferenceServiceId=${service_id}&kiosk=tv`}
               width={"100%"}
               height={600}
             />
