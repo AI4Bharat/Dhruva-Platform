@@ -10,9 +10,9 @@ from .database import LogDatabase
 
 from prometheus_client.exposition import basic_auth_handler
 
-logs_db = LogDatabase()
 
-load_dotenv()
+load_dotenv(override=True)
+
 
 def prom_agg_gateway_auth_handler(url, method, timeout, headers, data):
     try:

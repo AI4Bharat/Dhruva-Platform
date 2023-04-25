@@ -5,41 +5,51 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     hostname: rabbithost
-    environment:
-      - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
-      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
-      - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
-      - RABBITMQ_ERLANG_COOKIE=COOKIE
     ports:
       - "15672:15672"
       - "5672:5672"
+    volumes:
+      - ./server/celery_backend/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./server/celery_backend/definitions.json:/etc/rabbitmq/definitions.json:ro
+    env_file:
+      - .env
+    networks:
+      - dhruva-network
 
   celery:
     container_name: celery
-    image: celery_image
+    image: server
     build:
       context: ./server
     working_dir: /src
+    # Not having the depends clause due to version issues in production
+    # TODO: Prod docker-compose version upgrade
+    # depends_on:
+    #   rabbitmq_server:
+    #     condition: service_started
     volumes:
       - ./server:/src
     env_file:
       - .env
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+    networks:
+      - dhruva-network
   
   celery_beat:
     container_name: celery_beat
-    image: server_image
+    image: server
     working_dir: /src
+    # Not having the depends clause due to version issues in production
+    # depends_on:
+    #   rabbitmq_server:
+    #     condition: service_started
     volumes:
       - ./server:/src
-    depends_on:
-      rabbitmq_server:
-        condition: service_started
-      server:
-        condition: service_started
-    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
     env_file:
       - .env
+    command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
+    networks:
+      - dhruva-network
 
   # Use Flower later for monitoring
   # celery-flower:
@@ -61,3 +71,7 @@ services:
   #   ports:
   #     - "5555:5555"
   #   command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
+
+networks:
+  dhruva-network:
+    name: dhruva-network
