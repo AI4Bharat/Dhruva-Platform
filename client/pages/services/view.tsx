@@ -25,10 +25,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getService } from "../../api/serviceAPI";
 import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 
-interface LanguageConfig {
-  sourceLanguage: string;
-  targetLanguage: string;
-}
 
 export default function ViewService() {
   const router = useRouter();

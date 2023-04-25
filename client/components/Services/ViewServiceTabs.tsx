@@ -4,11 +4,19 @@ import Documentation from '../Documentation/Documentation';
 import Feedback from '../Feedback/Feedback';
 import Usage from './Usage';
 
-const ViewServiceTabs = (props) => {
+const ViewServiceTabs = ({
+  serviceInfo,
+  languages,
+  serviceID,
+}: {
+  serviceInfo: ServiceView;
+  languages: LanguageConfig[];
+  serviceID: string | string[];
+}) => {
 
-   const serviceInfo = props.serviceInfo;
-   const languages = props.languages;
-   const serviceID = props.serviceID;
+  //  const serviceInfo = props.serviceInfo;
+  //  const languages = props.languages;
+  //  const serviceID = props.serviceID;
   return (
     <TabPanels>
     <TabPanel>
@@ -46,13 +54,11 @@ const ViewServiceTabs = (props) => {
       <Documentation serviceInfo={serviceInfo} />
     </TabPanel>
     <TabPanel>
-      {languages ? (
+      {languages && (
         <Feedback
           serviceID={serviceID}
           serviceLanguages={languages}
         />
-      ) : (
-        <></>
       )}
     </TabPanel>
     <TabPanel>
