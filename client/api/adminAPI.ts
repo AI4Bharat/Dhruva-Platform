@@ -6,6 +6,7 @@ interface Icreatekey
   type:string; 
   data_tracking:boolean; 
   target_user_id:string;
+  regenerate : boolean;
 }
 
 const listallkeys = async(user_id : string) => {

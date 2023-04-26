@@ -10,6 +10,11 @@ const KeyModal = ({isOpen, onClose, name, k, active, onRefresh, user_id}) => {
   const mutation = useMutation(setstatus);
   const [modal, setModal] = useState(<></>)
 
+  const regenerateAPIKey = () =>
+  {
+
+  }
+
   const handleRevoke = () =>
   {
     mutation.mutate({name : name as string, action : active ? "REVOKE" : "ACTIVATE", target_user_id: user_id}, {
@@ -67,9 +72,14 @@ const KeyModal = ({isOpen, onClose, name, k, active, onRefresh, user_id}) => {
         {modal}
         </ModalBody>
         <ModalFooter >
-          <Button variant={"outline"} mt="2rem"  mr={3} onClick={handleRevoke}>
+          <HStack mt="2rem"  mr={3} >
+          <Button variant={"outline"} onClick={handleRevoke}>
             {active?"Revoke":"Activate"}
           </Button>
+          <Button onClick={regenerateAPIKey}>
+            Regenerate
+          </Button>
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>

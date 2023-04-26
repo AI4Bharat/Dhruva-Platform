@@ -66,6 +66,7 @@ const AccessKeys = () => {
     type: string;
     data_tracking: boolean;
     target_user_id: string;
+    regenerate : boolean;
   }
 
   const { data: userslist } = useQuery(["users"], () => listallusers());
@@ -77,6 +78,7 @@ const AccessKeys = () => {
     type: "INFERENCE",
     data_tracking: true,
     target_user_id: selectedUser,
+    regenerate : false
   });
 
   const { data: allkeys, refetch: allkeysrefetch } = useQuery(
@@ -260,6 +262,7 @@ const AccessKeys = () => {
       type: "INFERENCE",
       data_tracking: true,
       target_user_id: selectedUser,
+      regenerate : false
     });
   };
 
