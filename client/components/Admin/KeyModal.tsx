@@ -2,17 +2,100 @@ import React, { useState } from 'react'
 
 import { Modal, Text, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Box, HStack } from "@chakra-ui/react";
 import { BiArrowBack } from 'react-icons/bi';
-import { setstatus } from '../../api/adminAPI';
+import { createkey, getkeydata, setstatus } from '../../api/adminAPI';
 import { useMutation } from '@tanstack/react-query';
+import { taskOptions } from '../Utils/Options';
+import { FaCopy } from 'react-icons/fa';
+import { userAgent } from 'next/server';
 
-const KeyModal = ({isOpen, onClose, name, k, active, onRefresh, user_id}) => {
+const KeyModal = ({ isOpen, onClose, name, k, active, onRefresh, user_id, type, data_tracking }: {
+  isOpen: boolean;
+  onClose: any;
+  name: string;
+  k: string;
+  active: boolean;
+  onRefresh: any;
+  user_id: string;
+  type: string;
+  data_tracking: boolean;
+})=> {
 
   const mutation = useMutation(setstatus);
   const [modal, setModal] = useState(<></>)
 
+  const regenerate = useMutation(createkey);
+  const getdata = useMutation(getkeydata)
+
   const regenerateAPIKey = () =>
   {
-
+    regenerate.mutate({name : name , type: type, target_user_id:user_id, regenerate:true, data_tracking:data_tracking }, {
+      onSuccess: (data) =>{
+        // refetch();
+        setModal(
+          <>
+            <Box
+              mt="1rem"
+              width={"100%"}
+              minH={"3rem"}
+              border={"1px"}
+              borderColor={"gray.300"}
+              background={"green.50"}
+            >
+              <Text ml="1rem" mr="1rem" mt="1rem" color={"green.600"}>
+                Copy the API Key. This won't be visible again.
+              </Text>
+            </Box>
+            <Box
+              mt="1rem"
+              width={"100%"}
+              minH={"4rem"}
+              border={"1px"}
+              borderColor={"gray.300"}
+              background={"blackAlpha.50"}
+            >
+              <Text
+                ml="1rem"
+                mr="1rem"
+                mt="1rem"
+                mb="0.5rem"
+                color={"gray.600"}
+              >
+                {data.api_key}
+              </Text>
+            </Box>
+            <Button
+              mt="0.5rem"
+              variant="ghost"
+              onClick={() => navigator.clipboard.writeText(data.api_key)}
+            >
+              <FaCopy />
+              &nbsp; Copy Key
+            </Button>
+          </>
+        );
+        getdata.mutate({api_key_name:name, target_user_id:user_id},{
+          onSuccess: data =>{
+              onRefresh(data);
+          }
+      })
+    },
+      onError: (error) => {
+        setModal(
+          <Box
+            mt="1rem"
+            width={"100%"}
+            minH={"3rem"}
+            border={"1px"}
+            borderColor={"gray.300"}
+            background={"red.50"}
+          >
+            <Text ml="1rem" mr="1rem" mt="0.5rem" color={"red.600"}>
+              ERROR
+            </Text>
+          </Box>
+        );
+      },
+    })
   }
 
   const handleRevoke = () =>

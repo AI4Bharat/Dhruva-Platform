@@ -53,12 +53,15 @@ const AccessKeys = () => {
     type: string;
     active: boolean;
     masked_key: string;
+    data_tracking: boolean
   }
 
   interface ModalData {
     name: string;
     active: boolean;
     masked_key: string;
+    data_tracking : boolean;
+    type : string
   }
 
   interface Icreatekey {
@@ -98,6 +101,8 @@ const AccessKeys = () => {
   const [modalstate, setModalState] = useState<ModalData>({
     name: "",
     masked_key: "",
+    type: "",
+    data_tracking: true,
     active: false,
   });
   const [searchedKeys, setSearchedKeys] = useState<Key[]>([]);
@@ -474,6 +479,8 @@ const AccessKeys = () => {
                                   onClick={() => {
                                     setModalOpen(true),
                                       setModalState({
+                                        data_tracking: keysData.data_tracking,
+                                        type : keysData.type,
                                         name: keysData.name,
                                         masked_key: keysData.masked_key,
                                         active: keysData.active,
@@ -494,6 +501,8 @@ const AccessKeys = () => {
                       onRefresh={(data) => {
                         refetch();
                         setModalState({
+                          type: data.type,
+                          data_tracking: data.data_tracking,
                           name: data.name,
                           masked_key: data.masked_key,
                           active: data.active,
@@ -507,6 +516,8 @@ const AccessKeys = () => {
                       k={modalstate.masked_key}
                       active={modalstate.active}
                       user_id={selectedUser}
+                      data_tracking={modalstate.data_tracking}
+                      type={modalstate.type}
                     />
                   </Box>
                 )
