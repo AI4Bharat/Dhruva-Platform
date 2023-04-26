@@ -15,7 +15,6 @@ from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
-
 from celery_backend.tasks import log_data
 from exception.base_error import BaseError
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
@@ -36,7 +35,6 @@ from schema.services.response import (
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
-from pydub import AudioSegment
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
