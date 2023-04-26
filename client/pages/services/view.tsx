@@ -106,7 +106,7 @@ function ServicePerformanceModal({ ...props }) {
             </Stack>
             <br />
             <iframe
-              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${userId}&var-inferenceServiceId=${service_id}&kiosk=tv`}
+              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${userId}&var-inferenceServiceId=${service_id}&from=now-1h&to=now&kiosk=tv`}
               width={"100%"}
               height={600}
             />
