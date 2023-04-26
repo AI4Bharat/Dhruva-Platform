@@ -32,7 +32,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -68,7 +68,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -82,7 +82,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -99,7 +99,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -120,7 +120,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -135,7 +135,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -149,11 +149,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(dhruva_request_duration_seconds_bucket[5m])) * 1000 OR vector(0)",
+          "expr": "histogram_quantile(0.5, sum(rate(dhruva_request_duration_seconds_bucket[5m])) by (le)) or vector(0)",
           "interval": "",
           "legendFormat": "{{ pod }}",
           "range": true,
@@ -179,7 +179,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -259,7 +259,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -276,7 +276,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -356,7 +356,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -369,7 +369,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -383,7 +383,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -397,7 +397,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -415,7 +415,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -497,11 +497,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\", status_code!=\"404\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m]))) OR vector(0)",
+          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\", status_code!~\"4..\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m]))) OR vector(0)",
           "interval": "",
           "legendFormat": "Error Rate",
           "range": true,
@@ -527,7 +527,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -570,7 +570,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -606,7 +607,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -623,7 +624,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -666,7 +667,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -702,7 +704,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -715,7 +717,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -729,7 +731,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -743,7 +745,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -761,7 +763,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "kdjfS_R7c"
       },
       "fieldConfig": {
         "defaults": {
@@ -806,7 +808,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -842,11 +845,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "kdjfS_R7c"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service!=\"None\"}[5m])) * 100 / sum(rate(dhruva_requests_total{inference_service!=\"None\"}[5m]))) OR vector(0)",
+          "expr": "(sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service!=\"None\", status_code!~\"4..\"}[5m])) * 100 / sum(rate(dhruva_requests_total{inference_service!=\"None\"}[5m]))) OR vector(0)",
           "interval": "",
           "legendFormat": "Error Rate",
           "range": true,
@@ -855,239 +858,6 @@
       ],
       "title": "Error Rate",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 39
-      },
-      "id": 26,
-      "panels": [],
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Responses",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 40
-      },
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(dhruva_requests_total{status_code=~\"2..\"}) OR vector(0)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{ status_code }}",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Responses total 2xx",
-      "transformations": [],
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Total count of responses by method, path and status codes",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 8,
-        "y": 40
-      },
-      "id": 27,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(dhruva_requests_total{status_code=~\"4..\"}) OR vector(0)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{ status_code }}",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Responses total 4xx",
-      "transformations": [],
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Total count of responses by method, path and status codes",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 40
-      },
-      "id": 28,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(dhruva_requests_total{status_code=~\"5..\"}) OR vector(0)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{ status_code }}",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Responses total 5xx",
-      "transformations": [],
-      "type": "stat"
     }
   ],
   "refresh": "",
@@ -1119,6 +889,6 @@
   "timezone": "",
   "title": "Dhruva Global Dashboard",
   "uid": "Zj4zOgA7z",
-  "version": 11,
+  "version": 14,
   "weekStart": ""
 }

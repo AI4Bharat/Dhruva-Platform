@@ -518,10 +518,10 @@ class InferenceService:
                 if "serviceId" in pipeline_task.config
                 else None
             )
-            #             if not serviceId:
-            #                 serviceId = self.auto_select_service_id(
-            #                     pipeline_task.taskType, pipeline_task.config
-            #                 )
+            if not serviceId:
+                serviceId = self.auto_select_service_id(
+                    pipeline_task.taskType, pipeline_task.config
+                )
 
             start_time = time.perf_counter()
             new_request = ULCAGenericInferenceRequest(

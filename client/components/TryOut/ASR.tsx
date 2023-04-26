@@ -53,6 +53,7 @@ export default function ASRTry({ ...props }) {
 
   const [inferenceMode, setInferenceMode] = useState("rest");
 
+  const [permission, setPermission] = useState<boolean>(true);
   const [modal, setModal] = useState(<></>);
 
   const [streaming, setStreaming] = useState(false);
@@ -122,28 +123,6 @@ export default function ASRTry({ ...props }) {
           streamingClient.startStreaming(
             function (transcript: string) {
               setStreamingText(transcript);
-            },
-            (e: any) => {
-              setModal(
-                <Box
-                  mt="1rem"
-                  width={"100%"}
-                  minH={"3rem"}
-                  border={"1px"}
-                  borderColor={"gray.300"}
-                  background={"red.50"}
-                >
-                  <HStack ml="1rem" mr="1rem" mt="0.6rem">
-                    <Text color={"red.600"}>Required Permissions Denied</Text>
-                    <Spacer />
-                    <CloseIcon
-                      onClick={() => setModal(<></>)}
-                      color={"red.600"}
-                      fontSize={"xs"}
-                    />
-                  </HStack>
-                </Box>
-              );
             }
           );
         } else if (action === SocketStatus.TERMINATED) {
@@ -152,7 +131,7 @@ export default function ASRTry({ ...props }) {
           console.log("Action: ", action, id);
         }
       }
-    );
+    )
   };
 
   const stopStreaming = () => {
@@ -192,7 +171,29 @@ export default function ASRTry({ ...props }) {
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
       setAudioStream(stream);
-    });
+    }).catch((e:any) => {
+      setPermission(false);
+      setModal(
+        <Box
+          mt="1rem"
+          width={"100%"}
+          minH={"3rem"}
+          border={"1px"}
+          borderColor={"gray.300"}
+          background={"red.50"}
+        >
+          <HStack ml="1rem" mr="1rem" mt="0.6rem">
+            <Text color={"red.600"}>Required Permissions Denied</Text>
+            <Spacer />
+            <CloseIcon
+              onClick={() => setModal(<></>)}
+              color={"red.600"}
+              fontSize={"xs"}
+            />
+          </HStack>
+        </Box>
+      );
+    })
   }, [recording]);
 
   useEffect(() => {
@@ -311,7 +312,10 @@ export default function ASRTry({ ...props }) {
                 ) : (
                   <Button
                     onClick={() => {
-                      startRecording();
+                      if(permission)
+                      {
+                        startRecording();
+                      }
                     }}
                   >
                     <FaMicrophone size={15} />
