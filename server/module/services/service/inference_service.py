@@ -37,7 +37,7 @@ from schema.services.response import (
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
-
+from pydub import AudioSegment
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
@@ -348,12 +348,16 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        service = self.service_repository.find_by_id(serviceId)
+        try:
+            service = self.service_repository.find_by_id(serviceId)
+        except:
+            raise HTTPException(status_code=404, detail="Service not found")
         headers = {"Authorization": "Bearer " + service.api_key}
-
+        if not service:
+            raise HTTPException(status_code=404, detail="Service not found")
         ip_language = request_body.config.language.sourceLanguage
         ip_gender = request_body.config.gender
-        target_sr = 22050
+        target_sr = request_body.config.sampleRate
         results = []
 
         for input in request_body.input:
@@ -374,10 +378,17 @@ class InferenceService:
                     output_list=[output0],
                     headers=headers,
                 )
-                wav = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-                byte_io = io.BytesIO()
-                wavfile.write(byte_io, target_sr, wav)
-                encoded_bytes = base64.b64encode(byte_io.read())
+                bytes = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
+                with open("test.txt", "wb") as f:
+                    f.write(bytes)
+                byte_io = io.BytesIO() 
+                byte_io.write(bytes)
+                byte_io.seek(0)
+                audio = AudioSegment(byte_io, format=request_body.config.audioFormat)
+                audio = audio.set_frame_rate(target_sr)
+                audio = audio.set_channels(1)
+                # wavfile.write(byte_io, target_sr, wav)
+                encoded_bytes = base64.b64encode(audio.raw_data)
                 encoded_string = encoded_bytes.decode()
             else:
                 encoded_string = ""
