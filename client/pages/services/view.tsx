@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Grid,
-  GridItem,
   Heading,
   Modal,
   ModalBody,
@@ -11,20 +9,16 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
   Stack,
-  Tab,
   TabList,
-  TabPanel,
-  TabPanels,
+  Tab,
+  Grid,
+  GridItem,
+  Select,
   Tabs,
-  Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useQuery } from "@tanstack/react-query";
-import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { SlGraph } from "react-icons/sl";
 import { getService, listalluserkeys } from "../../api/serviceAPI";
 import Documentation from "../../components/Documentation/Documentation";
@@ -37,11 +31,13 @@ import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import { dhruvaAPI } from "../../api/apiConfig";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Head from "next/head";
+import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
+import { useQuery } from "@tanstack/react-query";
 
-interface LanguageConfig {
-  sourceLanguage: string;
-  targetLanguage: string;
-}
 
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -159,7 +155,7 @@ export default function ViewService() {
     }
   };
 
-  if (isLoading || !serviceInfo) return <div>Loading...</div>;
+  if (isLoading || !serviceInfo) return ;
 
   return (
     <>
@@ -194,47 +190,7 @@ export default function ViewService() {
                   <option value={2}>Feedback</option>
                   <option value={3}>Usage</option>
                 </Select>
-                <TabPanels>
-                  <TabPanel>
-                    <Stack spacing={5}>
-                      <Text className="dview-service-description">
-                        {serviceInfo["serviceDescription"]}
-                      </Text>
-                      <Stack>
-                        <Text className="dview-service-info-item">
-                          Model Version : {serviceInfo["model"]["version"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Model Type : {serviceInfo["model"]["task"]["type"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Running On : {serviceInfo["hardwareDescription"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Published On :{" "}
-                          {new Date(serviceInfo["publishedOn"]).toDateString()}
-                        </Text>
-                      </Stack>
-                    </Stack>
-                  </TabPanel>
-                  <TabPanel>
-                    <Documentation serviceInfo={serviceInfo} />
-                  </TabPanel>
-                  <TabPanel>
-                    {languages ? (
-                      <Feedback
-                        serviceID={router.query["serviceId"]}
-                        userID={"john_doe_dummy_id"}
-                        serviceLanguages={languages}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                    <Usage serviceID={router.query["serviceId"]} />
-                  </TabPanel>
-                </TabPanels>
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
               </Tabs>
             </GridItem>
             <GridItem p="1rem" bg="white">
@@ -269,50 +225,7 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <Stack spacing={5}>
-                      <Text className="dview-service-description">
-                        {serviceInfo["serviceDescription"]}
-                      </Text>
-                      <Stack>
-                        <Text className="dview-service-info-item">
-                          Model Version : {serviceInfo["model"]["version"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Model Type : {serviceInfo["model"]["task"]["type"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Running On : {serviceInfo["hardwareDescription"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Published On :{" "}
-                          {new Date(serviceInfo["publishedOn"]).toDateString()}
-                        </Text>
-                      </Stack>
-                    </Stack>
-                  </TabPanel>
-                  <TabPanel>
-                    <Documentation
-                      serviceInfo={serviceInfo}
-                      userID={"john_doe_dummy_id"}
-                    />
-                  </TabPanel>
-                  <TabPanel>
-                    {languages ? (
-                      <Feedback
-                        serviceID={router.query["serviceId"]}
-                        userID={"john_doe_dummy_id"}
-                        serviceLanguages={languages}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                    <Usage serviceID={router.query["serviceId"]} />
-                  </TabPanel>
-                </TabPanels>
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
               </Tabs>
             </GridItem>
             <GridItem>
