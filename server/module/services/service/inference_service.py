@@ -11,7 +11,7 @@ import requests
 import scipy.signal as sps
 import soundfile as sf
 import tritonclient.http as http_client
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 from scipy.io import wavfile
@@ -26,6 +26,7 @@ from schema.services.request import (
     ULCANerInferenceRequest,
     ULCAPipelineInferenceRequest,
     ULCATranslationInferenceRequest,
+    ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
 )
 from schema.services.response import (
@@ -33,6 +34,7 @@ from schema.services.response import (
     ULCANerInferenceResponse,
     ULCAPipelineInferenceResponse,
     ULCATranslationInferenceResponse,
+    ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
 
@@ -107,11 +109,11 @@ class InferenceService:
             ULCAGenericInferenceRequest,
             ULCAAsrInferenceRequest,
             ULCATranslationInferenceRequest,
+            ULCATransliterationInferenceRequest,
             ULCATtsInferenceRequest,
         ],
         serviceId: str,
     ) -> dict:
-        
         service = validate_service_id(serviceId, self.service_repository)
         model = validate_model_id(service.modelId, self.model_repository)
 
@@ -121,6 +123,11 @@ class InferenceService:
         if task_type == _ULCATaskType.TRANSLATION:
             request_obj = ULCATranslationInferenceRequest(**request_body)
             return await self.run_translation_triton_inference(request_obj, serviceId)
+        elif task_type == _ULCATaskType.TRANSLITERATION:
+            request_obj = ULCATransliterationInferenceRequest(**request_body)
+            return await self.run_transliteration_triton_inference(
+                request_obj, serviceId
+            )
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
             return await self.run_asr_triton_inference(request_obj, serviceId)
@@ -137,7 +144,6 @@ class InferenceService:
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
-        
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
@@ -168,7 +174,7 @@ class InferenceService:
             # Amplitude Equalization, assuming mono-streamed
             # TODO-1: Normalize based on a reference audio from MUCS benchmark? Ref: https://stackoverflow.com/a/42496373
             # TODO-2: Just implement it without pydub? Ref: https://stackoverflow.com/a/61254921
-            raw_audio *= 2**15 - 1 # Quantize to int16
+            raw_audio *= 2**15 - 1  # Quantize to int16
             pydub_audio = AudioSegment(
                 data=raw_audio.astype("int16").tobytes(),
                 sample_width=2,
@@ -179,7 +185,7 @@ class InferenceService:
 
             batch_size = 32
             chunk_size = 20
-            if serviceId == "ai4bharat/whisper-medium-en--gpu--t4":
+            if "whisper" in serviceId:
                 # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
                 batch_size = 1
                 chunk_size = 16
@@ -194,30 +200,38 @@ class InferenceService:
             # )
 
             # Dequantize
-            raw_audio = np.array(pydub_audio.get_array_of_samples()).astype('float64') / (2**15 - 1)
+            raw_audio = np.array(pydub_audio.get_array_of_samples()).astype(
+                "float64"
+            ) / (2**15 - 1)
             audio_chunks = list(
                 silero_vad_chunking(raw_audio, standard_rate, chunk_size)
             )
 
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 
-            transcript = ''
+            transcript = ""
             for i in range(0, len(audio_chunks), batch_size):
-                o = self.__pad_batch(audio_chunks[i:i+batch_size])
+                o = self.__pad_batch(audio_chunks[i : i + batch_size])
                 input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
                 input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
                 input0.set_data_from_numpy(o[0])
                 input1.set_data_from_numpy(o[1].astype("int32"))
                 input_list = [input0, input1]
 
-                if "conformer-hi" not in serviceId and language != "en":
+                if (
+                    "conformer-hi" not in serviceId
+                    and "whisper" not in serviceId
+                    and language != "en"
+                ):
                     # The other endpoints are multilingual and hence have LANG_ID as extra input
-                    # TODO: Standardize properly as a string similar to NMT and TTS
+                    # TODO: Standardize properly as a string similar to NMT and TTS, in all Triton repos
                     input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
-                    lang_id = [language]*len(o[1])
-                    input2.set_data_from_numpy(np.asarray(lang_id).astype('object').reshape(o[1].shape))
+                    lang_id = [language] * len(o[1])
+                    input2.set_data_from_numpy(
+                        np.asarray(lang_id).astype("object").reshape(o[1].shape)
+                    )
                     input_list.append(input2)
-                
+
                 response = await self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name="asr_am_ensemble",
@@ -230,7 +244,7 @@ class InferenceService:
                 outputs = " ".join(
                     [result.decode("utf-8") for result in encoded_result.tolist()]
                 )
-                transcript += ' ' + outputs
+                transcript += " " + outputs
             res["output"].append({"source": transcript.strip()})
 
         return ULCAAsrInferenceResponse(**res)
@@ -238,7 +252,6 @@ class InferenceService:
     async def run_translation_triton_inference(
         self, request_body: ULCATranslationInferenceRequest, serviceId: str
     ) -> ULCATranslationInferenceResponse:
-        
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
@@ -247,29 +260,29 @@ class InferenceService:
         target_lang = request_body.config.language.targetLanguage
 
         # TODO: Make Triton itself accept script-code separately
-        if request_body.config.language.sourceScriptCode \
-            and source_lang in LANG_CODE_TO_SCRIPT_CODE \
-            and request_body.config.language.sourceScriptCode != LANG_CODE_TO_SCRIPT_CODE[source_lang] \
-        :
-            source_lang += '_' + request_body.config.language.sourceScriptCode
-        
-        if request_body.config.language.targetScriptCode \
-            and target_lang in LANG_CODE_TO_SCRIPT_CODE \
-            and request_body.config.language.targetScriptCode != LANG_CODE_TO_SCRIPT_CODE[target_lang] \
-        :
-            target_lang += '_' + request_body.config.language.targetScriptCode
+        if (
+            request_body.config.language.sourceScriptCode
+            and source_lang in LANG_CODE_TO_SCRIPT_CODE
+            and request_body.config.language.sourceScriptCode
+            != LANG_CODE_TO_SCRIPT_CODE[source_lang]
+        ):
+            source_lang += "_" + request_body.config.language.sourceScriptCode
+
+        if (
+            request_body.config.language.targetScriptCode
+            and target_lang in LANG_CODE_TO_SCRIPT_CODE
+            and request_body.config.language.targetScriptCode
+            != LANG_CODE_TO_SCRIPT_CODE[target_lang]
+        ):
+            target_lang += "_" + request_body.config.language.targetScriptCode
 
         for input in request_body.input:
             input_string = input.source.replace("\n", " ").strip()
             if input_string:
                 inputs = [
                     self.__get_string_tensor(input_string, "INPUT_TEXT"),
-                    self.__get_string_tensor(
-                        source_lang, "INPUT_LANGUAGE_ID"
-                    ),
-                    self.__get_string_tensor(
-                        target_lang, "OUTPUT_LANGUAGE_ID"
-                    ),
+                    self.__get_string_tensor(source_lang, "INPUT_LANGUAGE_ID"),
+                    self.__get_string_tensor(target_lang, "OUTPUT_LANGUAGE_ID"),
                 ]
                 output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
                 response = await self.inference_gateway.send_triton_request(
@@ -290,10 +303,51 @@ class InferenceService:
         }
         return ULCATranslationInferenceResponse(**res)
 
+    async def run_transliteration_triton_inference(
+        self, request_body: ULCATransliterationInferenceRequest, serviceId: str
+    ) -> ULCATransliterationInferenceResponse:
+        service = validate_service_id(serviceId, self.service_repository)
+        headers = {"Authorization": "Bearer " + service.api_key}
+
+        results = []
+        source_lang = request_body.config.language.sourceLanguage
+        target_lang = request_body.config.language.targetLanguage
+        is_word_level = not request_body.config.isSentence
+        top_k = request_body.config.numSuggestions
+
+        for input in request_body.input:
+            input_string = input.source.replace("\n", " ").strip()
+            if input_string:
+                inputs = [
+                    self.__get_string_tensor(input_string, "INPUT_TEXT"),
+                    self.__get_string_tensor(source_lang, "INPUT_LANGUAGE_ID"),
+                    self.__get_string_tensor(target_lang, "OUTPUT_LANGUAGE_ID"),
+                    self.__get_bool_tensor(is_word_level, "IS_WORD_LEVEL"),
+                    self.__get_uint8_tensor(top_k, "TOP_K"),
+                ]
+                output0 = http_client.InferRequestedOutput("OUTPUT_TEXT")
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="transliteration",
+                    input_list=inputs,
+                    output_list=[output0],
+                    headers=headers,
+                )
+                encoded_result = response.as_numpy("OUTPUT_TEXT")
+                result = encoded_result.tolist()[0]
+                result = [r.decode("utf-8") for r in result]
+            else:
+                result = [input_string]
+            results.append({"source": input_string, "target": result})
+        res = {
+            # "config": request_body.config,
+            "output": results
+        }
+        return ULCATransliterationInferenceResponse(**res)
+
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        
         service = self.service_repository.find_by_id(serviceId)
         headers = {"Authorization": "Bearer " + service.api_key}
 
@@ -303,8 +357,8 @@ class InferenceService:
         results = []
 
         for input in request_body.input:
-            input_string = input.source.replace('।', '.').strip()
-            
+            input_string = input.source.replace("।", ".").strip()
+
             if input_string:
                 inputs = [
                     self.__get_string_tensor(input_string, "INPUT_TEXT"),
@@ -328,7 +382,7 @@ class InferenceService:
             else:
                 encoded_string = ""
             results.append({"audioContent": encoded_string})
-        
+
         res = {
             "config": {
                 "language": {"sourceLanguage": ip_language},
@@ -343,7 +397,6 @@ class InferenceService:
     async def run_ner_triton_inference(
         self, request_body: ULCANerInferenceRequest, serviceId: str
     ) -> ULCANerInferenceResponse:
-        
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
@@ -367,6 +420,22 @@ class InferenceService:
             tensor_name, string_obj.shape, np_to_triton_dtype(string_obj.dtype)
         )
         input_obj.set_data_from_numpy(string_obj)
+        return input_obj
+
+    def __get_bool_tensor(self, bool_value: bool, tensor_name: str):
+        bool_obj = np.array([bool_value], dtype="bool")
+        input_obj = http_client.InferInput(
+            tensor_name, bool_obj.shape, np_to_triton_dtype(bool_obj.dtype)
+        )
+        input_obj.set_data_from_numpy(bool_obj)
+        return input_obj
+
+    def __get_uint8_tensor(self, uint8_value, tensor_name):
+        uint8_obj = np.array([uint8_value], dtype="uint8")
+        input_obj = http_client.InferInput(
+            tensor_name, uint8_obj.shape, np_to_triton_dtype(uint8_obj.dtype)
+        )
+        input_obj.set_data_from_numpy(uint8_obj)
         return input_obj
 
     def auto_select_service_id(self, task_type: str, config: dict) -> str:
@@ -404,7 +473,7 @@ class InferenceService:
     async def run_pipeline_inference(
         self,
         request_body: ULCAPipelineInferenceRequest,
-        request_state,  # for request state
+        request_state: Request,  # for request state
     ) -> ULCAPipelineInferenceResponse:
         results = []
 
@@ -433,7 +502,11 @@ class InferenceService:
 
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
-            serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
+            serviceId = (
+                pipeline_task.config["serviceId"]
+                if "serviceId" in pipeline_task.config
+                else None
+            )
             if not serviceId:
                 serviceId = self.auto_select_service_id(
                     pipeline_task.taskType, pipeline_task.config
@@ -441,26 +514,32 @@ class InferenceService:
 
             start_time = time.perf_counter()
             new_request = ULCAGenericInferenceRequest(
-                config=pipeline_task.config, **previous_output_json
+                config=pipeline_task.config,
+                **previous_output_json,
+                controlConfig=request_body.controlConfig,
             )
             previous_output_json = await self.run_inference(
                 request=new_request, serviceId=serviceId
             )
 
-            log_data.apply_async(
-                (
-                    # Create the url for metering
-                    request_state.url._url.split("/")[0]
-                    + pipeline_task.taskType
-                    + "?"
-                    + serviceId,
-                    str(request_state.state.api_key_id),
-                    new_request.dict(),
-                    previous_output_json.dict(),
-                    time.perf_counter() - start_time,
-                ),
-                queue="data_log",
-            )
+            if (
+                request_state.state._state.get("api_key_data_tracking")
+                and request_body.controlConfig.dataTracking
+            ):
+                log_data.apply_async(
+                    (
+                        pipeline_task.taskType,
+                        serviceId,
+                        request_state.client.host,
+                        # request.state.data_collection_consent,
+                        str(request_state.state.api_key_id),
+                        new_request.json(),
+                        previous_output_json.json(),
+                        time.perf_counter() - start_time,
+                    ),
+                    queue="data_log",
+                )
+
             results.append(deepcopy(previous_output_json))
 
             # Output of previous will be input for next
@@ -480,6 +559,4 @@ class InferenceService:
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
                 pass
-        return {
-            "pipelineResponse": results
-        }
+        return {"pipelineResponse": results}

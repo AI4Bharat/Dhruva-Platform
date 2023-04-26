@@ -26,14 +26,14 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 11,
+  "id": 13,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "vowwS_B4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -68,7 +68,9 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -81,7 +83,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -98,7 +100,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "vowwS_B4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -119,7 +121,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -133,7 +135,9 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["mean"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -146,10 +150,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) * 1000 OR vector(0)",
+          "expr": "histogram_quantile(0.5, sum(rate(dhruva_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) or vector(0)",
           "interval": "",
           "legendFormat": "",
           "range": true,
@@ -162,7 +166,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "vowwS_B4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -242,7 +246,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -259,7 +263,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "vowwS_B4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -339,11 +343,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.95, sum(rate(dhruva_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
           "interval": "",
           "legendFormat": "0.95",
           "range": true,
@@ -352,11 +356,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.9, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.9, sum(rate(dhruva_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.9",
@@ -366,11 +370,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.5, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.5, sum(rate(dhruva_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.5",
@@ -380,11 +384,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.1, sum(rate(starlette_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.1, sum(rate(dhruva_request_duration_seconds_bucket{inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.1",
@@ -398,7 +402,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "vowwS_B4k"
       },
       "description": "",
       "fieldConfig": {
@@ -481,11 +485,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "vowwS_B4k"
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m])) OR vector(0)",
+          "expr": "sum(rate(dhruva_requests_total{status_code!~\"2..\", inference_service=\"$inferenceServiceId\", user_id=\"$userId\", api_key_name=\"$apiKeyName\", status_code!~\"4..\"}[5m])) * 100 / sum(rate(dhruva_requests_total[5m])) OR vector(0)",
           "interval": "",
           "legendFormat": "Error Rate",
           "range": true,
@@ -504,76 +508,66 @@
   "templating": {
     "list": [
       {
-        "current": {},
-        "datasource": {
-          "type": "datasource",
-          "uid": "-- Dashboard --"
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
         },
-        "definition": "[object Object]",
-        "error": {},
+        "description": "",
         "hide": 0,
-        "includeAll": false,
         "label": "API Key Name",
-        "multi": false,
         "name": "apiKeyName",
-        "options": [],
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
         "query": "",
-        "refresh": 1,
-        "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "textbox"
       },
       {
-        "current": {},
-        "datasource": {
-          "type": "datasource",
-          "uid": "-- Dashboard --"
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
         },
-        "definition": "[object Object]",
-        "error": {},
+        "description": "",
         "hide": 0,
-        "includeAll": false,
         "label": "User Id",
-        "multi": false,
         "name": "userId",
-        "options": [],
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
         "query": "",
-        "refresh": 1,
-        "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "textbox"
       },
       {
-        "current": {},
-        "datasource": {
-          "type": "datasource",
-          "uid": "-- Dashboard --"
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
         },
-        "definition": "[object Object]",
-        "error": {},
         "hide": 0,
-        "includeAll": false,
         "label": "Inference Service Id",
-        "multi": false,
         "name": "inferenceServiceId",
-        "options": [],
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
         "query": "",
-        "refresh": 1,
-        "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "textbox"
       }
     ]
   },
@@ -598,6 +592,6 @@
   "timezone": "",
   "title": "Dhruva Service Specific Dashboard",
   "uid": "Zj4zOgA7y",
-  "version": 7,
+  "version": 11,
   "weekStart": ""
 }

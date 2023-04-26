@@ -4,9 +4,11 @@ import pymongo
 from pymongo.database import Database
 
 
-load_dotenv()
+load_dotenv(override=True)
 
 db_clients = {
+    # For some reason with the latest changes the quotes in the fields in .env are getting sent to python
+    # Removing the quotes from the string in .env without removing them from the URL
     "app": pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"]),
 }
 
