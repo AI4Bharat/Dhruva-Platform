@@ -5,13 +5,12 @@ interface LanguageConfig {
   targetLanguage: string;
 }
 
-interface IFeedback
-{
-  language: LanguageConfig,
-  example: string,
-  rating: number,
-  comments: string,
-  service_id: string
+interface IFeedback {
+  language: LanguageConfig;
+  example: string;
+  rating: number;
+  comments: string;
+  service_id: string;
 }
 
 const listServices = async (): Promise<ServiceList[]> => {
@@ -22,9 +21,18 @@ const listServices = async (): Promise<ServiceList[]> => {
   return response.data;
 };
 
-const listallkeys = async(target_service_id : string) => {
-  const response = await apiInstance.get(`/auth/api-key/list?target_service_id=${target_service_id}`);
-   return response.data;
+const listallkeys = async (target_service_id: string) => {
+  const response = await apiInstance.get(
+    `/auth/api-key/list?target_service_id=${target_service_id}`
+  );
+  return response.data;
+};
+
+const listalluserkeys = async (target_service_id: string, user_id: string) => {
+  const response = await apiInstance.get(
+    `/auth/api-key/list?target_user_id=${user_id}&target_service_id=${target_service_id}`
+  );
+  return response.data;
 };
 
 const getService = async (
@@ -40,11 +48,18 @@ const getService = async (
   return response.data;
 };
 
-const submitFeedback = async (feedback : IFeedback) => {
+const submitFeedback = async (feedback: IFeedback) => {
   const response = await apiInstance.post(
-    `/services/feedback/submit`,feedback
+    `/services/feedback/submit`,
+    feedback
   );
   return response.data;
 };
 
-export { listServices, getService, submitFeedback, listallkeys };
+export {
+  listServices,
+  getService,
+  submitFeedback,
+  listallkeys,
+  listalluserkeys,
+};
