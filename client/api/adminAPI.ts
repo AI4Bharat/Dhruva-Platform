@@ -4,7 +4,7 @@ interface Icreatekey
 {
   name:string;
   type:string; 
-  regenerate:boolean; 
+  data_tracking:boolean; 
   target_user_id:string;
 }
 

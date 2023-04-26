@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Center,
+  Checkbox,
   FormLabel,
   HStack,
   Input,
@@ -63,7 +64,7 @@ const AccessKeys = () => {
   interface Icreatekey {
     name: string;
     type: string;
-    regenerate: boolean;
+    data_tracking: boolean;
     target_user_id: string;
   }
 
@@ -74,7 +75,7 @@ const AccessKeys = () => {
   const [createKeyDetails, setCreateKeyDetails] = useState<Icreatekey>({
     name: "",
     type: "INFERENCE",
-    regenerate: true,
+    data_tracking: true,
     target_user_id: selectedUser,
   });
 
@@ -150,10 +151,10 @@ const AccessKeys = () => {
     }));
   };
 
-  const updateRegenerate = (newRegenerate: boolean) => {
+  const updateCollectData = (newCollectData: boolean) => {
     setCreateKeyDetails((prevState) => ({
       ...prevState,
-      regenerate: newRegenerate,
+      data_tracking: newCollectData,
     }));
   };
 
@@ -257,7 +258,7 @@ const AccessKeys = () => {
     setCreateKeyDetails({
       name: "",
       type: "INFERENCE",
-      regenerate: true,
+      data_tracking: true,
       target_user_id: selectedUser,
     });
   };
@@ -379,17 +380,16 @@ const AccessKeys = () => {
                   <option>INFERENCE</option>
                   <option>PLATFORM</option>
                 </Select>
-                <FormLabel mt="1rem">Regenerate</FormLabel>
-                <Select
+                <br/>
+                <Checkbox
                   borderRadius={0}
-                  value={createKeyDetails.regenerate ? "True" : "False"}
+                  defaultChecked
                   onChange={(e) =>
-                    updateRegenerate(e.target.value == "True" ? true : false)
+                    updateCollectData(e.target.checked ? true : false)
                   }
-                >
-                  <option>True</option>
-                  <option>False</option>
-                </Select>
+                  >
+                    Allow us to track your data?
+                  </Checkbox>
                 <FormLabel mt="1rem">User ID</FormLabel>
                 <Box
                   width={"100%"}

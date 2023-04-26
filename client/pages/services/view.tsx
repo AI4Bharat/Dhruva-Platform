@@ -21,10 +21,7 @@ import {
 import { useRouter } from "next/router";
 import { SlGraph } from "react-icons/sl";
 import { getService, listalluserkeys } from "../../api/serviceAPI";
-import Documentation from "../../components/Documentation/Documentation";
-import Feedback from "../../components/Feedback/Feedback";
 import ContentLayout from "../../components/Layouts/ContentLayout";
-import Usage from "../../components/Services/Usage";
 import ASRTry from "../../components/TryOut/ASR";
 import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
