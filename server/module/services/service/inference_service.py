@@ -348,16 +348,11 @@ class InferenceService:
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, serviceId: str
     ) -> ULCATtsInferenceResponse:
-        try:
-            service = self.service_repository.find_by_id(serviceId)
-        except:
-            raise HTTPException(status_code=404, detail="Service not found")
+        service = self.service_repository.find_by_id(serviceId)
         headers = {"Authorization": "Bearer " + service.api_key}
-        if not service:
-            raise HTTPException(status_code=404, detail="Service not found")
         ip_language = request_body.config.language.sourceLanguage
         ip_gender = request_body.config.gender
-        target_sr = request_body.config.sampleRate
+        target_sr = request_body.config.samplingRate
         results = []
 
         for input in request_body.input:
@@ -379,16 +374,12 @@ class InferenceService:
                     headers=headers,
                 )
                 bytes = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-                with open("test.txt", "wb") as f:
-                    f.write(bytes)
-                byte_io = io.BytesIO() 
-                byte_io.write(bytes)
-                byte_io.seek(0)
-                audio = AudioSegment(byte_io, format=request_body.config.audioFormat)
-                audio = audio.set_frame_rate(target_sr)
-                audio = audio.set_channels(1)
-                # wavfile.write(byte_io, target_sr, wav)
-                encoded_bytes = base64.b64encode(audio.raw_data)
+                byte_io = io.BytesIO()
+                wavfile.write(byte_io, target_sr, bytes)
+                AudioSegment.from_file_using_temporary_files(byte_io).export(
+                    byte_io, format=request_body.config.audioFormat
+                )
+                encoded_bytes = base64.b64encode(byte_io.read())
                 encoded_string = encoded_bytes.decode()
             else:
                 encoded_string = ""
