@@ -45,10 +45,6 @@ class InferenceLoggingRoute(APIRoute):
             req_body = req_body_bytes.decode("utf-8")
             enable_tracking = False
 
-            if request.state._state.get("api_key_data_tracking"):
-                req_json: Dict[str, Any] = json.loads(req_body)
-                enable_tracking = req_json["controlConfig"]["dataTracking"]
-
             start_time = time.time()
             res_body, error_msg = None, None
             try:
@@ -65,6 +61,10 @@ class InferenceLoggingRoute(APIRoute):
             except Exception as other_exception:
                 error_msg = str(other_exception)
                 raise other_exception
+
+            if request.state._state.get("api_key_data_tracking"):
+                req_json: Dict[str, Any] = json.loads(req_body)
+                enable_tracking = req_json["controlConfig"]["dataTracking"]
 
             url_components = request.url._url.split("?serviceId=")
             if len(url_components) == 2:

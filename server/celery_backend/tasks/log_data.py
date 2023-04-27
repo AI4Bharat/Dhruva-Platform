@@ -8,16 +8,13 @@ from ..celery_app import app
 from .database import LogDatabase
 from .metering import meter_usage
 
-logs_db = None
-LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None)
-if LOG_REQUEST_RESPONSE_DATA_FLAG:
-    logs_db = LogDatabase()
+logs_db = LogDatabase()
 
 
 def log_to_db(client_ip: str, error_msg: str, inp: str, output: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
     sanitized_service_id = service_id.replace("/", "~")
-    # logs_collection = logs_db[sanitized_service_id]
+
     log_document = {
         "client_ip": client_ip,
         "input": inp,
