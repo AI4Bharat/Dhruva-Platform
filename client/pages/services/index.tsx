@@ -1,50 +1,31 @@
 import {
   Box,
   Button,
-  HStack,
   Input,
   InputGroup,
   InputLeftElement,
   Select,
-  Spacer,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  VStack,
+  Stack,
 } from "@chakra-ui/react";
-import Link from "next/link";
 import { IoSearchOutline } from "react-icons/io5";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useState, useEffect } from "react";
-import ServiceCard from "../../components/Mobile/Services/ServiceCard";
-import Image from "next/image";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { listServices } from "../../api/serviceAPI";
-
-interface Service {
-  serviceId: string;
-  name: string;
-  serviceDescription: string;
-  hardwareDescription: string;
-  publishedOn: number;
-  modelId: string;
-  task: any;
-  languages: any;
-}
+import {taskOptions, languageOptions} from "../../components/Utils/Options"
+import ServicesTable from "../../components/Services/ServicesTable";
+import ServicesList from "../../components/Mobile/Services/ServicesList";
+import NotFound from "../../components/Utils/NotFound";
 
 export default function Services() {
-  const {data:services} = useQuery(["services"],listServices);
+  const { data: services } = useQuery(["services"], listServices);
   const [sourceLang, setSourceLanguage] = useState<string>("");
   const [targetLang, setTargetLanguage] = useState<string>("");
   const [task, setTask] = useState<string>("");
-  const [filteredservices, setFilteredServices] = useState<Service[]>([]);
-  const [searchedservices, setSearchedServices] = useState<Service[]>([]);
+  const [filteredservices, setFilteredServices] = useState<ServiceList[]>([]);
+  const [searchedservices, setSearchedServices] = useState<ServiceList[]>([]);
   const [hide, togglehide] = useState<boolean>(true);
   const [hideTarget, setHideTarget] = useState<boolean>(true);
   const smallscreen = useMediaQuery("(max-width: 1080px)");
@@ -162,9 +143,8 @@ export default function Services() {
       <ContentLayout>
         <Box bg="light.100" ml={smallscreen ? "1rem" : "0rem"} key={seed}>
           {/* Searchbar */}
-          {smallscreen ? (
-            <VStack width={"90vw"} background={"gray.50"}>
-              <InputGroup
+          <Stack background={"gray.50"} direction={['column','column','column','column', 'row']}>
+          <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
                 background={"white"}
               >
@@ -191,11 +171,7 @@ export default function Services() {
                 <option hidden defaultChecked>
                   Select Task Type
                 </option>
-                <option value="translation">Translation</option>
-                <option value="tts">TTS</option>
-                <option value="asr">ASR</option>
-                <option value="ner">NER</option>
-                <option value="sts">STS</option>
+                {taskOptions}
               </Select>
               <InputGroup
                 width={smallscreen ? "90vw" : "30rem"}
@@ -211,18 +187,7 @@ export default function Services() {
                   <option hidden defaultChecked>
                     Source Language
                   </option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="as">Assamese</option>
-                  <option value="bn">Bengali</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="mr">Marathi</option>
-                  <option value="or">Oriya</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
+                  {languageOptions}
                 </Select>
                 <Select
                   value={targetLang}
@@ -235,18 +200,7 @@ export default function Services() {
                   <option hidden defaultChecked>
                     Target Language
                   </option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="as">Assamese</option>
-                  <option value="bn">Bengali</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="mr">Marathi</option>
-                  <option value="or">Oriya</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
+                  {languageOptions}
                 </Select>
               </InputGroup>
               <Button
@@ -255,200 +209,16 @@ export default function Services() {
               >
                 Clear Filters
               </Button>
-            </VStack>
-          ) : (
-            <HStack background={"gray.50"}>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <InputLeftElement
-                  color="gray.600"
-                  pointerEvents="none"
-                  children={<IoSearchOutline />}
-                />
-                <Input
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={searchToggler}
-                  placeholder="Search for Services"
-                />
-              </InputGroup>
-              <Select
-                value={task}
-                width={smallscreen ? "90vw" : "20rem"}
-                background={"white"}
-                borderRadius={0}
-                color="gray.600"
-                onChange={taskToggler}
-              >
-                <option hidden defaultChecked>
-                  Select Task Type
-                </option>
-                <option value="translation">Translation</option>
-                <option value="tts">TTS</option>
-                <option value="asr">ASR</option>
-                <option value="ner">NER</option>
-                <option value="sts">STS</option>
-              </Select>
-              <InputGroup
-                width={smallscreen ? "90vw" : "30rem"}
-                background={"white"}
-              >
-                <Select
-                  value={sourceLang}
-                  background={"white"}
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={sourceLangToggler}
-                >
-                  <option hidden defaultChecked>
-                    Source Language
-                  </option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="as">Assamese</option>
-                  <option value="bn">Bengali</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="mr">Marathi</option>
-                  <option value="or">Oriya</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
-                </Select>
-                <Select
-                  value={targetLang}
-                  background={"white"}
-                  borderRadius={0}
-                  color="gray.600"
-                  onChange={targetLangToggler}
-                  display={hideTarget ? "none" : "block"}
-                >
-                  <option hidden defaultChecked>
-                    Target Language
-                  </option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="as">Assamese</option>
-                  <option value="bn">Bengali</option>
-                  <option value="gu">Gujarati</option>
-                  <option value="kn">Kannada</option>
-                  <option value="ml">Malayalam</option>
-                  <option value="mr">Marathi</option>
-                  <option value="or">Oriya</option>
-                  <option value="pa">Punjabi</option>
-                  <option value="ta">Tamil</option>
-                  <option value="te">Telugu</option>
-                </Select>
-              </InputGroup>
-              <Button
-                width={smallscreen ? "90vw" : "8rem"}
-                onClick={clearFilters}
-              >
-                Clear Filters
-              </Button>
-            </HStack>
-          )}
+          </Stack>
         </Box>
         <br />
-        {smallscreen ? (
-          // Mobile View
-          searchedservices ? (
-            <>
-              {Object.entries(searchedservices).map(([id, serviceData]) => (
-                <ServiceCard
-                  key={id}
-                  name={serviceData.name}
-                  serviceID={serviceData.serviceId}
-                  modelID={serviceData.modelId}
-                  date={new Date(serviceData.publishedOn).toDateString()}
-                />
-              ))}
-            </>
-          ) : (
-            <>
-              <HStack background={"gray.50"} width="100vw" height="50vh">
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={300}
-                    width={300}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            </>
-          )
-        ) : (
-          // Desktop View
-          <Box bg="light.100">
-            {searchedservices ? (
-              <Table variant="unstyled">
-                <Thead>
-                  <Tr>
-                    <Th>Name</Th>
-                    <Th>Service ID</Th>
-                    <Th>Model ID</Th>
-                    <Th>Published On</Th>
-                    <Th>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {Object.entries(searchedservices).map(([id, serviceData]) => {
-                    const publishedOn = new Date(serviceData.publishedOn);
-                    return (
-                      <Tr key={id} fontSize={"sm"}>
-                        <Td>{serviceData.name}</Td>
-                        <Td>{serviceData.serviceId}</Td>
-                        <Td>{serviceData.modelId}</Td>
-                        <Td>{publishedOn.toDateString()}</Td>
-                        <Td>
-                          {" "}
-                          <Link
-                            href={{
-                              pathname: `/services/view`,
-                              query: {
-                                serviceId: serviceData.serviceId,
-                              },
-                            }}
-                          >
-                            {" "}
-                            <Button size={"sm"} variant={"outline"}>
-                              View
-                            </Button>
-                          </Link>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-                </Tbody>
-              </Table>
-            ) : (
-              <HStack background={"gray.50"}>
-                <Spacer />
-                <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                  <Image
-                    height={400}
-                    width={400}
-                    alt="No Results Found"
-                    src="NoResults.svg"
-                  />
-                  <Text fontSize={"lg"} color="gray.400">
-                    Uh Oh! No Results Found
-                  </Text>
-                </Box>
-                <Spacer />
-              </HStack>
-            )}
-          </Box>
-        )}
+        {
+          searchedservices?
+          searchedservices.length!==0?
+          smallscreen? <ServicesList data={searchedservices}/>:<ServicesTable data={searchedservices} />
+          :<NotFound hide={hide}/>
+          :<></>
+        }
       </ContentLayout>
     </>
   );

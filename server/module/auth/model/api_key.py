@@ -24,6 +24,7 @@ class ApiKey(MongoBaseModel):
     created_timestamp: datetime
     usage: int = 0
     hits: int = 0
+    data_tracking: bool
     services: List[_ServiceUsage] = []
 
     def revoke(self):
@@ -31,6 +32,12 @@ class ApiKey(MongoBaseModel):
 
     def activate(self):
         self.active = True
+
+    def enable_tracking(self):
+        self.data_tracking = True
+
+    def disable_tracking(self):
+        self.data_tracking = False
 
 
 ApiKeyCache = pydantic.create_model(

@@ -1,5 +1,5 @@
 from typing import Union
-from bson import ObjectId
+
 from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
@@ -9,17 +9,19 @@ from schema.auth.request import (
     CreateApiKeyRequest,
     GetAllApiKeysRequest,
     GetApiKeyQuery,
-    SetApiKeyStatusQuery,
-    ULCAApiKeyRequest,
+    ModifyApiKeyParamsQuery,
+    ULCACreateApiKeyRequest,
+    ULCASetApiKeyTrackingQuery,
 )
 from schema.auth.request.create_api_key_request import ApiKeyType
 from schema.auth.response import (
     CreateApiKeyResponse,
     GetAllApiKeysResponse,
-    GetServiceLevelApiKeysResponse,
     GetApiKeyResponse,
+    GetServiceLevelApiKeysResponse,
     ULCAApiKeyDeleteResponse,
     ULCAApiKeyGenerationResponse,
+    ULCAApiKeyTrackingResponse,
 )
 
 from ..service.auth_service import AuthService
@@ -33,7 +35,9 @@ router = APIRouter(
 )
 
 
-@router.get("/list", response_model=Union[GetAllApiKeysResponse, GetServiceLevelApiKeysResponse])
+@router.get(
+    "/list", response_model=Union[GetAllApiKeysResponse, GetServiceLevelApiKeysResponse]
+)
 async def _get_all_api_keys_for_user(
     params: GetAllApiKeysRequest = Depends(GetAllApiKeysRequest),
     auth_service: AuthService = Depends(AuthService),
@@ -63,13 +67,13 @@ async def _get_api_key(
     return api_key.dict()
 
 
-@router.patch("/set-status", response_model=GetApiKeyResponse)
-async def _set_api_key_status(
-    params: SetApiKeyStatusQuery = Depends(SetApiKeyStatusQuery),
+@router.patch("/modify", response_model=GetApiKeyResponse)
+async def _modify_api_key(
+    params: ModifyApiKeyParamsQuery = Depends(ModifyApiKeyParamsQuery),
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
-    api_key = auth_service.set_api_key_status(params, request_session.id)
+    api_key = auth_service.modify_api_key(params, request_session.id)
     return api_key
 
 
@@ -80,7 +84,7 @@ async def _set_api_key_status(
     include_in_schema=False,
 )
 async def _create_ulca_api_key(
-    request: ULCAApiKeyRequest,
+    request: ULCACreateApiKeyRequest,
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
@@ -88,6 +92,7 @@ async def _create_ulca_api_key(
         name=(request.emailId + "/" + request.appName),
         type=ApiKeyType.INFERENCE,
         regenerate=True,
+        data_tracking=request.dataTracking,
     )
     api_key = auth_service.create_api_key(create_api_key_req, request_session.id)
     return ULCAApiKeyGenerationResponse(value=api_key)
@@ -103,9 +108,27 @@ async def _create_ulca_api_key(
     include_in_schema=False,
 )
 async def _delete_ulca_api_key(
-    request: ULCAApiKeyRequest,
+    request: ULCACreateApiKeyRequest,
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
     res = auth_service.set_api_key_status_ulca(request, request_session.id)
+    return res
+
+
+@router.patch(
+    "/ulca",
+    response_model=ULCAApiKeyTrackingResponse,
+    responses={
+        "500": {"model": ULCAApiKeyTrackingResponse},
+        "404": {"model": ULCAApiKeyTrackingResponse},
+    },
+    include_in_schema=False,
+)
+async def _set_ulca_api_key_tracking(
+    params: ULCASetApiKeyTrackingQuery = Depends(ULCASetApiKeyTrackingQuery),
+    auth_service: AuthService = Depends(AuthService),
+    request_session: RequestSession = Depends(InjectRequestSession),
+):
+    res = auth_service.set_api_key_tracking_ulca(params, request_session.id)
     return res

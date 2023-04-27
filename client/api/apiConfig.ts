@@ -57,8 +57,17 @@ apiInstance.interceptors.response.use(
             return apiInstance(originalRequest);
           }
         })
+<<<<<<< HEAD
         .catch(() => {
           window.location.replace("/");
+=======
+        .catch((e)=>{
+          if(window.location.pathname !== "/")
+          {
+            window.location.replace("/");
+          }
+          throw e;
+>>>>>>> master
         });
     } else {
       throw error;

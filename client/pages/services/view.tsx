@@ -1,42 +1,136 @@
-import { useRouter } from "next/router";
 import {
   Box,
+  Button,
   Heading,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
-  Tabs,
   TabList,
-  TabPanels,
   Tab,
-  TabPanel,
-  Text,
   Grid,
   GridItem,
   Select,
+  Tabs,
+  useDisclosure,
 } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import { SlGraph } from "react-icons/sl";
+import { getService, listalluserkeys } from "../../api/serviceAPI";
+import Documentation from "../../components/Documentation/Documentation";
+import Feedback from "../../components/Feedback/Feedback";
 import ContentLayout from "../../components/Layouts/ContentLayout";
+import Usage from "../../components/Services/Usage";
 import ASRTry from "../../components/TryOut/ASR";
-import TTSTry from "../../components/TryOut/TTS";
+import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
+<<<<<<< HEAD
 import NERTry from "../../components/TryOut/NER";
 import XLITTry from "../../components/TryOut/XLIT";
+=======
+import TTSTry from "../../components/TryOut/TTS";
+>>>>>>> master
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { useState, useEffect } from "react";
+<<<<<<< HEAD
 import Documentation from "../../components/Documentation/Documentation";
+=======
+import axios from "axios";
+>>>>>>> master
 import Head from "next/head";
+import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 import { useQuery } from "@tanstack/react-query";
-import { getService } from "../../api/serviceAPI";
-import Feedback from "../../components/Feedback/Feedback";
-import Usage from "../../components/Services/Usage";
 
-interface LanguageConfig {
-  sourceLanguage: string;
-  targetLanguage: string;
+
+function ServicePerformanceModal({ ...props }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const user_id = localStorage.getItem("user_id");
+  const [userId, setUserId] = useState(user_id);
+  const service_id = props.service_id;
+  const { data: keylist } = useQuery(["keys"], () =>
+    listalluserkeys(service_id, userId)
+  );
+  const [apiKeyName, setAPIKeyName] = useState("");
+
+  useEffect(() => {
+    if (keylist) {
+      setAPIKeyName(keylist["api_keys"][0]["name"]);
+    }
+  }, [keylist]);
+
+  return (
+    <>
+      <Button onClick={onOpen}>
+        <SlGraph />
+      </Button>
+
+      <Modal isOpen={isOpen} size={"full"} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            <Heading>Service Specific Dashboard</Heading>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack direction={"column"}>
+              <Stack direction="row">
+                <Heading size={"md"}>API Key Name:</Heading>
+                {keylist ? (
+                  <Select
+                    value={apiKeyName}
+                    onChange={(e) => {
+                      if (e.target.value === ".*") {
+                        setUserId(".*");
+                      } else {
+                        setUserId(user_id);
+                      }
+                      setAPIKeyName(e.target.value);
+                    }}
+                  >
+                    <option key={"overall"} value=".*">
+                      Overall
+                    </option>
+                    {keylist["api_keys"].map((key) => {
+                      return (
+                        <option key={key.name} value={key.name}>
+                          {key.name}
+                        </option>
+                      );
+                    })}
+                  </Select>
+                ) : (
+                  <></>
+                )}
+              </Stack>
+            </Stack>
+            <br />
+            <iframe
+              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${userId}&var-inferenceServiceId=${service_id}&from=now-1h&to=now&kiosk=tv`}
+              width={"100%"}
+              height={600}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 }
 
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { data: serviceInfo, isLoading } = useQuery(
     ["service", router.query["serviceId"]],
     () => getService(router.query["serviceId"] as string)
@@ -71,7 +165,7 @@ export default function ViewService() {
     }
   };
 
-  if (isLoading || !serviceInfo) return <div>Loading...</div>;
+  if (isLoading || !serviceInfo) return ;
 
   return (
     <>
@@ -91,6 +185,9 @@ export default function ViewService() {
             <GridItem p="1rem" bg="white">
               <Stack spacing={10} direction={"row"}>
                 <Heading>{serviceInfo["name"]}</Heading>
+                <ServicePerformanceModal
+                  service_id={router.query["serviceId"]}
+                />
               </Stack>
               <br />
               <Tabs index={tabIndex} isFitted>
@@ -103,47 +200,7 @@ export default function ViewService() {
                   <option value={2}>Feedback</option>
                   <option value={3}>Usage</option>
                 </Select>
-                <TabPanels>
-                  <TabPanel>
-                    <Stack spacing={5}>
-                      <Text className="dview-service-description">
-                        {serviceInfo["serviceDescription"]}
-                      </Text>
-                      <Stack>
-                        <Text className="dview-service-info-item">
-                          Model Version : {serviceInfo["model"]["version"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Model Type : {serviceInfo["model"]["task"]["type"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Running On : {serviceInfo["hardwareDescription"]}
-                        </Text>
-                        <Text className="dview-service-info-item">
-                          Published On :{" "}
-                          {new Date(serviceInfo["publishedOn"]).toDateString()}
-                        </Text>
-                      </Stack>
-                    </Stack>
-                  </TabPanel>
-                  <TabPanel>
-                    <Documentation serviceInfo={serviceInfo} />
-                  </TabPanel>
-                  <TabPanel>
-                    {languages ? (
-                      <Feedback
-                        serviceID={router.query["serviceId"]}
-                        userID={"john_doe_dummy_id"}
-                        serviceLanguages={languages}
-                      />
-                    ) : (
-                      <></>
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                    <Usage serviceID={router.query["serviceId"]} />
-                  </TabPanel>
-                </TabPanels>
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
               </Tabs>
             </GridItem>
             <GridItem p="1rem" bg="white">
@@ -167,6 +224,9 @@ export default function ViewService() {
             <GridItem>
               <Stack spacing={10} direction={"row"} mb="1rem">
                 <Heading>{serviceInfo["name"]}</Heading>
+                <ServicePerformanceModal
+                  service_id={router.query["serviceId"]}
+                />
               </Stack>
               <Tabs isFitted>
                 <TabList mb="1em">
@@ -175,6 +235,7 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
+<<<<<<< HEAD
                 <TabPanels>
                   <TabPanel>
                     <Stack spacing={5}>
@@ -219,6 +280,9 @@ export default function ViewService() {
                     <Usage serviceID={router.query["serviceId"]} />
                   </TabPanel>
                 </TabPanels>
+=======
+                <ViewServiceTabs languages={languages} serviceID={router.query["serviceId"]} serviceInfo={serviceInfo}/>
+>>>>>>> master
               </Tabs>
             </GridItem>
             <GridItem>
