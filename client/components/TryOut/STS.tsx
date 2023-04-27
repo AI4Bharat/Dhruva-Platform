@@ -23,13 +23,19 @@ import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import { CloseIcon } from "@chakra-ui/icons";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function STSTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const STSTry: React.FC<Props> = (props) => {
   const [language, setLanguage] = useState(
     JSON.stringify({
       sourceLanguage: "en",
@@ -326,4 +332,6 @@ export default function STSTry({ ...props }) {
       {modal}
     </>
   );
-}
+};
+
+export default STSTry;

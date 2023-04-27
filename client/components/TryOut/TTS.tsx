@@ -19,13 +19,19 @@ import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function TTSTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const TTSTry: React.FC<Props> = (props) => {
   const [languages, setLanguages] = useState<string[]>([]);
   const [language, setLanguage] = useState("hi");
   const [voice, setVoice] = useState("male");
@@ -202,4 +208,6 @@ export default function TTSTry({ ...props }) {
       </Grid>
     </>
   );
-}
+};
+
+export default TTSTry;

@@ -18,13 +18,19 @@ import { useState, useEffect } from "react";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label, tag2Color } from "../../config/config";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function NERTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const NERTry: React.FC<Props> = (props) => {
   const [languages, setLanguages] = useState<string[]>([]);
   const [language, setLanguage] = useState("hi");
   const [fetching, setFetching] = useState(false);
@@ -208,4 +214,6 @@ export default function NERTry({ ...props }) {
       </GridItem>
     </Grid>
   );
-}
+};
+
+export default NERTry;

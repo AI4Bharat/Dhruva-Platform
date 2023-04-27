@@ -18,13 +18,19 @@ import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function NMTTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const NMTTry: React.FC<Props> = (props) => {
   const [language, setLanguage] = useState(
     JSON.stringify({
       sourceLanguage: "en",
@@ -193,4 +199,6 @@ export default function NMTTry({ ...props }) {
       </GridItem>
     </Grid>
   );
-}
+};
+
+export default NMTTry;

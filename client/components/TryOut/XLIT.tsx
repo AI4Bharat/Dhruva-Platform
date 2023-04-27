@@ -17,13 +17,19 @@ import { useEffect, useState } from "react";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function XLITTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const XLITTry: React.FC<Props> = (props) => {
   const [language, setLanguage] = useState(
     JSON.stringify({
       sourceLanguage: "en",
@@ -189,4 +195,6 @@ export default function XLITTry({ ...props }) {
       </GridItem>
     </Grid>
   );
-}
+};
+
+export default XLITTry;
