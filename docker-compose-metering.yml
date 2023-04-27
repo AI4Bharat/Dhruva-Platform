@@ -18,7 +18,7 @@ services:
 
   celery:
     container_name: celery
-    image: celery_image
+    image: server
     build:
       context: ./server
     working_dir: /src
@@ -37,7 +37,7 @@ services:
   
   celery_beat:
     container_name: celery_beat
-    image: celery_image
+    image: server
     working_dir: /src
     # Not having the depends clause due to version issues in production
     # depends_on:

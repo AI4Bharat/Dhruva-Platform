@@ -1,14 +1,25 @@
-import { Box, HStack, Slide, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, HStack, Menu, MenuButton, MenuItem, MenuList, Slide, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { GiHamburgerMenu } from "react-icons/gi";
-import Sidebar from "./Sidebar";
 import SidebarMobile from "./SidebarMobile";
+import { BiUser } from "react-icons/bi";
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "../../api/authAPI";
 
 const NavbarMobile = () => {
   const [title, setTitle] = useState<String>("Dashboard");
   const { isOpen, onToggle } = useDisclosure()
   const router = useRouter();
+  const {data:user} = useQuery(['User'], ()=>getUser(localStorage.getItem('email')))
+  const Logout = () =>
+  {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("current_page");
+      localStorage.removeItem("email");
+      router.push('/')
+  }
 
   useEffect(() => {
     let url = router.pathname.split("/");
@@ -50,10 +61,29 @@ const NavbarMobile = () => {
             <Slide direction='left' in={isOpen} style={{ zIndex: 10 }} onClick={onToggle}>
                 < SidebarMobile />
             </Slide>
-            <Text fontWeight={"bold"} fontSize="2xl">
-                {title}
+            <Text fontWeight={"bold"} fontSize="3xl" ml="2rem" >
+              {title}
             </Text>
-        </HStack>
+            <Spacer/>
+            <Box  >
+            <Menu>
+            <MenuButton
+              width="10rem" 
+              px={4}
+              py={2}
+              transition='all 0.2s'
+            >
+              <HStack>
+              <BiUser/>
+              <Text>{user?.name}</Text>
+              </HStack>
+            </MenuButton>
+            <MenuList>
+              <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
+            </MenuList>
+          </Menu>
+          </Box>
+      </HStack>
       </Box>
     </Box>
   );
