@@ -12,7 +12,7 @@ const login = async (email: string, password: string) => {
     localStorage.setItem("refresh_token", token);
     localStorage.setItem("user_id", user_id);
   }
-  await timeout(500);
+  await timeout(1000);
   await getNewAccessToken();
 };
 
