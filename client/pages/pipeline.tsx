@@ -13,6 +13,12 @@ import {
   Text,
   Box,
   Textarea,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  SimpleGrid,
+  Progress,
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import Head from "next/head";
@@ -23,6 +29,7 @@ import { listServices } from "../api/serviceAPI";
 import ContentLayout from "../components/Layouts/ContentLayout";
 import { lang2label } from "../config/config";
 import useMediaQuery from "../hooks/useMediaQuery";
+import { getWordCount } from "../utils/utils";
 
 function PipelineInterface() {
   const { data: services } = useQuery(["services"], listServices);
@@ -50,8 +57,14 @@ function PipelineInterface() {
   const [audioStream, setAudioStream] = useState<any>(null);
   const [fetched, setFetched] = useState(false);
 
+  const [requestWordCount, setRequestWordCount] = useState(0);
+  const [responseWordCount, setResponseWordCount] = useState(0);
+  const [requestTime, setRequestTime] = useState("");
+  const [audioDuration, setAudioDuration] = useState(0);
+
   const [sourceText, setsourceText] = useState("");
-  const [targetText, settargetText] = useState("")
+  const [targetText, settargetText] = useState("");
+  const [audio, setAudio] = useState("");
 
   const asrFilter = (service) => {
     return service["task"]["type"] === "asr";
@@ -135,16 +148,6 @@ function PipelineInterface() {
     }
   }, [sourceLanguage, targetLanguage]);
 
-  const logConfig = () => {
-    console.log([
-      sourceLanguage,
-      targetLanguage,
-      currentASRService,
-      currentTTSService,
-      currentNMTService,
-    ]);
-  };
-
   const startRecording = () => {
     setRecording(!recording);
     setFetched(false);
@@ -174,8 +177,8 @@ function PipelineInterface() {
       var result = reader.result as string;
       var base64Data = result.split(",")[1];
       getPipelineOutput(base64Data);
-      // var audio = new Audio("data:audio/wav;base64," + base64Data);
-      // audio.play();
+      var audio = new Audio("data:audio/wav;base64," + base64Data);
+      audio.play();
     };
   };
 
@@ -189,46 +192,50 @@ function PipelineInterface() {
   };
 
   const getPipelineOutput = (asrInput) => {
+    setFetched(false);
+    setFetching(true);
     apiInstance
       .post(
         dhruvaAPI.pipelineInference,
         {
           pipelineTasks: [
             {
-              "taskType": "asr",
-              "config": {
-                "serviceId": currentASRService,
-                "language": {
-                  "sourceLanguage": sourceLanguage
-                }
-              }
-            },
-            {
-              "taskType": "translation",
-              "config": {
-                "serviceId": currentNMTService,
-                "language": {
-                  "sourceLanguage": sourceLanguage,
-                  "targetLanguage": targetLanguage
-                }
-              }
-            },
-            {
-              "taskType": "tts",
-              "config": {
-                "serviceId": currentTTSService,
-                "language": {
-                  "sourceLanguage": targetLanguage
+              taskType: "asr",
+              config: {
+                serviceId: currentASRService,
+                language: {
+                  sourceLanguage: sourceLanguage,
                 },
-                "gender": "male"
-              }
-            }
+              },
+            },
+            {
+              taskType: "translation",
+              config: {
+                serviceId: currentNMTService,
+                language: {
+                  sourceLanguage: sourceLanguage,
+                  targetLanguage: targetLanguage,
+                },
+              },
+            },
+            {
+              taskType: "tts",
+              config: {
+                serviceId: currentTTSService,
+                language: {
+                  sourceLanguage: targetLanguage,
+                },
+                gender: "male",
+              },
+            },
           ],
           inputData: {
             input: [],
-            audio: [{
-              "audioContent": asrInput
-            }],
+            audio: [
+              {
+                audioContent: asrInput,
+              },
+            ],
           },
         },
         {
@@ -242,9 +249,20 @@ function PipelineInterface() {
       .then((response) => {
         const pipelineData = response.data["pipelineResponse"];
         const nmtOutput = pipelineData[1]["output"][0];
-        const ttsOutput = pipelineData[2];
+        const audioContent = pipelineData[2]["audio"][0]["audioContent"];
+        var audio = "data:audio/wav;base64," + audioContent;
+        var audioObject = new Audio(audio);
+        audioObject.addEventListener("loadedmetadata", () => {
+          setAudioDuration(audioObject.duration);
+        });
         setsourceText(nmtOutput["source"]);
         settargetText(nmtOutput["target"]);
+        setAudio(audio);
+        setFetching(false);
+        setFetched(true);
+        setRequestWordCount(getWordCount(nmtOutput["source"]));
+        setResponseWordCount(getWordCount(nmtOutput["target"]));
+        setRequestTime(response.headers["request-duration"]);
       });
   };
 
@@ -411,8 +429,45 @@ function PipelineInterface() {
                 />
               </Button>
             </Stack>
-            <Textarea>{sourceText}</Textarea>
-            <Textarea>{targetText}</Textarea>
+            {fetching ? <Progress size="xs" isIndeterminate /> : <></>}
+            {fetched ? (
+              <SimpleGrid
+                p="1rem"
+                w="100%"
+                h="auto"
+                bg="orange.100"
+                borderRadius={15}
+                columns={2}
+                spacingX="40px"
+                spacingY="20px"
+              >
+                <Stat>
+                  <StatLabel>Word Count</StatLabel>
+                  <StatNumber>{requestWordCount}</StatNumber>
+                  <StatHelpText>Request</StatHelpText>
+                </Stat>
+                <Stat>
+                  <StatLabel>Word Count</StatLabel>
+                  <StatNumber>{responseWordCount}</StatNumber>
+                  <StatHelpText>Response</StatHelpText>
+                </Stat>
+                <Stat>
+                  <StatLabel>Response Time</StatLabel>
+                  <StatNumber>{Number(requestTime) / 1000}</StatNumber>
+                  <StatHelpText>seconds</StatHelpText>
+                </Stat>
+                <Stat>
+                  <StatLabel>TTS Audio Duration</StatLabel>
+                  <StatNumber>{audioDuration}</StatNumber>
+                  <StatHelpText>seconds</StatHelpText>
+                </Stat>
+              </SimpleGrid>
+            ) : (
+              <></>
+            )}
+            <Textarea readOnly value={sourceText} />
+            <Textarea readOnly value={targetText} />
+            <audio style={{ width: "auto" }} src={audio} controls />
           </Stack>
         </Stack>
       </GridItem>
