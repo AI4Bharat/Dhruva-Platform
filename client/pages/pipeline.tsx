@@ -1,30 +1,28 @@
 import {
-  Box,
-  Heading,
-  Stack,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Text,
+  Button,
   Grid,
   GridItem,
+  Heading,
   Select,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  Box,
   Textarea,
-  Button,
-  Input,
 } from "@chakra-ui/react";
-import ContentLayout from "../components/Layouts/ContentLayout";
-import Head from "next/head";
-import useMediaQuery from "../hooks/useMediaQuery";
 import { useQuery } from "@tanstack/react-query";
-import { listServices } from "../api/serviceAPI";
-import { useState, useEffect } from "react";
-import { lang2label } from "../config/config";
+import Head from "next/head";
+import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import { apiInstance } from "../api/apiConfig";
-import { dhruvaAPI } from "../api/apiConfig";
+import { apiInstance, dhruvaAPI } from "../api/apiConfig";
+import { listServices } from "../api/serviceAPI";
+import ContentLayout from "../components/Layouts/ContentLayout";
+import { lang2label } from "../config/config";
+import useMediaQuery from "../hooks/useMediaQuery";
 
 function PipelineInterface() {
   const { data: services } = useQuery(["services"], listServices);
@@ -250,7 +248,7 @@ function PipelineInterface() {
           </TabPanels>
         </Tabs>
       </GridItem>
-      <GridItem p="1rem" bg="white">
+      {/* <GridItem p="1rem" bg="white">
         <Stack spacing={5} direction={"column"}>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">Source:</Text>
@@ -394,6 +392,22 @@ function PipelineInterface() {
             <Textarea readOnly></Textarea>
             <Textarea readOnly></Textarea>
           </Stack>
+        </Stack>
+      </GridItem> */}
+      <GridItem p="1rem" bg="white">
+        <Button fontSize={25} fontWeight={"bold"} w="100%">
+          +
+        </Button>
+        <br />
+        <Stack m={5} spacing={5}>
+          <Box justifyContent={"center"} alignItems={"center"}>
+            <Stack direction={"row"}>
+              <Text className="dview-service-try-option-title">
+                ASR Service:
+              </Text>
+              <Select></Select>
+            </Stack>
+          </Box>
         </Stack>
       </GridItem>
     </>
