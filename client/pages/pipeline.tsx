@@ -50,6 +50,9 @@ function PipelineInterface() {
   const [audioStream, setAudioStream] = useState<any>(null);
   const [fetched, setFetched] = useState(false);
 
+  const [sourceText, setsourceText] = useState("");
+  const [targetText, settargetText] = useState("")
+
   const asrFilter = (service) => {
     return service["task"]["type"] === "asr";
   };
@@ -192,25 +195,40 @@ function PipelineInterface() {
         {
           pipelineTasks: [
             {
-              taskType: "translation",
-              config: {
-                serviceId: "",
-                language: {
-                  sourceLanguage: "en",
-                  sourceScriptCode: "",
-                  targetLanguage: "ta",
-                  targetScriptCode: "",
-                },
-              },
+              "taskType": "asr",
+              "config": {
+                "serviceId": currentASRService,
+                "language": {
+                  "sourceLanguage": sourceLanguage
+                }
+              }
             },
+            {
+              "taskType": "translation",
+              "config": {
+                "serviceId": currentNMTService,
+                "language": {
+                  "sourceLanguage": sourceLanguage,
+                  "targetLanguage": targetLanguage
+                }
+              }
+            },
+            {
+              "taskType": "tts",
+              "config": {
+                "serviceId": currentTTSService,
+                "language": {
+                  "sourceLanguage": targetLanguage
+                },
+                "gender": "male"
+              }
+            }
           ],
           inputData: {
-            input: [
-              {
-                source: "who is there?",
-              },
-            ],
-            audio: [{}],
+            input: [],
+            audio: [{
+              "audioContent": asrInput
+            }],
           },
         },
         {
@@ -222,8 +240,11 @@ function PipelineInterface() {
         }
       )
       .then((response) => {
-        const data = response;
-        console.log(data);
+        const pipelineData = response.data["pipelineResponse"];
+        const nmtOutput = pipelineData[1]["output"][0];
+        const ttsOutput = pipelineData[2];
+        setsourceText(nmtOutput["source"]);
+        settargetText(nmtOutput["target"]);
       });
   };
 
@@ -231,7 +252,7 @@ function PipelineInterface() {
     <>
       <GridItem p="1rem" bg="white" gap={5}>
         <Stack spacing={10} direction={"row"} mb="1rem">
-          <Heading>Pipeline</Heading>
+          <Heading>Pipeline (Speech2Speech)</Heading>
         </Stack>
         <Tabs isFitted>
           <TabList mb="1em">
@@ -248,7 +269,7 @@ function PipelineInterface() {
           </TabPanels>
         </Tabs>
       </GridItem>
-      {/* <GridItem p="1rem" bg="white">
+      <GridItem p="1rem" bg="white">
         <Stack spacing={5} direction={"column"}>
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">Source:</Text>
@@ -385,29 +406,14 @@ function PipelineInterface() {
                       setFetching(false);
                       setFetched(true);
                     };
+                    e.target.value = null;
                   }}
                 />
               </Button>
             </Stack>
-            <Textarea readOnly></Textarea>
-            <Textarea readOnly></Textarea>
+            <Textarea>{sourceText}</Textarea>
+            <Textarea>{targetText}</Textarea>
           </Stack>
-        </Stack>
-      </GridItem> */}
-      <GridItem p="1rem" bg="white">
-        <Button fontSize={25} fontWeight={"bold"} w="100%">
-          +
-        </Button>
-        <br />
-        <Stack m={5} spacing={5}>
-          <Box justifyContent={"center"} alignItems={"center"}>
-            <Stack direction={"row"}>
-              <Text className="dview-service-try-option-title">
-                ASR Service:
-              </Text>
-              <Select></Select>
-            </Stack>
-          </Box>
         </Stack>
       </GridItem>
     </>
