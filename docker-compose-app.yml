@@ -8,6 +8,9 @@ services:
     tty: true
     env_file:
       - .env
+    depends_on:
+      - appdb-migration
+      - logdb-migration
     volumes:
       - app_data:/server
     ports:
