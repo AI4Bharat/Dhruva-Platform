@@ -26,7 +26,7 @@ auth_details = parse_connection_string(connection_string)
 
 config = {
     "mongo_url": connection_string,
-    "mongo_database": "dhruva",
+    "mongo_database": os.environ["DB_NAME"],
     "mongo_migrations_path": "migrations",
     "metastore": "migrations",
     "execution": execution,
