@@ -8,13 +8,16 @@ const login = async (email: string, password: string) => {
   const response = await apiInstance.post("/auth/signin", { email, password });
   let token = response.data.token;
   let role = response.data.role;
+  let user_id = response.data.id;
   if (token) {
     localStorage.setItem("refresh_token", token);
+    localStorage.setItem("user_id", user_id);
   }
   if (role) {
     localStorage.setItem("user_role", role);
   }
   await timeout(500);
+  await timeout(1000);
   await getNewAccessToken();
 };
 
