@@ -45,7 +45,7 @@ def log_to_db(client_ip: str, error_msg: str, input_data: str, output_data: str,
         "service_id": service_id,
         "timestamp": datetime.now().strftime("%d-%m-%Y,%H:%M:%S"),
     }
-    
+
     # Create a file in the local data directory to upload and download
     local_file_name = str(ULID.from_timestamp(time.time())) + ".json"
 
@@ -54,7 +54,7 @@ def log_to_db(client_ip: str, error_msg: str, input_data: str, output_data: str,
     if error_msg:
         log_document["error_msg"] = error_msg
         container_name = constants.ERROR_CONTAINER
-    
+
     # Write text to the file
     blob_stream = io.BytesIO()
     blob_stream.write(json.dumps(log_document, indent=4).encode("utf-8"))
