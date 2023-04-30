@@ -49,3 +49,4 @@ jsonpickle==3.0.1
 webrtcvad==2.0.10
 torch==2.0.0
 torchaudio==2.0.1
+mongodb-migrations==1.2.1

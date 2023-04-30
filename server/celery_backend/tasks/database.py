@@ -5,6 +5,10 @@ from pymongo.database import Database
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 
+import pymongo
+from dotenv import load_dotenv
+from pymongo.database import Database
+
 load_dotenv(override=True)
 
 db_clients = {
@@ -18,7 +22,7 @@ if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
 
 
 def AppDatabase() -> Database:
-    mongo_db = db_clients["app"]["dhruva"]
+    mongo_db = db_clients["app"][os.environ["APP_DB_NAME"]]
     return mongo_db
 
 

@@ -1,0 +1,71 @@
+import { HStack, Stack, TabPanel, TabPanels, Text } from '@chakra-ui/react'
+import React from 'react'
+import Documentation from '../Documentation/Documentation';
+import Feedback from '../Feedback/Feedback';
+import Usage from './Usage';
+
+const ViewServiceTabs = ({
+  serviceInfo,
+  languages,
+  serviceID,
+}: {
+  serviceInfo: ServiceView;
+  languages: LanguageConfig[];
+  serviceID: string | string[];
+}) => {
+
+  //  const serviceInfo = props.serviceInfo;
+  //  const languages = props.languages;
+  //  const serviceID = props.serviceID;
+  return (
+    <TabPanels>
+    <TabPanel>
+      <Stack spacing={5}>
+        <Text className="dview-service-description">
+          {serviceInfo["serviceDescription"]}
+        </Text>
+        <Stack>
+          <Text className="dview-service-info-item">
+            Model Version : {serviceInfo["model"]["version"]}
+          </Text>
+          <Text className="dview-service-info-item">
+            Model Type : {serviceInfo["model"]["task"]["type"]}
+          </Text>
+          <Text className="dview-service-info-item">
+            Running On : {serviceInfo["hardwareDescription"]}
+          </Text>
+          <Text className="dview-service-info-item">
+            Published On :{" "}
+            {new Date(serviceInfo["publishedOn"]).toDateString()}
+          </Text>
+          <HStack>
+          <Text className="dview-service-info-item"> Health : </Text>
+          <Text fontWeight={"bold"} color={serviceInfo["healthStatus"]["status"]=="healthy"?"green.300":"red.300"}>
+           {serviceInfo["healthStatus"]["status"]} 
+          </Text>
+          </HStack>
+          <Text className="dview-service-info-item">
+          (updated: {new Date(serviceInfo["healthStatus"]["lastUpdated"]).toDateString()} )
+          </Text>
+        </Stack>
+      </Stack>
+    </TabPanel>
+    <TabPanel>
+      <Documentation serviceInfo={serviceInfo} />
+    </TabPanel>
+    <TabPanel>
+      {languages && (
+        <Feedback
+          serviceID={serviceID}
+          serviceLanguages={languages}
+        />
+      )}
+    </TabPanel>
+    <TabPanel>
+    <Usage serviceID={serviceID}/>
+    </TabPanel>
+  </TabPanels>
+  )
+}
+
+export default ViewServiceTabs

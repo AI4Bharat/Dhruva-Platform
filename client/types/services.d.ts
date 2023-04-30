@@ -26,3 +26,8 @@ interface ServiceView {
     };
   };
 }
+
+interface LanguageConfig {
+  sourceLanguage: string;
+  targetLanguage: string;
+}

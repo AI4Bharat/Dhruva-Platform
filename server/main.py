@@ -72,7 +72,7 @@ async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
     if os.environ.get("SEED_DB", "False") == "True":
-        seed_collection(db_clients["app"]["dhruva"])
+        seed_collection(db_clients["app"][os.environ["APP_DB_NAME"]])
 
 
 @app.on_event("startup")

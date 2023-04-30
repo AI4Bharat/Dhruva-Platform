@@ -3,12 +3,14 @@ version: "3"
 services:
   server:
     container_name: server
-    build:
-      context: ./server
+    image: server
     stdin_open: true
     tty: true
     env_file:
       - .env
+    depends_on:
+      - appdb-migration
+      - logdb-migration
     volumes:
       - app_data:/server
     ports:
@@ -32,6 +34,32 @@ services:
     env_file:
       - .env
     command: yarn start --port $FRONTEND_PORT
+    networks:
+      - dhruva-network
+
+  appdb-migration:
+    image: server
+    container_name: appdb-migration
+    env_file:
+      - .env
+    environment:
+      - DB_CONNECTION_STRING=$APP_DB_CONNECTION_STRING
+      - DB_NAME=$APP_DB_NAME
+      - MIGRATION_DIR=app_migrations
+    command: sh -c "python3 migrate.py"
+    networks:
+      - dhruva-network
+
+  logdb-migration:
+    image: server
+    container_name: logdb-migration
+    env_file:
+      - .env
+    environment:
+      - DB_CONNECTION_STRING=$LOG_DB_CONNECTION_STRING
+      - DB_NAME=$LOG_DB_NAME
+      - MIGRATION_DIR=log_migrations
+    command: sh -c "python3 migrate.py"
     networks:
       - dhruva-network
 
