@@ -349,11 +349,17 @@ class InferenceService:
                     headers=headers,
                 )
                 bytes = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
+                standard_rate = 22050
+                if target_sr != standard_rate:
+                    number_of_samples = round(len(bytes) * target_sr / standard_rate)
+                    bytes = sps.resample(bytes, number_of_samples)
                 byte_io = io.BytesIO()
+               
                 wavfile.write(byte_io, target_sr, bytes)
                 format = request_body.config.audioFormat
                 if format == "pcm" :
                     format = "s16le"
+
                 AudioSegment.from_file_using_temporary_files(byte_io).export(
                     byte_io, format=format
                 )
