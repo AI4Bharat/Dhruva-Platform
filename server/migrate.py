@@ -27,7 +27,7 @@ auth_details = parse_connection_string(connection_string)
 config = {
     "mongo_url": connection_string,
     "mongo_database": os.environ["DB_NAME"],
-    "mongo_migrations_path": "migrations",
+    "mongo_migrations_path": os.environ["MIGRATION_DIR"],
     "metastore": "migrations",
     "execution": execution,
     **auth_details,
