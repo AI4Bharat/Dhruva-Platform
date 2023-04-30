@@ -521,6 +521,7 @@ class InferenceService:
 
             error_msg, exception = None, None
             try:
+                api_key_id = str(request_state.state.api_key_id)  # Having this here to capture all errors
                 previous_output_json = await self.run_inference(
                     request=new_request, serviceId=serviceId
                 )
@@ -543,7 +544,7 @@ class InferenceService:
                     request_state.headers.get("X-Forwarded-For", request_state.client.host),
                     data_tracking_consent,
                     error_msg,
-                    str(request_state.state.api_key_id),
+                    api_key_id,
                     new_request.json(),
                     # Error in first task will result in a dict, not pydaantic model response
                     previous_output_json if isinstance(previous_output_json, dict) \

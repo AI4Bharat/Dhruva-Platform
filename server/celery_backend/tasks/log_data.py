@@ -1,33 +1,76 @@
-import json
-import logging
+import io
 import os
+import json
+import time
+import base64
+import logging
 from datetime import datetime
-from time import time
+from urllib.request import urlopen
 
+from ulid import ULID
 from ..celery_app import app
-from .database import LogDatabase
+from .database import LogDatastore
 from .metering import meter_usage
+from . import constants
 
-logs_db = LogDatabase()
 
-
-def log_to_db(client_ip: str, error_msg: str, inp: str, output: str, api_key_id: str, service_id: str):
+def log_to_db(client_ip: str, error_msg: str, input_data: str, output_data: str, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
-    sanitized_service_id = service_id.replace("/", "~")
+
+    inp, op = input_data, output_data
+    if output_data.get("taskType") == "asr":
+        inp = [o["audioContent"] for o in input_data.get("audio")] \
+            if input_data and input_data.get("audio") else None
+        op = [o["source"] for o in output_data.get("output")] \
+            if output_data and output_data.get("output") else None
+    elif output_data.get("taskType") == "translation" or output_data.get("taskType") == "transliteration":
+        inp = [o["source"] for o in output_data.get("output")] \
+            if output_data and output_data.get("output") else None
+        op = [o["target"] for o in output_data.get("output")] \
+            if output_data and output_data.get("output") else None
+    elif output_data.get("taskType") == "tts":
+        inp = [o["source"] for o in input_data.get("input")] if \
+            input_data and input_data.get("input") else None
+        op = [o["audioContent"] for o in output_data.get("audio")] \
+            if output_data and output_data.get("audio") else None
 
     log_document = {
         "client_ip": client_ip,
+        "source_language": input_data.get("config", {}).get("language", {}).get("sourceLanguage"),
+        "target_language": input_data.get("config", {}).get("language", {}).get("targetLanguage"),
         "input": inp,
-        "output": output,
+        "task_type": output_data.get("taskType"),
+        "output": op,
         "api_key_id": api_key_id,
-        "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S"),
+        "service_id": service_id,
+        "timestamp": datetime.now().strftime("%d-%m-%Y,%H:%M:%S"),
     }
+    
+    # Create a file in the local data directory to upload and download
+    local_file_name = str(ULID.from_timestamp(time.time())) + ".json"
+
+    # Create a blob client using the local file name as the name for the blob
+    container_name = constants.LOGS_CONTAINER
     if error_msg:
-        errors_collection = logs_db["errors-" + sanitized_service_id]
-        errors_collection.insert_one(log_document)
-    else:
-        logs_collection = logs_db[sanitized_service_id]
-        logs_collection.insert_one(log_document)
+        log_document["error_msg"] = error_msg
+        container_name = constants.ERROR_CONTAINER
+    
+    # Write text to the file
+    blob_stream = io.BytesIO()
+    blob_stream.write(json.dumps(log_document, indent=4).encode("utf-8"))
+    blob_stream.seek(0)
+
+    log_store = LogDatastore()
+
+    # Files are stored based on the date
+    blob_path = os.path.join(datetime.now().strftime("%Y/%m/%d"), local_file_name)
+    blob_client = log_store.get_blob_client(container=container_name, blob=blob_path)
+    print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
+
+    # Upload the created file
+    t = time.time()
+    blob_client.upload_blob(blob_stream.read())
+    print(f"Upload time: {time.time() - t}")
 
 
 @app.task(name="log.data")
@@ -40,20 +83,28 @@ def log_data(
     api_key_id: str,
     req_body: str,
     resp_body: str,
-    response_time: time,
+    response_time: time.time,
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
-    resp_body = json.loads(resp_body) if resp_body else None
+    resp_body = json.loads(resp_body) if resp_body else {}
     req_body = json.loads(req_body)
 
     data_usage = None
     if usage_type == "tts":
         data_usage = req_body["input"]
+
     elif usage_type == "asr":
+        for i, ele in enumerate(req_body["audio"]):
+            if ele["audioUri"]:
+                req_body["audio"][i]["audioContent"] = base64.b64encode(
+                    urlopen(ele["audioUri"]).read()
+                ).decode("utf-8")
         data_usage = req_body["audio"]
+
     elif usage_type == "translation":
         data_usage = req_body["input"]
+
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 

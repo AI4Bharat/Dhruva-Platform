@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 import pymongo
 from pymongo.database import Database
-
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
 
 load_dotenv(override=True)
 
@@ -21,6 +22,11 @@ def AppDatabase() -> Database:
     return mongo_db
 
 
-def LogDatabase() -> Database:
-    mongo_db = db_clients["log"]["dhruva"]
-    return mongo_db
+def LogDatastore() -> BlobServiceClient:
+    # mongo_db = db_clients["log"]["dhruva"]
+
+    token_credential = DefaultAzureCredential()
+    blob_service_client = BlobServiceClient(
+            account_url=f'https://{os.environ.get("BLOB_STORE")}.blob.core.windows.net',
+            credential=token_credential)
+    return blob_service_client

@@ -109,8 +109,12 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
     metering_collection = metering_db["api_key"]
     doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
 
+    if doc is None:
+        print("No document found for the API key")
+        return
+
     # Check for the document
-    if "services" in doc:
+    if "services" in doc and doc["services"]:
         # Check for services
         for service in doc["services"]:
             if service["service_id"] == service_id:
