@@ -45,6 +45,7 @@ services:
     environment:
       - DB_CONNECTION_STRING=$APP_DB_CONNECTION_STRING
       - DB_NAME=$APP_DB_NAME
+      - MIGRATION_DIR=app_migrations
     command: sh -c "python3 migrate.py"
     networks:
       - dhruva-network
@@ -57,6 +58,7 @@ services:
     environment:
       - DB_CONNECTION_STRING=$LOG_DB_CONNECTION_STRING
       - DB_NAME=$LOG_DB_NAME
+      - MIGRATION_DIR=log_migrations
     command: sh -c "python3 migrate.py"
     networks:
       - dhruva-network
