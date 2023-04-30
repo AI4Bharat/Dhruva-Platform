@@ -361,7 +361,7 @@ class AuthService:
 
         if params.active:
             api_key.activate()
-        elif params.data_tracking == False:
+        elif params.active == False:
             api_key.revoke()
 
         try:

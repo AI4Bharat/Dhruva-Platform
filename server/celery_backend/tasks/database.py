@@ -1,8 +1,8 @@
 import os
-from dotenv import load_dotenv
-import pymongo
-from pymongo.database import Database
 
+import pymongo
+from dotenv import load_dotenv
+from pymongo.database import Database
 
 load_dotenv(override=True)
 
@@ -17,10 +17,10 @@ if os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None):
 
 
 def AppDatabase() -> Database:
-    mongo_db = db_clients["app"]["dhruva"]
+    mongo_db = db_clients["app"][os.environ["APP_DB_NAME"]]
     return mongo_db
 
 
 def LogDatabase() -> Database:
-    mongo_db = db_clients["log"]["dhruva"]
+    mongo_db = db_clients["log"][os.environ["LOG_DB_NAME"]]
     return mongo_db
