@@ -19,8 +19,6 @@ services:
   celery:
     container_name: celery
     image: server
-    build:
-      context: ./server
     working_dir: /src
     # Not having the depends clause due to version issues in production
     # TODO: Prod docker-compose version upgrade
@@ -34,7 +32,7 @@ services:
     command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
     networks:
       - dhruva-network
-  
+
   celery_beat:
     container_name: celery_beat
     image: server
@@ -50,7 +48,6 @@ services:
     command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
     networks:
       - dhruva-network
-
   # Use Flower later for monitoring
   # celery-flower:
   #   container_name: celery-flower

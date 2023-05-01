@@ -14,7 +14,6 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
@@ -30,7 +29,7 @@ interface Props {
   serviceId: string;
 }
 
-const NMTTry: React.FC<Props> = (props) => {
+const XLITTry: React.FC<Props> = (props) => {
   const [language, setLanguage] = useState(
     JSON.stringify({
       sourceLanguage: "en",
@@ -38,27 +37,35 @@ const NMTTry: React.FC<Props> = (props) => {
     })
   );
   const [tltText, setTltText] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
+  const [transliteratedText, settransliteratedText] = useState("");
   const [fetching, setFetching] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [requestWordCount, setRequestWordCount] = useState(0);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
 
-  const getTranslation = (source: string) => {
+  const getTransliteration = (source: string) => {
     setFetched(false);
     setFetching(true);
     apiInstance
       .post(
-        dhruvaAPI.translationInference + `?serviceId=${props.serviceId}`,
+        dhruvaAPI.xlitInference + `?serviceId=${props.serviceId}`,
         {
           input: [
             {
-              source: source,
+              source: tltText,
             },
           ],
           config: {
-            language: JSON.parse(language),
+            serviceId: props.serviceId,
+            language: {
+              sourceLanguage: JSON.parse(language)["sourceLanguage"],
+              sourceScriptCode: "",
+              targetLanguage: JSON.parse(language)["targetLanguage"],
+              targetScriptCode: "",
+            },
+            isSentence: true,
+            numSuggestions: 5,
           },
           controlConfig: {
             dataTracking: true,
@@ -73,8 +80,9 @@ const NMTTry: React.FC<Props> = (props) => {
         }
       )
       .then((response) => {
-        var output = response.data["output"][0]["target"];
-        setTranslatedText(output);
+        console.log(response);
+        var output = response.data["output"][0]["target"][0];
+        settransliteratedText(output);
         setFetching(false);
         setFetched(true);
         setRequestWordCount(getWordCount(tltText));
@@ -85,28 +93,7 @@ const NMTTry: React.FC<Props> = (props) => {
 
   const clearIO = () => {
     setTltText("");
-    setTranslatedText("");
-  };
-
-  const renderTransliterateComponent = () => {
-    const currentLanguage: LanguageConfig = JSON.parse(language);
-    return (
-      <IndicTransliterate
-        renderComponent={(props) => (
-          <Textarea resize="none" h={200} {...props} />
-        )}
-        onChangeText={(text: string) => {
-          setTltText(text);
-        }}
-        value={tltText}
-        placeholder="Type your text here to transliterate...."
-        lang={currentLanguage.sourceLanguage}
-        onChange={undefined}
-        onBlur={undefined}
-        onKeyDown={undefined}
-        enabled={currentLanguage.sourceLanguage !== "en"}
-      />
-    );
+    settransliteratedText("");
   };
 
   useEffect(() => {
@@ -179,21 +166,30 @@ const NMTTry: React.FC<Props> = (props) => {
       )}
       <GridItem>
         <Stack>
-          {renderTransliterateComponent()}
           <Textarea
-            readOnly
-            value={translatedText}
+            value={tltText}
+            onChange={(e) => {
+              setTltText(e.target.value);
+            }}
             w={"auto"}
             resize="none"
             h={200}
-            placeholder="View Translation Here..."
+            placeholder="Type in Source Language Here..."
+          />
+          <Textarea
+            readOnly
+            value={transliteratedText}
+            w={"auto"}
+            resize="none"
+            h={200}
+            placeholder="View Transliteration Here..."
           />
           <Button
             onClick={() => {
-              getTranslation(tltText);
+              getTransliteration(tltText);
             }}
           >
-            Translate
+            Transliterate
           </Button>
         </Stack>
       </GridItem>
@@ -201,4 +197,4 @@ const NMTTry: React.FC<Props> = (props) => {
   );
 };
 
-export default NMTTry;
+export default XLITTry;

@@ -31,6 +31,7 @@ import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
+import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
 
 function ServicePerformanceModal({ ...props }) {
@@ -133,7 +134,7 @@ export default function ViewService() {
 
   const renderTryIt = (taskType: string) => {
     if (languages) {
-      const serviceId = router.query["serviceId"];
+      const serviceId = router.query["serviceId"] as string;
       switch (taskType) {
         case "asr":
           return <ASRTry languages={languages} serviceId={serviceId} />;
@@ -145,6 +146,8 @@ export default function ViewService() {
           return <STSTry languages={languages} serviceId={serviceId} />;
         case "ner":
           return <NERTry languages={languages} serviceId={serviceId} />;
+        case "transliteration":
+          return <XLITTry languages={languages} serviceId={serviceId} />;
       }
     }
   };
