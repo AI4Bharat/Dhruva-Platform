@@ -16,8 +16,8 @@ services:
     networks:
       - dhruva-network
 
-  celery:
-    container_name: celery
+  celery-metering:
+    container_name: celery-metering
     image: server
     working_dir: /src
     # Not having the depends clause due to version issues in production
@@ -29,7 +29,26 @@ services:
       - ./server:/src
     env_file:
       - .env
-    command: sh -c "python3 -m celery -A celery_backend.celery_app worker"
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker -Q data_log,heartbeat"
+    networks:
+      - dhruva-network
+
+  celery-monitoring:
+    container_name: celery-monitoring
+    image: server
+    build:
+      context: ./server
+    working_dir: /src
+    # Not having the depends clause due to version issues in production
+    # TODO: Prod docker-compose version upgrade
+    # depends_on:
+    #   rabbitmq_server:
+    #     condition: service_started
+    volumes:
+      - ./server:/src
+    env_file:
+      - .env
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker -Q metrics_log"
     networks:
       - dhruva-network
 

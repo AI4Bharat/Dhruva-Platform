@@ -518,27 +518,44 @@ class InferenceService:
                 **previous_output_json,
                 controlConfig=request_body.controlConfig,
             )
-            previous_output_json = await self.run_inference(
-                request=new_request, serviceId=serviceId
-            )
 
-            if (
-                request_state.state._state.get("api_key_data_tracking")
-                and request_body.controlConfig.dataTracking
-            ):
-                log_data.apply_async(
-                    (
-                        pipeline_task.taskType,
-                        serviceId,
-                        request_state.client.host,
-                        # request.state.data_collection_consent,
-                        str(request_state.state.api_key_id),
-                        new_request.json(),
-                        previous_output_json.json(),
-                        time.perf_counter() - start_time,
-                    ),
-                    queue="data_log",
+            error_msg, exception = None, None
+            try:
+                api_key_id = str(request_state.state.api_key_id)  # Having this here to capture all errors
+                previous_output_json = await self.run_inference(
+                    request=new_request, serviceId=serviceId
                 )
+            except BaseError as exc:
+                exception = exc
+                if exc.error_kind in (
+                    Errors.DHRUVA101.value["kind"], Errors.DHRUVA102.value["kind"]
+                ):
+                    error_msg = exc.error_kind + "_" + exc.error_message
+            except Exception as other_exception:
+                exception = other_exception
+                error_msg = str(other_exception)
+
+            data_tracking_consent = request_state.state._state.get("api_key_data_tracking") \
+                            and request_body.controlConfig \
+                            and request_body.controlConfig.dataTracking
+            log_data.apply_async(
+                (
+                    pipeline_task.taskType,
+                    serviceId,
+                    request_state.headers.get("X-Forwarded-For", request_state.client.host),
+                    data_tracking_consent,
+                    error_msg,
+                    api_key_id,
+                    new_request.json(),
+                    # Error in first task will result in a dict, not pydaantic model response
+                    previous_output_json if isinstance(previous_output_json, dict) \
+                        else previous_output_json.json(),
+                    time.perf_counter() - start_time,
+                ),
+                queue="data_log",
+            )
+            if exception:
+                raise exception
 
             results.append(deepcopy(previous_output_json))
 

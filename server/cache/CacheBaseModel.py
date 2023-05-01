@@ -9,9 +9,7 @@ from redis_om import Field as RedisField
 from redis_om import HashModel
 from redis_om.model.model import PrimaryKey
 
-from .app_cache import cache
-
-# from module.services.model.model import Model, ModelCache
+from .app_cache import get_cache_connection
 
 
 # Ignore these fields when creating models from Mongo DB Model Schemas
@@ -30,7 +28,7 @@ class CacheBaseModel(HashModel):
         global_key_prefix: str = "Dhruva"
         # TODO: Generate model_key_prefix without 'pydantic.main'
         # model_key_prefix: str = None
-        database: redis.Redis = cache
+        database: redis.Redis = get_cache_connection()
         primary_key: Optional[PrimaryKey] = None
         embedded: bool = False
         encoding: str = "utf-8"
