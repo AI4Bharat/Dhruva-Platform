@@ -81,6 +81,34 @@ const NavbarMobile = () => {
           >
             <SidebarMobile />
           </Slide>
+          <Text fontWeight={"bold"} fontSize="2xl" ml="2rem">
+            {title}
+          </Text>
+          <Spacer />
+          <Box>
+            <Menu>
+              <MenuButton width="2rem" px={0} py={2} transition="all 0.2s">
+                <BiUser />
+                {/* <HStack>
+              <BiUser/>
+               <Text>{user?.name}</Text>
+              </HStack> */}
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={Logout} value="logout">
+                  Logout
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Box>
+          <Slide
+            direction="left"
+            in={isOpen}
+            style={{ zIndex: 10 }}
+            onClick={onToggle}
+          >
+            <SidebarMobile />
+          </Slide>
           <Text fontWeight={"bold"} fontSize="3xl" ml="2rem">
             {title}
           </Text>

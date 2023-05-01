@@ -1,6 +1,8 @@
 import {
   Box,
   Button,
+  Grid,
+  GridItem,
   Heading,
   Modal,
   ModalBody,
@@ -9,33 +11,29 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Stack,
-  TabList,
-  Tab,
-  Grid,
-  GridItem,
   Select,
+  Stack,
+  Tab,
+  TabList,
   Tabs,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { SlGraph } from "react-icons/sl";
 import { getService, listalluserkeys } from "../../api/serviceAPI";
-import Documentation from "../../components/Documentation/Documentation";
-import Feedback from "../../components/Feedback/Feedback";
 import ContentLayout from "../../components/Layouts/ContentLayout";
-import Usage from "../../components/Services/Usage";
+import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 import ASRTry from "../../components/TryOut/ASR";
 import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
 import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
+import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { dhruvaAPI } from "../../api/apiConfig";
-import { useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 import { useQuery } from "@tanstack/react-query";
 
 function ServicePerformanceModal({ ...props }) {
@@ -140,7 +138,7 @@ export default function ViewService() {
 
   const renderTryIt = (taskType: string) => {
     if (languages) {
-      const serviceId = router.query["serviceId"];
+      const serviceId = router.query["serviceId"] as string;
       switch (taskType) {
         case "asr":
           return <ASRTry languages={languages} serviceId={serviceId} />;
@@ -152,6 +150,8 @@ export default function ViewService() {
           return <STSTry languages={languages} serviceId={serviceId} />;
         case "ner":
           return <NERTry languages={languages} serviceId={serviceId} />;
+        case "transliteration":
+          return <XLITTry languages={languages} serviceId={serviceId} />;
       }
     }
   };
