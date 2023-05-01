@@ -13,8 +13,10 @@ from .database import LogDatastore
 from .metering import meter_usage
 from . import constants
 
+log_store = LogDatastore()
 
-def log_to_db(client_ip: str, error_msg: str, input_data: str, output_data: str, api_key_id: str, service_id: str):
+
+def log_to_db(client_ip: str, error_msg: str, input_data: dict, output_data: dict, api_key_id: str, service_id: str):
     """Log input output data pairs to the DB"""
 
     inp, op = input_data, output_data
@@ -59,8 +61,6 @@ def log_to_db(client_ip: str, error_msg: str, input_data: str, output_data: str,
     blob_stream = io.BytesIO()
     blob_stream.write(json.dumps(log_document, indent=4).encode("utf-8"))
     blob_stream.seek(0)
-
-    log_store = LogDatastore()
 
     # Files are stored based on the date
     blob_path = os.path.join(datetime.now().strftime("%Y/%m/%d"), local_file_name)
