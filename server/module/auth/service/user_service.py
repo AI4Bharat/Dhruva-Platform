@@ -7,8 +7,8 @@ from fastapi import Depends, HTTPException, status
 
 from exception.base_error import BaseError
 from schema.auth.common import ApiKeyType
-from schema.auth.request import CreateApiKeyRequest, CreateUserRequest
-from schema.auth.response.get_user_response import GetUserResponse
+from schema.auth.request import CreateApiKeyRequest, CreateUserRequest, ModifyUserQuery
+from schema.auth.response import GetUserResponse
 
 from ..error.errors import Errors
 from ..model.user import User
@@ -77,3 +77,31 @@ class UserService:
         except Exception:
             raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
         return users
+
+    def modify_user(self, params: ModifyUserQuery, user_id: ObjectId):
+        try:
+            user = self.user_repository.find_by_id(ObjectId(user_id))
+        except Exception:
+            raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"message": "User not found"},
+            )
+
+        ph = PasswordHasher()
+
+        if params.password:
+            hashed_password = ph.hash(params.password)
+            user.password = hashed_password
+
+        if params.name:
+            user.name = params.name
+
+        try:
+            self.user_repository.save(user)
+        except Exception:
+            raise BaseError(Errors.DHRUVA212.value, traceback.format_exc())
+
+        return user
