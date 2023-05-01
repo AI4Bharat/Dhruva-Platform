@@ -536,6 +536,7 @@ class InferenceService:
                 error_msg = str(other_exception)
 
             data_tracking_consent = request_state.state._state.get("api_key_data_tracking") \
+                            and request_body.controlConfig \
                             and request_body.controlConfig.dataTracking
             log_data.apply_async(
                 (
