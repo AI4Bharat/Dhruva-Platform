@@ -80,15 +80,9 @@ class UserService:
 
     def modify_user(self, params: ModifyUserQuery, user_id: ObjectId):
         try:
-            user = self.user_repository.find_by_id(ObjectId(user_id))
+            user = self.user_repository.get_by_id(ObjectId(user_id))
         except Exception:
             raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
-
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "User not found"},
-            )
 
         ph = PasswordHasher()
 
