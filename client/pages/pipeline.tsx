@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import { apiInstance, dhruvaAPI } from "../api/apiConfig";
 import { listServices } from "../api/serviceAPI";
@@ -487,9 +487,29 @@ const task2Label = {
 const taskCompatability = {
   translation: ["asr", "translation", "transliteration"],
   tts: ["asr", "translation", "transliteration"],
-  asr: ["tts"],
+  asr: ["tts", "sts"],
   ner: ["asr", "translation", "transliteration"],
   transliteration: ["asr", "translation", "transliteration"],
+  sts: ["asr"],
+};
+
+const TaskObject = (props) => {
+  const taskElement = useRef(null);
+
+  const deleteSelf = () => {
+    taskElement.current.remove();
+    props.deleteFn;
+  };
+
+  return (
+    <Stack ref={taskElement} direction="row">
+      <Text className="dview-service-try-option-title">
+        {task2Label[props.task]}:
+      </Text>
+      <Select></Select>
+      <Button onClick={deleteSelf}>X</Button>
+    </Stack>
+  );
 };
 
 function PipelineInterface() {
@@ -558,21 +578,25 @@ function PipelineInterface() {
                 tasks.map((element) => {
                   currentTasks.push(element);
                 });
-                currentTasks.push(selectedTask);
-                settasks(currentTasks);
+                if (currentTasks.at(-1) === undefined) {
+                  currentTasks.push(selectedTask);
+                  settasks(currentTasks);
+                } else if (
+                  currentTasks.at(-1) !== undefined &&
+                  taskCompatability[selectedTask].includes(currentTasks.at(-1))
+                ) {
+                  currentTasks.push(selectedTask);
+                  settasks(currentTasks);
+                } else {
+                  alert("Not Compatabile");
+                }
               }}
             >
               +
             </Button>
           </Stack>
-          {tasks.map((task) => {
-            return (
-              <Stack direction="row">
-                <Text className="dview-service-try-option-title">
-                  {task2Label[task]}
-                </Text>
-              </Stack>
-            );
+          {tasks.map((task, key) => {
+            return <TaskObject key={key} task={task} />;
           })}
         </Stack>
       </GridItem>
