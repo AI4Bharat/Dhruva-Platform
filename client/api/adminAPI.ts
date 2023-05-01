@@ -26,8 +26,8 @@ const createkey = async (key_details : Icreatekey) => {
     return response.data;
   };
 
-  const setstatus = async ({ name, action, target_user_id }: { name: string, action: string, target_user_id:string }) => {
-    const response = await apiInstance.patch(`/auth/api-key/modify?api_key_name=${name}&target_user_id=${target_user_id}&action=${action}`);
+  const setstatus = async ({ name, active, target_user_id }: { name: string, active: boolean, target_user_id:string }) => {
+    const response = await apiInstance.patch(`/auth/api-key/modify?api_key_name=${name}&target_user_id=${target_user_id}&active=${active}`);
     return response.data;
   }
   

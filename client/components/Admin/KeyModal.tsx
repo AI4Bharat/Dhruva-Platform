@@ -100,7 +100,7 @@ const KeyModal = ({ isOpen, onClose, name, k, active, onRefresh, user_id, type, 
 
   const handleRevoke = () =>
   {
-    mutation.mutate({name : name as string, action : active ? "REVOKE" : "ACTIVATE", target_user_id: user_id}, {
+    mutation.mutate({name : name as string, active : (active ? false : true), target_user_id: user_id}, {
       onSuccess: (data) => {
         setModal(
           <Box
@@ -109,9 +109,9 @@ const KeyModal = ({ isOpen, onClose, name, k, active, onRefresh, user_id, type, 
             minH={"3rem"}
             border={"1px"}
             borderColor={"gray.300"}
-            background={active?"red.50":"green.50"}
+            background={"green.50"}
           >
-            <Text ml="1rem" mr="1rem" mt="1rem" color={active?"red.600":"green.600"}>
+            <Text ml="1rem" mr="1rem" mt="1rem" color={"green.600"}>
               Key {active?"Revoked":"Activated"} Successfully
             </Text>
           </Box>
