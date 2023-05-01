@@ -328,6 +328,11 @@ class InferenceService:
         ip_language = request_body.config.language.sourceLanguage
         ip_gender = request_body.config.gender
         target_sr = request_body.config.samplingRate
+        standard_rate = 22050
+        format = request_body.config.audioFormat
+        if format == "pcm" :
+            format = "s16le"
+        
         results = []
 
         for input in request_body.input:
@@ -348,21 +353,19 @@ class InferenceService:
                     output_list=[output0],
                     headers=headers,
                 )
-                bytes = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-                standard_rate = 22050
+                raw_audio = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
+                
                 if target_sr != standard_rate:
-                    number_of_samples = round(len(bytes) * target_sr / standard_rate)
-                    bytes = sps.resample(bytes, number_of_samples)
+                    number_of_samples = round(len(raw_audio) * target_sr / standard_rate)
+                    raw_audio = sps.resample(raw_audio, number_of_samples)
                 byte_io = io.BytesIO()
                
-                wavfile.write(byte_io, target_sr, bytes)
-                format = request_body.config.audioFormat
-                if format == "pcm" :
-                    format = "s16le"
+                wavfile.write(byte_io, target_sr, raw_audio)
 
-                AudioSegment.from_file_using_temporary_files(byte_io).export(
-                    byte_io, format=format
-                )
+                if format != "wav" :
+                    AudioSegment.from_file_using_temporary_files(byte_io).export(
+                        byte_io, format=format
+                    )
 
                 encoded_bytes = base64.b64encode(byte_io.read())
                 encoded_string = encoded_bytes.decode()
@@ -373,7 +376,7 @@ class InferenceService:
         res = {
             "config": {
                 "language": {"sourceLanguage": ip_language},
-                "audioFormat": "wav",
+                "audioFormat": request_body.config.audioFormat,
                 "encoding": "base64",
                 "samplingRate": target_sr,
             },
