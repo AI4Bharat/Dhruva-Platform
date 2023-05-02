@@ -38,9 +38,6 @@ next-env.d.ts
 # yarn
 .yarn/
 .yarnrc
-<<<<<<< HEAD
 .vscode/
-=======
 yarn.lock
 
->>>>>>> 8ffe05574e3c73522456df2b54d6cf61900e2b1b
