@@ -38,9 +38,14 @@ export default function Login() {
   const validateCredentials = async () => {
     try {
       await login(username, password);
+      localStorage.setItem("email", username);
       if(localStorage.getItem("current_page"))
       {
         router.push(localStorage.getItem("current_page"))
+      }
+      else
+      {
+        router.push(localStorage.getItem("/services"))
       }
     } catch (error) {
       if (error.response.status === 401 || error.response.status === 422) {
