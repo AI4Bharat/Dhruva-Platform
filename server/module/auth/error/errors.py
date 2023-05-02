@@ -40,3 +40,7 @@ class Errors(Enum):
         "kind": "DHRUVA-211",
         "message": "Failed to modify api key params",
     }
+    DHRUVA212 = {
+        "kind": "DHRUVA-212",
+        "message": "Failed to modify user details",
+    }

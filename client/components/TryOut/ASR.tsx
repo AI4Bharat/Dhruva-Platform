@@ -27,13 +27,19 @@ import {
   SocketStatus,
 } from "@project-sunbird/open-speech-streaming-client";
 import { CloseIcon } from "@chakra-ui/icons";
+import React from "react";
 
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
 }
 
-export default function ASRTry({ ...props }) {
+interface Props {
+  languages: LanguageConfig[];
+  serviceId: string;
+}
+
+const ASRTry: React.FC<Props> = (props) => {
   const [streamingClient, setStreamingClient] = useState(new StreamingClient());
 
   const [languages, setLanguages] = useState<string[]>([]);
@@ -76,6 +82,9 @@ export default function ASRTry({ ...props }) {
             audioFormat: "wav",
             encoding: "base64",
             samplingRate: sampleRate,
+          },
+          controlConfig: {
+            dataTracking: true,
           },
         },
         {
@@ -120,18 +129,16 @@ export default function ASRTry({ ...props }) {
       function (action: any, id: any) {
         if (action === SocketStatus.CONNECTED) {
           console.log("Connected");
-          streamingClient.startStreaming(
-            function (transcript: string) {
-              setStreamingText(transcript);
-            }
-          );
+          streamingClient.startStreaming(function (transcript: string) {
+            setStreamingText(transcript);
+          });
         } else if (action === SocketStatus.TERMINATED) {
           console.log("Terminated");
         } else {
           console.log("Action: ", action, id);
         }
       }
-    )
+    );
   };
 
   const stopStreaming = () => {
@@ -169,31 +176,34 @@ export default function ASRTry({ ...props }) {
   };
 
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setAudioStream(stream);
-    }).catch((e:any) => {
-      setPermission(false);
-      setModal(
-        <Box
-          mt="1rem"
-          width={"100%"}
-          minH={"3rem"}
-          border={"1px"}
-          borderColor={"gray.300"}
-          background={"red.50"}
-        >
-          <HStack ml="1rem" mr="1rem" mt="0.6rem">
-            <Text color={"red.600"}>Required Permissions Denied</Text>
-            <Spacer />
-            <CloseIcon
-              onClick={() => setModal(<></>)}
-              color={"red.600"}
-              fontSize={"xs"}
-            />
-          </HStack>
-        </Box>
-      );
-    })
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        setAudioStream(stream);
+      })
+      .catch((e: any) => {
+        setPermission(false);
+        setModal(
+          <Box
+            mt="1rem"
+            width={"100%"}
+            minH={"3rem"}
+            border={"1px"}
+            borderColor={"gray.300"}
+            background={"red.50"}
+          >
+            <HStack ml="1rem" mr="1rem" mt="0.6rem">
+              <Text color={"red.600"}>Required Permissions Denied</Text>
+              <Spacer />
+              <CloseIcon
+                onClick={() => setModal(<></>)}
+                color={"red.600"}
+                fontSize={"xs"}
+              />
+            </HStack>
+          </Box>
+        );
+      });
   }, [recording]);
 
   useEffect(() => {
@@ -312,8 +322,7 @@ export default function ASRTry({ ...props }) {
                 ) : (
                   <Button
                     onClick={() => {
-                      if(permission)
-                      {
+                      if (permission) {
                         startRecording();
                       }
                     }}
@@ -384,4 +393,6 @@ export default function ASRTry({ ...props }) {
       {modal}
     </>
   );
-}
+};
+
+export default ASRTry;

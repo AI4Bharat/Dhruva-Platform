@@ -14,13 +14,13 @@ const dhruvaAPI: { [key: string]: string } = {
   asrStreamingInference: `wss://api.dhruva.ai4bharat.org`,
   stsInference: `${dhruvaRootURL}/services/inference/s2s`,
   nerInference: `${dhruvaRootURL}/services/inference/ner`,
+  xlitInference: `${dhruvaRootURL}/services/inference/transliteration`,
 };
 
-const apiInstance = axios.create({baseURL: dhruvaRootURL});
+const apiInstance = axios.create({ baseURL: dhruvaRootURL });
 
 apiInstance.interceptors.request.use((config: any) => {
-  if(window.location.pathname !== "/")
-  {
+  if (window.location.pathname !== "/") {
     localStorage.setItem("current_page", window.location.href);
   }
   config.headers["request-startTime"] = new Date().getTime();
@@ -57,18 +57,16 @@ apiInstance.interceptors.response.use(
             return apiInstance(originalRequest);
           }
         })
-        .catch((e)=>{
-          if(window.location.pathname !== "/")
-          {
+        .catch((e) => {
+          if (window.location.pathname !== "/") {
             window.location.replace("/");
           }
           throw e;
         });
-    }
-    else{
-     throw error;
+    } else {
+      throw error;
     }
   }
 );
 
-export { dhruvaAPI,apiInstance };
+export { dhruvaAPI, apiInstance };
