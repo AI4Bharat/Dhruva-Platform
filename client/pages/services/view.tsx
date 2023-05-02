@@ -42,13 +42,7 @@ function ServicePerformanceModal({ ...props }) {
   const { data: keylist } = useQuery(["keys"], () =>
     listalluserkeys(service_id, userId)
   );
-  const [apiKeyName, setAPIKeyName] = useState("");
-
-  useEffect(() => {
-    if (keylist) {
-      setAPIKeyName(keylist["api_keys"][0]["name"]);
-    }
-  }, [keylist]);
+  const [apiKeyName, setAPIKeyName] = useState(".*");
 
   return (
     <>
@@ -82,13 +76,11 @@ function ServicePerformanceModal({ ...props }) {
                     <option key={"overall"} value=".*">
                       Overall
                     </option>
-                    {keylist["api_keys"].map((key) => {
-                      return (
-                        <option key={key.name} value={key.name}>
-                          {key.name}
-                        </option>
-                      );
-                    })}
+                    {keylist["api_keys"].map((key) => (
+                      <option key={key.name} value={key.name}>
+                        {key.name}
+                      </option>
+                    ))}
                   </Select>
                 ) : (
                   <></>
