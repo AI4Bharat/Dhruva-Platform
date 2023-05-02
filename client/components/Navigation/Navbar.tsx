@@ -37,6 +37,9 @@ const Navbar = () => {
       case "profile":
         setTitle("Profile");
         break;
+      case "pipeline":
+        setTitle("Pipeline");
+        break;
       default:
         setTitle("Dashboard");
         break;
