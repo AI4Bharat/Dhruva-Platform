@@ -8,7 +8,7 @@ from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from cache.app_cache import cache
+from cache.app_cache import get_cache_connection
 from db.database import db_clients
 from db.populate_db import seed_collection
 from exception.base_error import BaseError
@@ -77,6 +77,7 @@ async def init_mongo_client():
 
 @app.on_event("startup")
 async def flush_cache():
+    cache = get_cache_connection()
     cache.flushall()
 
 

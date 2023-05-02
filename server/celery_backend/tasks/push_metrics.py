@@ -1,15 +1,10 @@
 import os
 from time import time
-
 import jsonpickle
 from dotenv import load_dotenv
-from prometheus_client import CollectorRegistry, push_to_gateway
-
-from ..celery_app import app
-from .database import LogDatabase
-
 from prometheus_client.exposition import basic_auth_handler
-
+from prometheus_client import CollectorRegistry, push_to_gateway
+from ..celery_app import app
 
 load_dotenv(override=True)
 

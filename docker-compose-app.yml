@@ -15,15 +15,13 @@ services:
       - app_data:/server
     ports:
       - "$BACKEND_PORT:$BACKEND_PORT"
-    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0
+    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0 --proxy-headers
     networks:
       - dhruva-network
 
   client:
     container_name: client
-    build:
-      context: ./client
-      dockerfile: Dockerfile.prod
+    image: client
     stdin_open: true
     tty: true
     ports:
