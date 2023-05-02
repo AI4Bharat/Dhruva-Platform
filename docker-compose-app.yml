@@ -21,9 +21,7 @@ services:
 
   client:
     container_name: client
-    build:
-      context: ./client
-      dockerfile: Dockerfile.prod
+    image: client
     stdin_open: true
     tty: true
     ports:
