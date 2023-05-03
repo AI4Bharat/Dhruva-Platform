@@ -48,6 +48,8 @@ export default function Login() {
         router.push(localStorage.getItem("/services"))
       }
     } catch (error) {
+      if(error.response)
+      {
       if (error.response.status === 401 || error.response.status === 422) {
         toast({
           title: "Error",
@@ -66,6 +68,7 @@ export default function Login() {
         });
       }
     }
+   }
   };
   return (
     <>

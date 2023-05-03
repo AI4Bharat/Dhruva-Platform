@@ -1,5 +1,7 @@
 import { apiInstance } from "./apiConfig";
 
+
+
 function timeout(delay: number) {
   return new Promise((res) => setTimeout(res, delay));
 }
@@ -21,6 +23,11 @@ const getUser= async(email:string)=>{
   return res.data;
 }
 
+const updateUser = async(details : UpdateProfileCreds)=>{
+  const res = await apiInstance.patch(`/auth/user/modify?name=${details.name}&password=${details.password}`);
+  return res.data;
+}
+
 const getNewAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
   const response = await apiInstance.post("/auth/refresh", {
@@ -32,4 +39,4 @@ const getNewAccessToken = async () => {
   }
 };
 
-export { login, getNewAccessToken,getUser };
+export { login, getNewAccessToken,getUser, updateUser };

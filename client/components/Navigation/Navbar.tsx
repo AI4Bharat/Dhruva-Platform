@@ -68,7 +68,7 @@ const Navbar = () => {
           </HStack>
         </MenuButton>
         <MenuList>
-        <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
+          <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
           <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
         </MenuList>
       </Menu>
