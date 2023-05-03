@@ -18,6 +18,7 @@ const listServices = async (): Promise<ServiceList[]> => {
     method: "GET",
     url: dhruvaAPI.listServices,
   });
+
   return response.data;
 };
 

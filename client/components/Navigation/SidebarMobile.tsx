@@ -10,10 +10,11 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { IoConstructOutline, IoGridOutline } from "react-icons/io5";
-import {MdOutlineAdminPanelSettings} from "react-icons/md";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { RiFlowChart } from "react-icons/ri";
 
 const SidebarMobile: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
@@ -30,6 +31,9 @@ const SidebarMobile: React.FC = () => {
         break;
       case "models":
         setNumber(3);
+        break;
+      case "pipeline":
+        setNumber(5);
         break;
       default:
         setNumber(0);
@@ -141,6 +145,30 @@ const SidebarMobile: React.FC = () => {
               </Button>
             </Link>
           </Box>
+          <Box w="100%">
+            <Link href={"/pipeline"}>
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                w="100%"
+                variant={number === 5 ? "solid" : "ghost"}
+                background={number === 5 ? "orange.500" : "transperent"}
+                color={number === 5 ? "white" : "black"}
+                justifyContent="flex-start"
+                size="l"
+                boxShadow={number === 5 ? "xl" : "none"}
+                transition="width 0.2s"
+              >
+                <Box>
+                  <IoConstructOutline style={{ marginLeft: 12 }} size={25} />
+                </Box>
+                <Text marginLeft={4} fontWeight={"normal"}>
+                  Pipeline
+                </Text>
+              </Button>
+            </Link>
+          </Box>
           {/* <Box>
             <Link href={"/billing"}>
               <Button
@@ -191,7 +219,7 @@ const SidebarMobile: React.FC = () => {
               </Button>
             </Link>
           </Box>
-                    {/* 
+          {/* 
           <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">

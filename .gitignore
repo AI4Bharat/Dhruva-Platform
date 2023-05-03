@@ -11,3 +11,4 @@ server/.vscode
 server/db/fixtures
 celerybeat-schedule
 .vscode
+server/data
