@@ -48,7 +48,7 @@ export default function Profile() {
   return (
   <>
     <Head>
-        <title>Admin Dashboard</title>
+        <title>My Profile</title>
     </Head>
     <Box
         ml={smallscreen ? "1rem" : "2rem"}
