@@ -15,7 +15,8 @@ class FeedbackService:
     def submit_feedback(self, request: ULCAFeedbackRequest, id: ObjectId):
         try:
             feedback = request.dict()
-            feedback['user_id'] = id
+            feedback["user_id"] = id
+            feedback["api_key_name"] = "default"
             feedback_obj = Feedback(**feedback)
             return self.feedback_repository.insert_one(feedback_obj)
         except Exception:
