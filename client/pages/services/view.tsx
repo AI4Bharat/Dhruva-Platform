@@ -18,8 +18,6 @@ import {
   Tabs,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useQuery } from "@tanstack/react-query";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { SlGraph } from "react-icons/sl";
@@ -33,6 +31,10 @@ import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import { dhruvaAPI } from "../../api/apiConfig";
+import axios from "axios";
+import Head from "next/head";
+import { useQuery } from "@tanstack/react-query";
 
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -42,13 +44,7 @@ function ServicePerformanceModal({ ...props }) {
   const { data: keylist } = useQuery(["keys"], () =>
     listalluserkeys(service_id, userId)
   );
-  const [apiKeyName, setAPIKeyName] = useState("");
-
-  useEffect(() => {
-    if (keylist) {
-      setAPIKeyName(keylist["api_keys"][0]["name"]);
-    }
-  }, [keylist]);
+  const [apiKeyName, setAPIKeyName] = useState(".*");
 
   return (
     <>
@@ -82,13 +78,11 @@ function ServicePerformanceModal({ ...props }) {
                     <option key={"overall"} value=".*">
                       Overall
                     </option>
-                    {keylist["api_keys"].map((key) => {
-                      return (
-                        <option key={key.name} value={key.name}>
-                          {key.name}
-                        </option>
-                      );
-                    })}
+                    {keylist["api_keys"].map((key) => (
+                      <option key={key.name} value={key.name}>
+                        {key.name}
+                      </option>
+                    ))}
                   </Select>
                 ) : (
                   <></>
@@ -120,7 +114,8 @@ export default function ViewService() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { data: serviceInfo, isLoading } = useQuery(
     ["service", router.query["serviceId"]],
-    () => getService(router.query["serviceId"] as string)
+    () => getService(router.query["serviceId"] as string),
+    { enabled: router.isReady }
   );
 
   const [languages, setLanguages] = useState<LanguageConfig[]>();
@@ -129,6 +124,7 @@ export default function ViewService() {
   useEffect(() => {
     if (serviceInfo) {
       setLanguages(serviceInfo["model"]["languages"]);
+      console.log(serviceInfo);
     }
   }, [serviceInfo]);
 

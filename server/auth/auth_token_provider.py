@@ -28,7 +28,7 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
 
     session_collection = db["session"]
     session = session_collection.find_one({"_id": ObjectId(claims["sess_id"])})
-    if 'inference' in request.url.path:
+    if 'inference' in request.url.path or 'feedback' in request.url.path:
         auth_token = request.headers.get("Authorization")
         if auth_token is not None:
             credentials = auth_token.split(" ")[1]

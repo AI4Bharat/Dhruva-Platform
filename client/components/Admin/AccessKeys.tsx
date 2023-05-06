@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Center,
+  Checkbox,
   FormLabel,
   HStack,
   Input,
@@ -52,19 +53,23 @@ const AccessKeys = () => {
     type: string;
     active: boolean;
     masked_key: string;
+    data_tracking: boolean
   }
 
   interface ModalData {
     name: string;
     active: boolean;
     masked_key: string;
+    data_tracking : boolean;
+    type : string
   }
 
   interface Icreatekey {
     name: string;
     type: string;
-    regenerate: boolean;
+    data_tracking: boolean;
     target_user_id: string;
+    regenerate : boolean;
   }
 
   const { data: userslist } = useQuery(["users"], () => listallusers());
@@ -74,8 +79,9 @@ const AccessKeys = () => {
   const [createKeyDetails, setCreateKeyDetails] = useState<Icreatekey>({
     name: "",
     type: "INFERENCE",
-    regenerate: true,
+    data_tracking: true,
     target_user_id: selectedUser,
+    regenerate : false
   });
 
   const { data: allkeys, refetch: allkeysrefetch } = useQuery(
@@ -95,6 +101,8 @@ const AccessKeys = () => {
   const [modalstate, setModalState] = useState<ModalData>({
     name: "",
     masked_key: "",
+    type: "",
+    data_tracking: true,
     active: false,
   });
   const [searchedKeys, setSearchedKeys] = useState<Key[]>([]);
@@ -150,10 +158,10 @@ const AccessKeys = () => {
     }));
   };
 
-  const updateRegenerate = (newRegenerate: boolean) => {
+  const updateCollectData = (newCollectData: boolean) => {
     setCreateKeyDetails((prevState) => ({
       ...prevState,
-      regenerate: newRegenerate,
+      data_tracking: newCollectData,
     }));
   };
 
@@ -257,8 +265,9 @@ const AccessKeys = () => {
     setCreateKeyDetails({
       name: "",
       type: "INFERENCE",
-      regenerate: true,
+      data_tracking: true,
       target_user_id: selectedUser,
+      regenerate : false
     });
   };
 
@@ -379,17 +388,16 @@ const AccessKeys = () => {
                   <option>INFERENCE</option>
                   <option>PLATFORM</option>
                 </Select>
-                <FormLabel mt="1rem">Regenerate</FormLabel>
-                <Select
+                <br/>
+                <Checkbox
                   borderRadius={0}
-                  value={createKeyDetails.regenerate ? "True" : "False"}
+                  defaultChecked
                   onChange={(e) =>
-                    updateRegenerate(e.target.value == "True" ? true : false)
+                    updateCollectData(e.target.checked ? true : false)
                   }
-                >
-                  <option>True</option>
-                  <option>False</option>
-                </Select>
+                  >
+                    Allow us to track your data?
+                  </Checkbox>
                 <FormLabel mt="1rem">User ID</FormLabel>
                 <Box
                   width={"100%"}
@@ -471,6 +479,8 @@ const AccessKeys = () => {
                                   onClick={() => {
                                     setModalOpen(true),
                                       setModalState({
+                                        data_tracking: keysData.data_tracking,
+                                        type : keysData.type,
                                         name: keysData.name,
                                         masked_key: keysData.masked_key,
                                         active: keysData.active,
@@ -491,6 +501,8 @@ const AccessKeys = () => {
                       onRefresh={(data) => {
                         refetch();
                         setModalState({
+                          type: data.type,
+                          data_tracking: data.data_tracking,
                           name: data.name,
                           masked_key: data.masked_key,
                           active: data.active,
@@ -504,6 +516,8 @@ const AccessKeys = () => {
                       k={modalstate.masked_key}
                       active={modalstate.active}
                       user_id={selectedUser}
+                      data_tracking={modalstate.data_tracking}
+                      type={modalstate.type}
                     />
                   </Box>
                 )
