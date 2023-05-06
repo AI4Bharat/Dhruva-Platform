@@ -22,9 +22,9 @@ const NavbarMobile = () => {
   const [title, setTitle] = useState<String>("Dashboard");
   const { isOpen, onToggle } = useDisclosure();
   const router = useRouter();
-  const { data: user } = useQuery(["User"], () =>
-    getUser(localStorage.getItem("email"))
-  );
+  // const { data: user } = useQuery(["User"], () =>
+  //   getUser(localStorage.getItem("email"))
+  // );
   const Logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -93,40 +93,12 @@ const NavbarMobile = () => {
               <BiUser/>
                <Text>{user?.name}</Text>
               </HStack> */}
-              </MenuButton>
-              <MenuList>
-                <MenuItem onClick={Logout} value="logout">
-                  Logout
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Box>
-          <Slide
-            direction="left"
-            in={isOpen}
-            style={{ zIndex: 10 }}
-            onClick={onToggle}
-          >
-            <SidebarMobile />
-          </Slide>
-          <Text fontWeight={"bold"} fontSize="3xl" ml="2rem">
-            {title}
-          </Text>
-          <Spacer />
-          <Box>
-            <Menu>
-              <MenuButton width="10rem" px={4} py={2} transition="all 0.2s">
-                <HStack>
-                  <BiUser />
-                  <Text>{user?.name}</Text>
-                </HStack>
-              </MenuButton>
-              <MenuList>
-                <MenuItem onClick={Logout} value="logout">
-                  Logout
-                </MenuItem>
-              </MenuList>
-            </Menu>
+            </MenuButton>
+            <MenuList>
+              <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
+              <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
+            </MenuList>
+          </Menu>
           </Box>
         </HStack>
       </Box>

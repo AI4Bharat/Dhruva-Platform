@@ -61,7 +61,6 @@ const Navbar = () => {
         <Box pt="2rem" pr="25rem">
         <Menu>
         <MenuButton
-          width="10rem" 
           px={4}
           py={2}
           transition='all 0.2s'
@@ -72,6 +71,7 @@ const Navbar = () => {
           </HStack>
         </MenuButton>
         <MenuList>
+          <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
           <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
         </MenuList>
       </Menu>
