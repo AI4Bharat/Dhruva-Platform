@@ -9,6 +9,7 @@ services:
     env_file:
       - .env
     depends_on:
+      - seed
       - appdb-migration
       - logdb-migration
     volumes:
@@ -32,6 +33,20 @@ services:
     env_file:
       - .env
     command: yarn start --port $FRONTEND_PORT
+    networks:
+      - dhruva-network
+
+  seed:
+    image: seed
+    container_name: seed
+    env_file:
+      - .env
+    environment:
+      - ENV=$ENV
+      - DB_CONNECTION_STRING=$APP_DB_CONNECTION_STRING
+      - DB_NAME=$APP_DB_NAME
+      - ADMIN_USER_PASSWORD=$ADMIN_USER_PASSWORD
+    command: sh -c "python3 main.py"
     networks:
       - dhruva-network
 
