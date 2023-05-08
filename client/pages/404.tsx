@@ -15,7 +15,7 @@ function ErrorPage() {
       <Flex justify="center" align="center" h="90vh">
         <VStack>
           <Image alt="404 Error" src={Error} />
-          <Button onClick={()=>router.push(localStorage.getItem("current_page"))}><AiOutlineLeft/> &nbsp;Go Back</Button>
+          {/* <Button onClick={()=>router.push(localStorage.getItem("current_page"))}><AiOutlineLeft/> &nbsp;Go Back</Button> */}
         </VStack>
       </Flex>
     </Box>

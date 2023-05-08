@@ -1,9 +1,11 @@
 import {
   Box,
   Button,
+  FormLabel,
   Grid,
   GridItem,
   Heading,
+  HStack,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Spacer,
   Stack,
   Tab,
   TabList,
@@ -35,70 +38,88 @@ import { dhruvaAPI } from "../../api/apiConfig";
 import axios from "axios";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
+import {listallusers } from "../../api/adminAPI";
 
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const user_id = localStorage.getItem("user_id");
-  const [userId, setUserId] = useState(user_id);
   const service_id = props.service_id;
-  const { data: keylist } = useQuery(["keys"], () =>
-    listalluserkeys(service_id, userId)
-  );
-  const [apiKeyName, setAPIKeyName] = useState(".*");
 
+  const [selectedUser, setSelectedUser] = useState<string>(".*")
+  const [apiKeyName, setAPIKeyName] = useState<string>(".*");
+
+  const { data: userslist } = useQuery(["users"], () => listallusers());
+
+  const { data: keyslist, refetch: keyslistrefresh, isSuccess } = useQuery(
+    ["keys", selectedUser],
+    () => listalluserkeys(service_id ,selectedUser),{onSuccess:data =>{setAPIKeyName(data["api_keys"][0].name)}}
+  );
+
+  useEffect(() => {
+    keyslistrefresh();
+    if(selectedUser === ".*")
+    {
+      setAPIKeyName(".*")
+    }
+  }, [selectedUser]);
+
+  
   return (
     <>
       <Button onClick={onOpen}>
         <SlGraph />
       </Button>
 
-      <Modal isOpen={isOpen} size={"full"} onClose={onClose}>
+      <Modal isOpen={isOpen} size="8xl" onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            <Heading>Service Specific Dashboard</Heading>
+            <Heading>Dashboard</Heading>
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Stack direction={"column"}>
-              <Stack direction="row">
-                <Heading size={"md"}>API Key Name:</Heading>
-                {keylist ? (
-                  <Select
-                    value={apiKeyName}
-                    onChange={(e) => {
-                      if (e.target.value === ".*") {
-                        setUserId(".*");
-                      } else {
-                        setUserId(user_id);
-                      }
-                      setAPIKeyName(e.target.value);
-                    }}
-                  >
-                    <option key={"overall"} value=".*">
-                      Overall
-                    </option>
-                    {keylist["api_keys"].map((key) => (
-                      <option key={key.name} value={key.name}>
-                        {key.name}
-                      </option>
-                    ))}
-                  </Select>
-                ) : (
-                  <></>
-                )}
-              </Stack>
+            <Stack direction={["column","row"]} spacing="1rem">
+              <HStack >
+                <FormLabel>User:</FormLabel>
+                <Select value={selectedUser}  minWidth="15rem" onChange={e=>{setSelectedUser(e.target.value)}}>
+                  <option value=".*">Overall</option>
+                  {
+                    userslist?.map((user: any) => {
+                      return <option value={user._id}>{user.name}</option>;
+                    })
+                  }
+                </Select>
+              </HStack>
+              <HStack>
+              <FormLabel>API&nbsp;Key:</FormLabel>
+                <Select value={apiKeyName} minWidth="15rem" onChange={e=>{setAPIKeyName(e.target.value)}} isDisabled={selectedUser === ".*"}>
+                  {
+                    selectedUser !== ".*"?
+                    keyslist&&
+                    keyslist["api_keys"]?.map((k: any) => {
+                      return <option value={k.name}>{k.name}</option>;
+                    })
+                    :
+                    <></>
+                  }
+                </Select>
+              </HStack>
             </Stack>
             <br />
+            {/* {apiKeyName}
+            <br/>
+            {selectedUser}
+            <br/>
+            {service_id}
+            <br/> */}
             <iframe
-              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${userId}&var-inferenceServiceId=${service_id}&from=now-1h&to=now&kiosk=tv`}
+              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${service_id}&from=now-1h&to=now&kiosk=tv`}
               width={"100%"}
               height={600}
             />
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
+            <Button  mr={3} onClick={onClose}>
               Close
             </Button>
           </ModalFooter>
