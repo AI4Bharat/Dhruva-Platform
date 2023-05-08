@@ -7,9 +7,8 @@ from fastapi.routing import APIRoute, Request, Response
 
 from auth.auth_provider import AuthProvider
 from celery_backend.tasks import log_data
-from exception.http_error import HttpErrorResponse
 from exception.base_error import BaseError
-from ..error import Errors
+from exception.http_error import HttpErrorResponse
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
@@ -32,6 +31,8 @@ from schema.services.response import (
     ULCATtsInferenceResponse,
 )
 
+from ..error import Errors
+
 # from ..repository import ServiceRepository, ModelRepository
 from ..service.inference_service import InferenceService
 
@@ -50,11 +51,14 @@ class InferenceLoggingRoute(APIRoute):
             try:
                 response: Response = await original_route_handler(request)
                 res_body = response.body
-                api_key_id = str(request.state.api_key_id)  # Having this here to capture all errors
+                api_key_id = str(
+                    request.state.api_key_id
+                )  # Having this here to capture all errors
 
             except BaseError as exc:
                 if exc.error_kind in (
-                    Errors.DHRUVA101.value["kind"], Errors.DHRUVA102.value["kind"]
+                    Errors.DHRUVA101.value["kind"],
+                    Errors.DHRUVA102.value["kind"],
                 ):
                     error_msg = exc.error_kind + "_" + exc.error_message
                 raise exc
@@ -66,9 +70,9 @@ class InferenceLoggingRoute(APIRoute):
             finally:
                 if request.state._state.get("api_key_data_tracking"):
                     req_json: Dict[str, Any] = json.loads(req_body)
-                    enable_tracking = req_json["controlConfig"]["dataTracking"] \
-                        if "controlConfig" in req_json and "dataTracking" in req_json["controlConfig"] \
-                        else False
+                    enable_tracking = req_json.get(
+                        "controlConfig", {"dataTracking": True}
+                    )["dataTracking"]
 
                 url_components = request.url._url.split("?serviceId=")
                 if len(url_components) == 2:
@@ -85,13 +89,14 @@ class InferenceLoggingRoute(APIRoute):
                             api_key_id,
                             request.state._state.get("input", req_body),
                             res_body.decode("utf-8") if res_body else None,
-                            time.time() - start_time
+                            time.time() - start_time,
                         ),
-                        queue="data_log"
+                        queue="data_log",
                     )
                     print("logged data")
 
             return response
+
         return logging_route_handler
 
 
