@@ -6,7 +6,7 @@ import io
 import os
 import sys
 from urllib.parse import parse_qs
-from pydantic import BaseModel, dataclasses
+from pydantic import BaseModel
 import wave
 import requests
 from scipy.io.wavfile import write as scipy_wav_write
@@ -17,6 +17,7 @@ from module.services.utils.audio import silero_vad_chunking
 class UserState(BaseModel):
     input_audio__buffer: np.ndarray = None
     input_audio__run_inference_once_in_samples: int = -1
+    input_audio__response_frequency_in_secs: float = None
     input_audio__max_inference_duration_in_samples: int = -1
     input_audio__last_inference_position_in_samples: int = 0
     input_audio__auto_chunking: bool = True
@@ -24,13 +25,18 @@ class UserState(BaseModel):
 
     task_sequence: list = []
     input_task_type: str = None
-    sequence_depth_to_run: int = 1
+    sequence_depth_to_run: int = 0
     http_headers: dict
 
     # Without this, pydantic throws the following exception:
     # `RuntimeError: no validator found for <class 'numpy.ndarray'>`
     class Config:
         arbitrary_types_allowed = True
+
+DEFAULT_STREAMING_CONFIG = {
+    "responseTaskSequenceDepth": 1,
+    "responseFrequencyInSecs": 2.0,
+}
 
 class StreamingServerTaskSequence:
     '''
@@ -58,7 +64,6 @@ class StreamingServerTaskSequence:
             exit(f"ERROR: Please set the env var `BACKEND_PORT`")
 
         # Constants. TODO: Should we allow changing this?
-        self.input_audio__response_frequency_in_ms = 2*1000
         self.input_audio__bytes_per_sample = 2
         self.input_audio__max_inference_time_in_ms = 20*1000
         
@@ -78,13 +83,21 @@ class StreamingServerTaskSequence:
         if clear_history:
             pass
     
+    def set_streaming_config(self, sid: str, streaming_config: dict) -> None:
+        if "responseTaskSequenceDepth" in streaming_config and self.client_states[sid].sequence_depth_to_run != streaming_config["responseTaskSequenceDepth"]:
+            self.client_states[sid].sequence_depth_to_run = streaming_config["responseTaskSequenceDepth"]
+        
+        if "responseFrequencyInSecs" in streaming_config and self.client_states[sid].input_audio__response_frequency_in_secs != streaming_config["responseFrequencyInSecs"]:
+            if 1.0 <= streaming_config["responseFrequencyInSecs"] <= 20.0:
+                self.client_states[sid].input_audio__response_frequency_in_secs = streaming_config["responseFrequencyInSecs"]
+                self.client_states[sid].input_audio__run_inference_once_in_samples = int(self.client_states[sid].input_audio__sampling_rate * streaming_config["responseFrequencyInSecs"])
+
     def run_ulca_inference(self, sid: str, audio_chunks: list) -> str:
         audio_payload_list = []
         for audio_chunk in audio_chunks:
             # Convert PCM to WAV bytes
             byte_io: io.IOBase = io.BytesIO()
             scipy_wav_write(byte_io, self.client_states[sid].input_audio__sampling_rate, audio_chunk)
-            wav_byte_streams.append(byte_io)
 
             # Convert the byte-stream into base64 string
             # TODO: Any better communication format?
@@ -176,7 +189,7 @@ class StreamingServerTaskSequence:
             return True
         
         @self.sio.on("start")
-        async def start(sid: str, task_sequence: list):
+        async def start(sid: str, task_sequence: list, streaming_config: dict = {}):
             self.initialize_buffer(sid)
 
             if False: # TODO: Validate the `task_sequence`
@@ -188,15 +201,20 @@ class StreamingServerTaskSequence:
             if self.client_states[sid].input_task_type == _ULCATaskType.ASR:
                 # Compute the inference_frequency (once in how many samples should we run inference)
                 sampling_rate = int(task_sequence[0]["config"]["samplingRate"])
-                run_inference_once_in_samples = int(sampling_rate * (self.input_audio__response_frequency_in_ms / 1000))
                 max_inference_duration_in_samples = int(sampling_rate * (self.input_audio__max_inference_time_in_ms / 1000))
-
-                self.client_states[sid].input_audio__run_inference_once_in_samples = run_inference_once_in_samples
+                
                 # TODO: Implement proper translation+TTS strategy when auto_chunking is enabled
                 self.client_states[sid].input_audio__auto_chunking = len(task_sequence) == 1
                 # Below max limit is not applicable if `auto_chunking` is set
                 self.client_states[sid].input_audio__max_inference_duration_in_samples = max_inference_duration_in_samples
                 self.client_states[sid].input_audio__sampling_rate = task_sequence[0]["config"]["samplingRate"]
+
+                if streaming_config:
+                    initial_streaming_config = dict(DEFAULT_STREAMING_CONFIG)
+                    initial_streaming_config.update(streaming_config)
+                else:
+                    initial_streaming_config = DEFAULT_STREAMING_CONFIG
+                self.set_streaming_config(sid, initial_streaming_config)
 
             # print("Ready to start stream for:", sid)
             await self.sio.emit("ready", room=sid)
@@ -237,8 +255,7 @@ class StreamingServerTaskSequence:
             
             if streaming_config:
                 # Update the user-state with the latest streaming-config
-                if "responseDepth" in streaming_config and self.client_states[sid].sequence_depth_to_run != streaming_config["responseDepth"]:
-                    self.client_states[sid].sequence_depth_to_run = streaming_config["responseDepth"]
+                self.set_streaming_config(sid, streaming_config)
 
             if clear_server_state:
                 if not disconnect_stream:
