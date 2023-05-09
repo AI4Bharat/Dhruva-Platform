@@ -56,6 +56,8 @@ Dhruva is a full-fledged platform for serving AI models at scale.
 
 Get the .env file. This can be created from the .env.example, you just need to fill the values.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Installation
 
 Clone both Dhruva-Platform and Dhruva-Seed.
