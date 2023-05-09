@@ -41,7 +41,7 @@ This section should list any major frameworks/libraries used to bootstrap your p
 - [![Next][Nextjs]][Next-url]
 - [![Chakra UI][Chakra-ui]][Chakra-url]
 - [![FastApi][FastApi]][FastApi-url]
-- [![RabbitMQ][Rabbitmq]][Rabbitmq-url]
+- [![Celery][Celery]][Celery-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -165,5 +165,5 @@ To add new models and services, please add a JSON fixture in the [Dhruva-Seed](h
 [Chakra-url]: https://chakra-ui.com/
 [FastApi]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white
 [FastApi-url]: https://fastapi.tiangolo.com/
-[Rabbitmq]: https://img.shields.io/badge/Rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white
-[Rabbitmq-url]: https://www.rabbitmq.com
+[Celery]: https://img.shields.io/static/v1?style=for-the-badge&message=Celery&color=37814A&logo=Celery&logoColor=FFFFFF&label
+[Celery-url]: https://www.rabbitmq.com
