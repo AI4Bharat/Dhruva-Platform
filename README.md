@@ -27,10 +27,11 @@
 ## Getting Started
 
 ### Prerequisites
-Get the .env file and place it in the root folder.
+Get the .env file.
 
 
 ### Installation
+Clone both Dhruva-Platform and Dhruva-Seed.
 
 ```
 git clone --recurse-submodules https://github.com/AI4Bharat/Dhruva-Platform
@@ -39,6 +40,8 @@ git clone --recurse-submodules https://github.com/AI4Bharat/Dhruva-Platform
 ```
 git clone https://github.com/AI4Bharat/Dhruva-Seed
 ```
+
+Place the .env file in the root directory in Dhruva Platform
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
