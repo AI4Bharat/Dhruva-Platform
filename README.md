@@ -29,6 +29,8 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
+### Prerequisites
+Get the .env file and place it in the root folder.
 
 
 ### Installation
