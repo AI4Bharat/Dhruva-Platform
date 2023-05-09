@@ -75,7 +75,7 @@ git clone https://github.com/AI4Bharat/Dhruva-Seed
   docker compose -f docker-compose-monitoring.yml up -d
   ```
 
-- Finally run docker compose with the `docker-compose-app.yml' file as the compose file.
+- Finally run docker compose with the `docker-compose-app.yml` file as the compose file.
   ```
   docker compose -f docker-compose-app.yml up -d
   ```
