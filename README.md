@@ -95,7 +95,7 @@ To create a new migration, run the following command:
 ```
 mongodb-migrate-create --description <description>
 ```
-This command will create an new migration <TIMESTAMP>_<description>.py in the migrations folder. A class `Migration` will be created for you. Implement the upgrade method, and optionally, the downgrade method.
+This command will create a new migration `<timestamp>_<description>.py` in the migrations folder. A class `Migration` will be created for you. Implement the upgrade method, and optionally, the downgrade method.
 
 Once implemented, you can run docker compose with `docker-compose-app.yml` as the compose file to run the migration.
 
