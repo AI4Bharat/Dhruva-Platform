@@ -1,45 +1,78 @@
-import io
-import os
-import json
-import time
 import base64
+import io
+import json
 import logging
+import os
+import time
 from datetime import datetime
 from urllib.request import urlopen
 
 from ulid import ULID
+
 from ..celery_app import app
+from . import constants
 from .database import LogDatastore
 from .metering import meter_usage
-from . import constants
 
 log_store = LogDatastore()
 
 
-def log_to_db(client_ip: str, error_msg: str, input_data: dict, output_data: dict, api_key_id: str, service_id: str):
+def log_to_db(
+    client_ip: str,
+    error_msg: str,
+    input_data: dict,
+    output_data: dict,
+    api_key_id: str,
+    service_id: str,
+):
     """Log input output data pairs to the DB"""
 
     inp, op = input_data, output_data
     if output_data.get("taskType") == "asr":
-        inp = [o["audioContent"] for o in input_data.get("audio")] \
-            if input_data and input_data.get("audio") else None
-        op = [o["source"] for o in output_data.get("output")] \
-            if output_data and output_data.get("output") else None
-    elif output_data.get("taskType") == "translation" or output_data.get("taskType") == "transliteration":
-        inp = [o["source"] for o in output_data.get("output")] \
-            if output_data and output_data.get("output") else None
-        op = [o["target"] for o in output_data.get("output")] \
-            if output_data and output_data.get("output") else None
+        inp = (
+            [o["audioContent"] for o in input_data.get("audio")]
+            if input_data and input_data.get("audio")
+            else None
+        )
+        op = (
+            [o["source"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
+    elif (
+        output_data.get("taskType") == "translation"
+        or output_data.get("taskType") == "transliteration"
+    ):
+        inp = (
+            [o["source"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
+        op = (
+            [o["target"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
     elif output_data.get("taskType") == "tts":
-        inp = [o["source"] for o in input_data.get("input")] if \
-            input_data and input_data.get("input") else None
-        op = [o["audioContent"] for o in output_data.get("audio")] \
-            if output_data and output_data.get("audio") else None
+        inp = (
+            [o["source"] for o in input_data.get("input")]
+            if input_data and input_data.get("input")
+            else None
+        )
+        op = (
+            [o["audioContent"] for o in output_data.get("audio")]
+            if output_data and output_data.get("audio")
+            else None
+        )
 
     log_document = {
         "client_ip": client_ip,
-        "source_language": input_data.get("config", {}).get("language", {}).get("sourceLanguage"),
-        "target_language": input_data.get("config", {}).get("language", {}).get("targetLanguage"),
+        "source_language": input_data.get("config", {})
+        .get("language", {})
+        .get("sourceLanguage"),
+        "target_language": input_data.get("config", {})
+        .get("language", {})
+        .get("targetLanguage"),
         "input": inp,
         "task_type": output_data.get("taskType"),
         "output": op,
@@ -91,7 +124,8 @@ def log_data(
     req_body = json.loads(req_body)
 
     data_usage = None
-    if usage_type == "tts":
+
+    if usage_type in ("translation", "transliteration", "tts"):
         data_usage = req_body["input"]
 
     elif usage_type == "asr":
@@ -101,9 +135,6 @@ def log_data(
                     urlopen(ele["audioUri"]).read()
                 ).decode("utf-8")
         data_usage = req_body["audio"]
-
-    elif usage_type == "translation":
-        data_usage = req_body["input"]
 
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
