@@ -1,6 +1,3 @@
-
-!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <h3 align="center">Dhruva</h3>
 </div>
@@ -116,6 +113,7 @@ Commit all migrations to the repository and do not delete any migration.
 
 To add new models and services, please add a JSON fixture in the [Dhruva-Seed](https://github.com/AI4Bharat/Dhruva-Seed) repository.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
