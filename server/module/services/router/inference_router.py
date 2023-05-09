@@ -93,7 +93,6 @@ class InferenceLoggingRoute(APIRoute):
                         ),
                         queue="data_log",
                     )
-                    print("logged data")
 
             return response
 
