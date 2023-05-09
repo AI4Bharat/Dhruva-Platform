@@ -434,16 +434,16 @@ class InferenceService:
                 serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
             else:
                 serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
-        elif task_type == _ULCATaskType.TRANSLATION:
-            # serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
-            serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
         # elif task_type == _ULCATaskType.TRANSLATION:
-        #     if config["language"]["sourceLanguage"] == "en":
-        #         serviceId = "ai4bharat/indictrans-v2-e2i-gpu--t4"
-        #     elif config["language"]["targetLanguage"] == "en":
-        #         serviceId = "ai4bharat/indictrans-v2-i2e-gpu--t4"
-        #     else:
-        #         serviceId = "ai4bharat/indictrans-v2-i2i_piv-gpu--t4"
+        #     # serviceId = "ai4bharat/indictrans-fairseq-all-gpu--t4"
+        #     serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
+        elif task_type == _ULCATaskType.TRANSLATION:
+            if config["language"]["sourceLanguage"] == "en":
+                serviceId = "ai4bharat/indictrans-v2-e2i-gpu--t4"
+            elif config["language"]["targetLanguage"] == "en":
+                serviceId = "ai4bharat/indictrans-v2-i2e-gpu--t4"
+            else:
+                serviceId = "ai4bharat/indictrans-v2-i2i_piv-gpu--t4"
         elif task_type == _ULCATaskType.TTS:
             if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
                 serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
