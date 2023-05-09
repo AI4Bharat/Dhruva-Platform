@@ -2,12 +2,16 @@
   <h3 align="center">Dhruva</h3>
 </div>
 
-
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
@@ -22,15 +26,35 @@
   </ol>
 </details>
 
+<!-- ABOUT THE PROJECT -->
+
+## About The Project
+
+Dhruva is a full-fledged platform for serving AI models at scale.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Built With
+
+This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+
+- [![Next][Nextjs]][Next-url]
+- [![Chakra UI][Chakra ui]][Chakra-url]
+- [![FastApi][FastApi]][FastApi-url]
+- [![RabbitMQ][Rabbitmq]][Rabbitmq-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 ### Prerequisites
-Get the .env file.
 
+Get the .env file. This can be created from the .env.example, you just need to fill the values.
 
 ### Installation
+
 Clone both Dhruva-Platform and Dhruva-Seed.
 
 ```
@@ -127,3 +151,15 @@ To add new models and services, please add a JSON fixture in the [Dhruva-Seed](h
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[Nextjs]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+[Next-url]: https://nextjs.org/
+[Chakra-ui]: https://img.shields.io/badge/chakra--ui-black?logo=chakraui&style=for-the-badge
+[Chakra-url]: https://chakra-ui.com/
+[FastApi]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white
+[FastApi-url]: https://fastapi.tiangolo.com/
+[Rabbitmq]: https://img.shields.io/badge/Rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white
+[Rabbitmq-url]: https://www.rabbitmq.com
