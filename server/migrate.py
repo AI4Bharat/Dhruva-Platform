@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from mongodb_migrations.cli import MigrationManager
 from mongodb_migrations.config import Configuration, Execution
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 def parse_connection_string(conn_str: str):
@@ -27,7 +27,6 @@ auth_details = parse_connection_string(connection_string)
 config = {
     "mongo_url": connection_string,
     "mongo_database": os.environ["DB_NAME"],
-    "mongo_migrations_path": os.environ["MIGRATION_DIR"],
     "metastore": "migrations",
     "execution": execution,
     **auth_details,

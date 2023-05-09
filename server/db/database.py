@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from pymongo.database import Database
 
-load_dotenv()
+load_dotenv(override=True)
 
 db_clients = dict()
 

@@ -185,10 +185,13 @@ def webrtc_vad_chunking(vad_level, chunk_size, fp_arr, sample_rate):
             yield raw_audio
 
 
+import os
 import torch
 
 model, silero_utils = torch.hub.load(
-    repo_or_dir="/root/.cache/torch/hub/snakers_silero_vad",
+    repo_or_dir=os.environ.get(
+        "VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"
+    ),
     model="silero_vad",
     # force_reload=True,
     source="local",
