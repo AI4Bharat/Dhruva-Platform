@@ -19,7 +19,12 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#deployment">Deployment</a></li>
+    <li>
+        <a href="#deployment">Deployment</a>
+        <ul>
+          <li><a href="#development">Development</a></li>
+        </ul>
+    </li>
     <li><a href="#migrations">Migrations</a></li>
     <li><a href="#seed">Seed</a></li>
     <li><a href="#contributing">Contributing</a></li>
