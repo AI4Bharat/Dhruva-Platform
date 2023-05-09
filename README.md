@@ -171,4 +171,4 @@ To add new models and services, please add a JSON fixture in the [Dhruva-Seed](h
 [FastApi]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white
 [FastApi-url]: https://fastapi.tiangolo.com/
 [Celery]: https://img.shields.io/static/v1?style=for-the-badge&message=Celery&color=37814A&logo=Celery&logoColor=FFFFFF&label
-[Celery-url]: https://www.rabbitmq.com
+[Celery-url]: https://docs.celeryq.dev/en/stable/
