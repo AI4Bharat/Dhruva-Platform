@@ -19,7 +19,7 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#deployment">Deployment</a></li>
     <li><a href="#migrations">Migrations</a></li>
     <li><a href="#seed">Seed</a></li>
     <li><a href="#contributing">Contributing</a></li>
@@ -39,7 +39,7 @@ Dhruva is a full-fledged platform for serving AI models at scale.
 This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
 - [![Next][Nextjs]][Next-url]
-- [![Chakra UI][Chakra ui]][Chakra-url]
+- [![Chakra UI][Chakra-ui]][Chakra-url]
 - [![FastApi][FastApi]][FastApi-url]
 - [![RabbitMQ][Rabbitmq]][Rabbitmq-url]
 
@@ -69,10 +69,11 @@ Place the .env file in the root directory in Dhruva Platform
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
-## Usage
+
+## Deployment
+
+### Development
 
 - Build the docker images for both the server and the client using the commands below.
 
@@ -81,15 +82,17 @@ Place the .env file in the root directory in Dhruva Platform
   ```
 
   ```
-  docker build -f Dockerfile.prod -t client .
+  docker build -f Dockerfile -t client .
   ```
 
 - Build the docker image for the seed repository
+
   ```
   docker build -t seed .
   ```
 
 - Run docker compose by using the `docker-compose-db.yml`, `docker-compose-metering.yml` and `docker-compose-monitoring.yml` as the compose files first.
+
   ```
   docker compose -f docker-compose-db.yml up -d
   ```
@@ -111,30 +114,30 @@ You should now be able to view the client at `http://localhost:{$FRONTEND_PORT}`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- MIGRATIONS -->
+
 ## Migrations
 
-We use [mongodb-migrations](https://github.com/DoubleCiti/mongodb-migrations) to manage migrations. All migrations are stored in the migrations folder. 
+We use [mongodb-migrations](https://github.com/DoubleCiti/mongodb-migrations) to manage migrations. All migrations are stored in the migrations folder.
 
 To create a new migration, run the following command:
+
 ```
 mongodb-migrate-create --description <description>
 ```
+
 This command will create a new migration `<timestamp>_<description>.py` in the migrations folder. A class `Migration` will be created for you. Implement the upgrade method, and optionally, the downgrade method.
 
 Once implemented, you can run docker compose with `docker-compose-app.yml` as the compose file to run the migration.
 
-After the migration is run, it will also add a new document in the `migrations` collection, in the database specified in the .env file, to ensure that each the migration only runs once. 
+After the migration is run, it will also add a new document in the `migrations` collection, in the database specified in the .env file, to ensure that each the migration only runs once.
 
-Commit all migrations to the repository and do not delete any migration. 
+Commit all migrations to the repository and do not delete any migration.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- SEED -->
+
 ## Seed
 
 To add new models and services, please add a JSON fixture in the [Dhruva-Seed](https://github.com/AI4Bharat/Dhruva-Seed) repository.
@@ -142,6 +145,7 @@ To add new models and services, please add a JSON fixture in the [Dhruva-Seed](h
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 1. Clone the Project
