@@ -1,3 +1,4 @@
+import { CloseIcon } from "@chakra-ui/icons";
 import {
   FormControl,
   FormLabel,
@@ -7,11 +8,18 @@ import {
   Button,
   Select,
   useToast,
+  Input,
+  Switch,
+  Checkbox,
+  HStack,
+  IconButton,
 } from "@chakra-ui/react";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
+import { BiCross } from "react-icons/bi";
 import { submitFeedback } from "../../api/serviceAPI";
 import { lang2label } from "../../config/config";
+import { PipelineInput, PipelineOutput, ULCAFeedbackRequest } from "./Feedback";
 
 import Rating from "./Rating";
 
@@ -27,136 +35,198 @@ interface IFeedback {
   comments: string;
   service_id: string;
 }
+enum ULCATaskType {
+  ASR = "asr",
+  TRANSLATION = "translation",
+  TTS = "tts",
+  TRANSLITERATION = "transliteration",
+  NER = "ner",
+  STS = "sts", // TODO: Remove
+}
+enum FeedbackType {
+  RATING = "rating",
+  COMMENT = "comment",
+  THUMBS = "thumbs",
+  RATING_LIST = "ratingList",
+  COMMENT_LIST = "commentList",
+  THUMBS_LIST = "thumbsList",
+  CHECKBOX_LIST = "checkboxList",
+}
 
 const Feedback = (props) => {
-  const toast = useToast();
-  const mutation = useMutation(submitFeedback);
-
-  const [comment, setComment] = useState("");
-  const handleCommentChange = (e) => setComment(e.target.value);
-
-  const [displayLanguage, setDisplayLanguage] = useState("");
-  const handleLanguageChange = (e) => setDisplayLanguage(e.target.value);
-
-  const [language, setLanguage] = useState<LanguageConfig>({sourceLanguage:"", targetLanguage:""})
-
-  const [example, setExample] = useState("");
-  const handleExampleChange = (e) => setExample(e.target.value);
-
-  const [rating, setRating] = useState(0);
-  const handleRatingChange = (newRating) => setRating(newRating);
-
-  const [modal, setModal] = useState(<></>);
-
-  const handleSubmitFeedback = () => {
-    if (comment === "" || language.sourceLanguage === "") {
-      toast({
-        title: "Fields Required",
-        description: "Fill all the required fields",
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-      });
-    } else {
-      let request: IFeedback = {
-        language: language,
-        rating: rating,
-        example: example,
-        comments: comment,
-        service_id: props.serviceID,
-      };
-      mutation.mutate(request, {
-        onSuccess: (data) => {
-          toast({
-            title: "Submitted Successfully",
-            description: "Your Feedback has been submitted.",
-            status: "success",
-            duration: 5000,
-            isClosable: true,
-          });
-          setLanguage({sourceLanguage:"", targetLanguage:""});
-          setComment("");
-          setExample("");
-          setRating(0);
+  const [feedback, setFeedback] = useState<any>({
+    feedbackLanguage: "",
+    pipelineFeedback: {
+      commonFeedback: [
+        {
+          feedbackType: FeedbackType.RATING_LIST,
+          question: "How would you rate the overall quality of the output?",
+          rating: 0,
         },
-        onError: (data) => {
-          toast({
-            title: "Error",
-            description: "An error was encountered.",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-          });
-        },
-      });
-    }
-  };
+      ],
+    },
+    taskFeedback: [
+      {
+        taskType: ULCATaskType.ASR,
+        commonFeedback: [],
+        granularFeedback: [],
+      },
+    ],
+  });
 
+  const [pipelineInput, setPipelineInput] = useState<PipelineInput>({
+    inputData: [],
+    controlConfig: {
+      dataTracking: false,
+    },
+    pipelineTasks: [],
+  });
+
+  const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput>({
+    pipelineResponse: [],
+    controlConfig: {
+      dataTracking: false,
+    },
+  });
+
+  const [suggestedPipelineOutput, setSuggestedPipelineOutput] =
+    useState<PipelineOutput>({
+      pipelineResponse: [],
+      controlConfig: {
+        dataTracking: false,
+      },
+    });
   return (
     <>
-      <FormLabel>Service ID</FormLabel>
-      <Box
-        width={"100%"}
-        minH={"3rem"}
-        border={"1px"}
-        borderColor={"gray.300"}
-        background={"blackAlpha.50"}
-      >
-        <Text ml="1rem" mr="1rem" mt="0.5rem" color={"gray.600"}>
-          {props.serviceID}
-        </Text>
-      </Box>
-      <FormControl isRequired>
-        <FormLabel mt="1rem">Language</FormLabel>
-        <Select
-          onChange={handleLanguageChange}
-          borderRadius={0}
-          value={displayLanguage}
+      <FormControl>
+        <FormLabel>
+          <Text fontSize="lg" fontWeight="bold">
+            Feedback Language
+          </Text>
+        </FormLabel>
+        <Input value={feedback.feedbackLanguage} />
+      </FormControl>
+      <FormControl>
+        <FormLabel>
+          <Text fontSize="lg" fontWeight="bold">
+            Pipeline Input
+          </Text>
+        </FormLabel>
+        <Checkbox>Data Tracking</Checkbox>
+        {pipelineInput.inputData.map((data, index) => (
+          <HStack key={index} mb="1%">
+            <Input value={data} placeholder="Input Data" />
+            <Input value={data} placeholder="Input Config" />
+            <IconButton
+              aria-label="Delete"
+              icon={<CloseIcon />}
+              variant={"ghost"}
+              onClick={() =>
+                setPipelineInput({
+                  ...pipelineInput,
+                  inputData: pipelineInput.inputData.filter(
+                    (_, i) => i !== index
+                  ),
+                })
+              }
+            />
+          </HStack>
+        ))}
+        <Button
+          w="100%"
+          onClick={() =>
+            setPipelineInput({
+              ...pipelineInput,
+              inputData: [...pipelineInput.inputData, ""],
+            })
+          }
         >
-          <option hidden defaultChecked>
-            Select Language
-          </option>
-          {props.serviceLanguages.map((languageConfig: LanguageConfig) => {
-            return (
-              <option
-                key={JSON.stringify(languageConfig)}
-                onClick={()=>{setLanguage({...languageConfig})}}
-                value={JSON.stringify(languageConfig)}
-              >
-                <Text>
-                  {lang2label[languageConfig.sourceLanguage]}
-                  {lang2label[languageConfig.targetLanguage] ? " -> " : ""}
-                  {lang2label[languageConfig.targetLanguage]}
-                </Text>
-              </option>
-            );
-          })}
-        </Select>
+          Add Input
+        </Button>
       </FormControl>
-      <FormControl isRequired mt="1rem">
-        <FormLabel>Comments</FormLabel>
-        <Textarea
-          borderRadius={"0"}
-          focusBorderColor={"orange.200"}
-          value={comment}
-          onChange={handleCommentChange}
-        />
+      <FormControl>
+        <FormLabel>
+          <Text fontSize="lg" fontWeight="bold">
+            Pipeline Output
+          </Text>
+        </FormLabel>
+        <Checkbox>Data Tracking</Checkbox>
+        {pipelineOutput.pipelineResponse.map((data, index) => (
+          <HStack>
+            <Input mb="1%" key={index} value={data} placeholder="Output Data" />
+            <IconButton
+              aria-label="Delete"
+              variant={"ghost"}
+              icon={<CloseIcon />}
+              onClick={() => {
+                setPipelineOutput({
+                  ...pipelineOutput,
+                  pipelineResponse: pipelineOutput.pipelineResponse.filter(
+                    (_, i) => i !== index
+                  ),
+                });
+              }}
+            />
+          </HStack>
+        ))}
+        <Button
+          w="100%"
+          onClick={() => {
+            setPipelineOutput({
+              ...pipelineOutput,
+              pipelineResponse: [...pipelineOutput.pipelineResponse, ""],
+            });
+          }}
+        >
+          Add Output
+        </Button>
       </FormControl>
-      <FormLabel mt="1rem">Example</FormLabel>
-      <Textarea
-        borderRadius={"0"}
-        focusBorderColor={"orange.200"}
-        value={example}
-        onChange={handleExampleChange}
-      />
-      <FormControl isRequired mt="1rem">
-        <FormLabel mt="1rem">Rating</FormLabel>
-        <Rating onChange={handleRatingChange} />
+      <FormControl>
+        <FormLabel>
+          <Text fontSize="lg" fontWeight="bold">
+            Suggested Pipeline Output
+          </Text>
+        </FormLabel>
+        <Checkbox>Data Tracking</Checkbox>
+        {suggestedPipelineOutput.pipelineResponse.map((data, index) => (
+          <HStack>
+            <Input mb="1%" key={index} value={data} placeholder="Output Data" />
+            <IconButton
+              aria-label="Delete"
+              variant={"ghost"}
+              icon={<CloseIcon />}
+              onClick={() => {
+                setSuggestedPipelineOutput({
+                  ...suggestedPipelineOutput,
+                  pipelineResponse:
+                    suggestedPipelineOutput.pipelineResponse.filter(
+                      (_, i) => i !== index
+                    ),
+                });
+              }}
+            />
+          </HStack>
+        ))}
+        <Button
+          w="100%"
+          onClick={() => {
+            setSuggestedPipelineOutput({
+              ...suggestedPipelineOutput,
+
+              pipelineResponse: [
+                ...suggestedPipelineOutput.pipelineResponse,
+                "",
+              ],
+            });
+          }}
+        >
+          Add Output
+        </Button>
       </FormControl>
-      <Button mt={"2rem"} type="submit" onClick={handleSubmitFeedback}>
+
+      <Button mt={"2rem"} type="submit">
         Submit
       </Button>
-      {modal}
     </>
   );
 };
