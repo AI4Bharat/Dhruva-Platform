@@ -12,11 +12,10 @@ const Navbar = () => {
   const {data:user} = useQuery(['User'], ()=>getUser(localStorage.getItem('email')))
   const Logout = () =>
   {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("current_page");
-      localStorage.removeItem("email");
-      router.push('/')
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("email");
+    router.push("/");
   }
   useEffect(() => {
     let url = router.pathname.split("/");

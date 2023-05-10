@@ -15,20 +15,16 @@ import { useRouter } from "next/router";
 import { GiHamburgerMenu } from "react-icons/gi";
 import SidebarMobile from "./SidebarMobile";
 import { BiUser } from "react-icons/bi";
-import { useQuery } from "@tanstack/react-query";
-import { getUser } from "../../api/authAPI";
+
 
 const NavbarMobile = () => {
   const [title, setTitle] = useState<String>("Dashboard");
   const { isOpen, onToggle } = useDisclosure();
   const router = useRouter();
-  // const { data: user } = useQuery(["User"], () =>
-  //   getUser(localStorage.getItem("email"))
-  // );
+
   const Logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-    localStorage.removeItem("current_page");
     localStorage.removeItem("email");
     router.push("/");
   };

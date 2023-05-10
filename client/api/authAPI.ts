@@ -6,8 +6,8 @@ function timeout(delay: number) {
   return new Promise((res) => setTimeout(res, delay));
 }
 
-const login = async (email: string, password: string) => {
-  const response = await apiInstance.post("/auth/signin", { email, password });
+const login = async (userDetails : loginFormat) => {
+  const response = await apiInstance.post("/auth/signin", userDetails);
   let token = response.data.token;
   let user_id = response.data.id;
   if (token) {
