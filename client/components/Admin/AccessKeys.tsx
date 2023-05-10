@@ -436,6 +436,7 @@ const AccessKeys = () => {
                     {Object.entries(searchedKeys).map(([id, keysData]) => {
                       return (
                         <KeyCard
+                          data_tracking = {keysData.data_tracking}
                           total_usage = {findPerKeyUsage(keysData)}
                           refreshCard={refetch}
                           name={keysData.name}
