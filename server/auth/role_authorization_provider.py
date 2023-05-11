@@ -9,7 +9,7 @@ from schema.auth.common import RoleType
 
 
 def RoleAuthorizationProvider(
-    request: Request, roles: List[RoleType], db: Database = Depends(AppDatabase)
+    roles: List[RoleType], request: Request, db: Database = Depends(AppDatabase)
 ):
     user_collection = db["user"]
     user: Dict[str, Any] = user_collection.find_one(
