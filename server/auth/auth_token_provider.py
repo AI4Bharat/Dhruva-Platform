@@ -32,18 +32,24 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
         auth_token = request.headers.get("Authorization")
         if auth_token is not None:
             credentials = auth_token.split(" ")[1]
-            claims = jwt.decode(credentials, key=os.environ['JWT_SECRET_KEY'], algorithms=["HS256"])
+            claims = jwt.decode(
+                credentials, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"]
+            )
             user_id = claims["sub"]
             api_key_collection = db["api_key"]
-            api_key = api_key_collection.find_one({"name": "default", "user_id": ObjectId(user_id)})
+            api_key = api_key_collection.find_one(
+                {"name": "default", "user_id": ObjectId(user_id)}
+            )
             if api_key is not None:
-                request.state.api_key_id = api_key['_id']
+                request.state.api_key_id = api_key["_id"]
+
+    request.state.user_id = claims["sub"]
+    request.state.auth_type = "AUTH_TOKEN"
 
     if not session:
         return False
 
     return True
-    
 
 
 def fetch_session(credentials: str, db: Database):
