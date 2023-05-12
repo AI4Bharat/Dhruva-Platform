@@ -16,7 +16,7 @@ def parse_connection_string(conn_str: str):
     return {"mongo_username": username, "mongo_password": password}
 
 
-connection_string = os.environ["DB_CONNECTION_STRING"]
+connection_string = os.environ["APP_DB_CONNECTION_STRING"]
 execution = (
     Execution.MIGRATE
     if os.environ["MIGRATION_ACTION"] == "migrate"
@@ -26,7 +26,7 @@ auth_details = parse_connection_string(connection_string)
 
 config = {
     "mongo_url": connection_string,
-    "mongo_database": os.environ["DB_NAME"],
+    "mongo_database": os.environ["APP_DB_NAME"],
     "metastore": "migrations",
     "execution": execution,
     **auth_details,

@@ -1,6 +1,7 @@
 import base64
 import io
 import time
+import json
 import traceback
 from copy import deepcopy
 from typing import Union
@@ -484,6 +485,7 @@ class InferenceService:
             # TODO: Return proper error messages once standardized
             return {"pipelineResponse": results}
 
+        data_tracking_consent = False
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
             serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
@@ -513,9 +515,11 @@ class InferenceService:
                 exception = other_exception
                 error_msg = str(other_exception)
 
-            data_tracking_consent = request_state.state._state.get("api_key_data_tracking") \
-                            and request_body.controlConfig \
-                            and request_body.controlConfig.dataTracking
+            if request_state.state._state.get("api_key_data_tracking"):
+                data_tracking_consent = True
+                if new_request.controlConfig and new_request.controlConfig.dataTracking is False:
+                    data_tracking_consent = False
+
             log_data.apply_async(
                 (
                     pipeline_task.taskType,
@@ -525,8 +529,8 @@ class InferenceService:
                     error_msg,
                     api_key_id,
                     new_request.json(),
-                    # Error in first task will result in a dict, not pydaantic model response
-                    previous_output_json if isinstance(previous_output_json, dict) \
+                    # Error in first task will result in a dict, not pydantic model response
+                    json.dumps(previous_output_json) if isinstance(previous_output_json, dict) \
                         else previous_output_json.json(),
                     time.perf_counter() - start_time,
                 ),

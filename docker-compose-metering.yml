@@ -20,11 +20,9 @@ services:
     container_name: celery-metering
     image: server
     working_dir: /src
-    # Not having the depends clause due to version issues in production
-    # TODO: Prod docker-compose version upgrade
-    # depends_on:
-    #   rabbitmq_server:
-    #     condition: service_started
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
     volumes:
       - ./server:/src
     env_file:
@@ -39,11 +37,9 @@ services:
     build:
       context: ./server
     working_dir: /src
-    # Not having the depends clause due to version issues in production
-    # TODO: Prod docker-compose version upgrade
-    # depends_on:
-    #   rabbitmq_server:
-    #     condition: service_started
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
     volumes:
       - ./server:/src
     env_file:
@@ -56,10 +52,11 @@ services:
     container_name: celery_beat
     image: server
     working_dir: /src
-    # Not having the depends clause due to version issues in production
-    # depends_on:
-    #   rabbitmq_server:
-    #     condition: service_started
+    depends_on:
+      rabbitmq_server:
+        condition: service_started
+      celery-metering:
+        condition: service_started
     volumes:
       - ./server:/src
     env_file:
@@ -67,6 +64,7 @@ services:
     command: sh -c "python3 -m celery -A celery_backend.celery_app beat --loglevel DEBUG"
     networks:
       - dhruva-network
+
   # Use Flower later for monitoring
   # celery-flower:
   #   container_name: celery-flower
