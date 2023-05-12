@@ -33,7 +33,6 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
     request.state.api_key_id = api_key.id
     request.state.api_key_data_tracking = bool(api_key.data_tracking)
     request.state.api_key_type = api_key.type
-    request.state.auth_type = "API_KEY"
 
     return True
 
