@@ -106,7 +106,7 @@ router = APIRouter(
     route_class=InferenceLoggingRoute,
     dependencies=[
         Depends(AuthProvider),
-        Depends(ApiKeyTypeAuthorizationProvider(required_type=ApiKeyType.INFERENCE)),
+        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
     responses={
         "401": {"model": HttpErrorResponse},

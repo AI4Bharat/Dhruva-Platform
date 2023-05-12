@@ -20,7 +20,7 @@ router = APIRouter(
     prefix="/admin",
     dependencies=[
         Depends(AuthProvider),
-        Depends(RoleAuthorizationProvider(roles=[RoleType.ADMIN])),
+        Depends(RoleAuthorizationProvider([RoleType.ADMIN])),
     ],
     responses={
         "401": {"model": HttpErrorResponse},
