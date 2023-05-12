@@ -9,14 +9,11 @@ from schema.auth.common import RoleType
 
 
 class RoleAuthorizationProvider:
-    def __init__(
-        self, roles: List[RoleType], db: Database = Depends(AppDatabase)
-    ) -> None:
+    def __init__(self, roles: List[RoleType]) -> None:
         self.roles = roles
-        self.db = db
 
-    def __call__(self, request: Request):
-        user_collection = self.db["user"]
+    def __call__(self, request: Request, db: Database = Depends(AppDatabase)):
+        user_collection = db["user"]
         user: Dict[str, Any] = user_collection.find_one(
             {"_id": ObjectId(request.state.user_id)}
         )  # type: ignore
