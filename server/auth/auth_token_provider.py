@@ -29,19 +29,15 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
     session_collection = db["session"]
     session = session_collection.find_one({"_id": ObjectId(claims["sess_id"])})
     if "inference" in request.url.path or "feedback" in request.url.path:
-        auth_token = request.headers.get("Authorization")
-        if auth_token is not None:
-            credentials = auth_token.split(" ")[1]
-            claims = jwt.decode(
-                credentials, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"]
-            )
-            user_id = claims["sub"]
-            api_key_collection = db["api_key"]
-            api_key = api_key_collection.find_one(
-                {"name": "default", "user_id": ObjectId(user_id)}
-            )
-            if api_key is not None:
-                request.state.api_key_id = api_key["_id"]
+        user_id = claims["sub"]
+        api_key_collection = db["api_key"]
+        api_key = api_key_collection.find_one(
+            {"name": "default", "user_id": ObjectId(user_id)}
+        )
+
+        if api_key is not None:
+            request.state.api_key_id = api_key["_id"]
+            request.state.api_key_type = api_key["type"]
 
     request.state.user_id = claims["sub"]
 
