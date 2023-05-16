@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends
 
+from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.role_authorization_provider import RoleAuthorizationProvider
 from exception.http_error import HttpErrorResponse
-from schema.auth.common import RoleType
-from schema.auth.response.get_all_api_keys_response import GetAllApiKeysDetailsResponse
+from schema.auth.common import ApiKeyType, RoleType
+from schema.auth.response import GetAllApiKeysDetailsResponse
 from schema.services.request import (
     ModelCreateRequest,
     ModelUpdateRequest,
@@ -21,6 +22,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
         Depends(RoleAuthorizationProvider([RoleType.ADMIN])),
+        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
     responses={
         "401": {"model": HttpErrorResponse},

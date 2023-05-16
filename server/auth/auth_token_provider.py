@@ -4,7 +4,7 @@ from typing import Any, Dict
 import jwt
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
-from fastapi import Request
+from fastapi import HTTPException, Request, status
 from pymongo.database import Database
 
 load_dotenv(override=True)
@@ -35,9 +35,14 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
             {"name": "default", "user_id": ObjectId(user_id)}
         )
 
-        if api_key is not None:
-            request.state.api_key_id = api_key["_id"]
-            request.state.api_key_type = api_key["type"]
+        if api_key is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"message": "Internal Server Error"},
+            )
+
+        request.state.api_key_id = api_key["_id"]
+        request.state.api_key_type = api_key["type"]
 
     request.state.user_id = claims["sub"]
 
