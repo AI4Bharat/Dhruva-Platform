@@ -22,6 +22,7 @@ import {
   CheckboxGroup,
   ModalCloseButton,
   useToast,
+  IconButton,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import {
@@ -431,7 +432,6 @@ const Feedback: React.FC<FeedbackProps> = ({
       });
     }
   };
-
   return (
     <>
       <FormControl>
@@ -533,12 +533,15 @@ const Feedback: React.FC<FeedbackProps> = ({
                                     let newSuggestedPipelineOutput = {
                                       ...suggestedPipelineOutput,
                                     };
-                                    newSuggestedPipelineOutput.pipelineResponse[
-                                      index
-                                    ].output[i].target = e.target.value;
-                                    setSuggestedPipelineOutput(
-                                      newSuggestedPipelineOutput
-                                    );
+                                    if (newSuggestedPipelineOutput) {
+                                      // @ts-ignore
+                                      newSuggestedPipelineOutput.pipelineResponse[
+                                        index
+                                      ].output[i].target = e.target.value;
+                                      setSuggestedPipelineOutput(
+                                        newSuggestedPipelineOutput
+                                      );
+                                    }
                                   }}
                                 />
                               </Box>
