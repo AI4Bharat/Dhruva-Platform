@@ -1,4 +1,4 @@
-import { CloseIcon } from "@chakra-ui/icons";
+import { StarIcon } from "@chakra-ui/icons";
 import {
   FormControl,
   FormLabel,
@@ -6,35 +6,30 @@ import {
   Text,
   Box,
   Button,
-  Select,
-  useToast,
   Input,
   Switch,
   Checkbox,
   HStack,
-  IconButton,
+  Modal,
+  ModalHeader,
+  useDisclosure,
+  ModalBody,
+  ModalOverlay,
+  ModalContent,
+  VStack,
+  Divider,
+  Spacer,
+  CheckboxGroup,
+  ModalCloseButton,
+  useToast,
 } from "@chakra-ui/react";
-import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { BiCross } from "react-icons/bi";
-import { submitFeedback } from "../../api/serviceAPI";
-import { lang2label } from "../../config/config";
-import { PipelineInput, PipelineOutput, ULCAFeedbackRequest } from "./Feedback";
-
-import Rating from "./Rating";
-
-interface LanguageConfig {
-  sourceLanguage: string;
-  targetLanguage: string;
-}
-
-interface IFeedback {
-  language: LanguageConfig;
-  example: string;
-  rating: number;
-  comments: string;
-  service_id: string;
-}
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCAFeedbackRequest,
+} from "./FeedbackTypes";
+import { fetchFeedbackQuestions, submitFeedback } from "../../api/serviceAPI";
 enum ULCATaskType {
   ASR = "asr",
   TRANSLATION = "translation",
@@ -53,13 +48,27 @@ enum FeedbackType {
   CHECKBOX_LIST = "checkboxList",
 }
 
-const Feedback = (props) => {
+interface FeedbackProps {
+  feedbackLanguage: string;
+  pipelineInput: PipelineInput;
+  pipelineOutput: PipelineOutput;
+  taskType?: ULCATaskType;
+  serviceId: string;
+}
+
+const Feedback: React.FC<FeedbackProps> = ({
+  feedbackLanguage,
+  pipelineInput,
+  pipelineOutput,
+  taskType,
+  serviceId,
+}) => {
   const [feedback, setFeedback] = useState<any>({
-    feedbackLanguage: "",
+    feedbackLanguage: feedbackLanguage,
     pipelineFeedback: {
       commonFeedback: [
         {
-          feedbackType: FeedbackType.RATING_LIST,
+          feedbackType: FeedbackType.RATING,
           question: "How would you rate the overall quality of the output?",
           rating: 0,
         },
@@ -68,167 +77,514 @@ const Feedback = (props) => {
     taskFeedback: [
       {
         taskType: ULCATaskType.ASR,
-        commonFeedback: [],
-        granularFeedback: [],
+        commonFeedback: [
+          {
+            feedbackType: FeedbackType.RATING,
+            question: "How would you rate the overall quality of the output?",
+            rating: 0,
+          },
+        ],
+        granularFeedback: [
+          {
+            feedbackType: FeedbackType.RATING_LIST,
+            question: "How would you rate the overall quality of the output?",
+            ratingList: [
+              {
+                parameterName: "parameter1",
+                checkbox: false,
+              },
+              {
+                parameterName: "parameter2",
+                checkbox: false,
+              },
+            ],
+          },
+          {
+            feedbackType: FeedbackType.THUMBS,
+            question: "How would you rate the overall quality of the output?",
+            rating: 0,
+          },
+        ],
       },
     ],
   });
-
-  const [pipelineInput, setPipelineInput] = useState<PipelineInput>({
-    inputData: [],
-    controlConfig: {
-      dataTracking: false,
-    },
-    pipelineTasks: [],
-  });
-
-  const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput>({
-    pipelineResponse: [],
-    controlConfig: {
-      dataTracking: false,
-    },
-  });
-
+  const [suggest, setSuggest] = useState(false);
   const [suggestedPipelineOutput, setSuggestedPipelineOutput] =
-    useState<PipelineOutput>({
-      pipelineResponse: [],
-      controlConfig: {
-        dataTracking: false,
-      },
+    useState<PipelineOutput>(pipelineOutput);
+  const toast = useToast();
+  const fetchQuestions = () => {
+    const response = fetchFeedbackQuestions({
+      feedbackLanguage: feedbackLanguage,
+      supportedTasks: [ULCATaskType.ASR],
     });
+    //TODO: Write parsing function for state management
+    setFeedback(response);
+  };
+
+  const changeFeedbackState = (
+    index,
+    value,
+    feedbackLocation,
+    parentIndex = -1,
+    feedbackType
+  ) => {
+    if (parentIndex === -1) {
+      if (feedbackLocation)
+        setFeedback({
+          ...feedback,
+          pipelineFeedback: {
+            commonFeedback: feedback.pipelineFeedback.commonFeedback.map(
+              (data, i) => {
+                if (i === index) {
+                  return { ...data, [feedbackType]: value };
+                } else {
+                  return data;
+                }
+              }
+            ),
+          },
+        });
+    } else {
+      if (feedbackLocation === "granular") {
+        setFeedback({
+          ...feedback,
+          taskFeedback: feedback.taskFeedback.map((data, i) => {
+            if (i === parentIndex) {
+              return {
+                ...data,
+                granularFeedback: data.granularFeedback.map((data, j) => {
+                  if (j === index) {
+                    return { ...data, [feedbackType]: value };
+                  } else {
+                    return data;
+                  }
+                }),
+              };
+            } else {
+              return data;
+            }
+          }),
+        });
+      } else if (feedbackLocation === "common") {
+        setFeedback({
+          ...feedback,
+          taskFeedback: feedback.taskFeedback.map((data, i) => {
+            if (i === parentIndex) {
+              return {
+                ...data,
+                commonFeedback: data.commonFeedback.map((data, j) => {
+                  if (j === index) {
+                    return { ...data, [feedbackType]: value };
+                  } else {
+                    return data;
+                  }
+                }),
+              };
+            } else {
+              return data;
+            }
+          }),
+        });
+      }
+    }
+  };
+
+  const renderFeedbackType = (
+    feedbackType: FeedbackType,
+    index,
+    feedbackLocation,
+    parentIndex = -1,
+    data
+  ) => {
+    switch (feedbackType) {
+      case FeedbackType.RATING:
+        let value = data.rating;
+        return (
+          <Box mt="1%">
+            <Text>How would you rate the overall quality of the output?</Text>
+            {Array(5)
+              .fill("")
+              .map((_, i) => (
+                <StarIcon
+                  key={i}
+                  mt="1%"
+                  color={i < value ? "orange.500" : "gray.300"}
+                  boxSize={6}
+                  onClick={() =>
+                    changeFeedbackState(
+                      index,
+                      i + 1,
+                      feedbackLocation,
+                      parentIndex,
+                      feedbackType
+                    )
+                  }
+                />
+              ))}
+          </Box>
+        );
+      case FeedbackType.COMMENT:
+        let comment = data.comment;
+        return (
+          <Box mt="1%">
+            <Text>How would you rate the overall quality of the output?</Text>
+            <Textarea
+              placeholder="Enter your comment here"
+              value={comment}
+              onChange={(e) =>
+                changeFeedbackState(
+                  index,
+                  e.target.value,
+                  feedbackLocation,
+                  parentIndex,
+                  feedbackType
+                )
+              }
+            />
+          </Box>
+        );
+      case FeedbackType.THUMBS:
+        let thumbs = data.thumbs;
+
+        console.log(thumbs);
+        return (
+          <Box mt="1%">
+            <Text>How would you rate the overall quality of the output?</Text>
+            <HStack>
+              <Button
+                variant={thumbs === false ? "ghost" : "solid"}
+                onClick={() => {
+                  changeFeedbackState(
+                    index,
+                    true,
+                    feedbackLocation,
+                    parentIndex,
+                    feedbackType
+                  );
+                }}
+              >
+                👍
+              </Button>
+              <Button
+                variant={thumbs === true ? "ghost" : "solid"}
+                onClick={() => {
+                  changeFeedbackState(
+                    index,
+                    false,
+                    feedbackLocation,
+                    parentIndex,
+                    feedbackType
+                  );
+                }}
+              >
+                👎
+              </Button>
+            </HStack>
+          </Box>
+        );
+      case FeedbackType.CHECKBOX_LIST:
+        let checkboxList = data.checkboxList;
+        return (
+          <Box mt="1%">
+            <Text>Which parameters should be improved?</Text>
+            <CheckboxGroup>
+              <HStack>
+                {checkboxList.map((data, i) => {
+                  return (
+                    <Checkbox
+                      key={i}
+                      isChecked={data.checkbox}
+                      onChange={(e) =>
+                        changeFeedbackState(
+                          index,
+                          [...checkboxList].map((checkboxData, j) => {
+                            if (j === i) {
+                              return {
+                                ...checkboxData,
+
+                                checkbox: e.target.checked,
+                              };
+                            } else {
+                              return checkboxData;
+                            }
+                          }),
+                          feedbackLocation,
+                          parentIndex,
+                          feedbackType
+                        )
+                      }
+                    >
+                      {data.parameterName}
+                    </Checkbox>
+                  );
+                })}
+              </HStack>
+            </CheckboxGroup>
+          </Box>
+        );
+      case FeedbackType.THUMBS_LIST:
+        let thumbsList = data.thumbsList;
+        return (
+          <Box mt="1%">
+            <Text>Which parameters should be improved?</Text>
+            <HStack>
+              {thumbsList.map((data, i) => {
+                return (
+                  <Button
+                    key={i}
+                    variant={data.thumbs === true ? "solid" : "ghost"}
+                    onClick={() =>
+                      changeFeedbackState(
+                        index,
+                        [...thumbsList].map((thumbsData, j) => {
+                          if (j === i) {
+                            return {
+                              ...thumbsData,
+                              thumbs: !thumbsData.thumbs,
+                            };
+                          } else {
+                            return thumbsData;
+                          }
+                        }),
+                        feedbackLocation,
+                        parentIndex,
+                        feedbackType
+                      )
+                    }
+                  >
+                    {data.parameterName}
+                  </Button>
+                );
+              })}
+            </HStack>
+          </Box>
+        );
+      case FeedbackType.RATING_LIST:
+        let ratingList = data.ratingList;
+        return (
+          <Box mt="1%">
+            <Text>Which parameters should be improved?</Text>
+            <VStack alignItems={"flex-start"}>
+              {ratingList.map((data, i) => {
+                return (
+                  <HStack key={i}>
+                    <Text>{data.parameterName}</Text>
+                    <Box>
+                      {Array(5)
+                        .fill("")
+                        .map((_, k) => (
+                          <StarIcon
+                            key={k}
+                            mt="1%"
+                            color={k < data.rating ? "orange.500" : "gray.300"}
+                            boxSize={6}
+                            onClick={() =>
+                              changeFeedbackState(
+                                index,
+                                [...ratingList].map((ratingData, j) => {
+                                  if (j === i) {
+                                    return {
+                                      ...ratingData,
+                                      rating: k + 1,
+                                    };
+                                  } else {
+                                    return ratingData;
+                                  }
+                                }),
+                                feedbackLocation,
+                                parentIndex,
+                                feedbackType
+                              )
+                            }
+                          />
+                        ))}
+                    </Box>
+                  </HStack>
+                );
+              })}
+            </VStack>
+          </Box>
+        );
+      default:
+        return <></>;
+    }
+  };
+
+  const onSubmitFeedback = async () => {
+    let feedbackRequest: ULCAFeedbackRequest = {
+      ...feedback,
+      pipelineInput: pipelineInput,
+      pipelineOutput: pipelineOutput,
+      suggestedPipelineOutput: suggestedPipelineOutput,
+      feedbackTimeStamp: new Date().toISOString(),
+      feedbackLanguage: "en",
+    };
+    try {
+      await submitFeedback(feedbackRequest, serviceId);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Error in submitting feedback",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <>
       <FormControl>
-        <FormLabel>
-          <Text fontSize="lg" fontWeight="bold">
-            Feedback Language
-          </Text>
-        </FormLabel>
-        <Input value={feedback.feedbackLanguage} />
+        {feedback.pipelineFeedback.commonFeedback?.map((data, index) => {
+          return (
+            <Box key={index}>
+              {renderFeedbackType(
+                data.feedbackType,
+                index,
+                "pipeline",
+                -1,
+                data
+              )}
+            </Box>
+          );
+        })}
       </FormControl>
       <FormControl>
-        <FormLabel>
-          <Text fontSize="lg" fontWeight="bold">
-            Pipeline Input
-          </Text>
-        </FormLabel>
-        <Checkbox>Data Tracking</Checkbox>
-        {pipelineInput.inputData.map((data, index) => (
-          <HStack key={index} mb="1%">
-            <Input value={data} placeholder="Input Data" />
-            <Input value={data} placeholder="Input Config" />
-            <IconButton
-              aria-label="Delete"
-              icon={<CloseIcon />}
-              variant={"ghost"}
-              onClick={() =>
-                setPipelineInput({
-                  ...pipelineInput,
-                  inputData: pipelineInput.inputData.filter(
-                    (_, i) => i !== index
-                  ),
-                })
-              }
-            />
-          </HStack>
-        ))}
-        <Button
-          w="100%"
-          onClick={() =>
-            setPipelineInput({
-              ...pipelineInput,
-              inputData: [...pipelineInput.inputData, ""],
-            })
-          }
-        >
-          Add Input
-        </Button>
+        {feedback.taskFeedback.map((data, parentIndex) => {
+          return (
+            <Box key={parentIndex}>
+              <Text fontSize="md" fontWeight="bold">
+                {data.taskType}
+              </Text>
+              <Box>
+                {data.commonFeedback?.map((data, index) => {
+                  return (
+                    <Box key={index}>
+                      {renderFeedbackType(
+                        data.feedbackType,
+                        index,
+                        "common",
+                        parentIndex,
+                        data
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+              <Box>
+                {data.granularFeedback?.map((data, index) => {
+                  return (
+                    <Box key={index}>
+                      {renderFeedbackType(
+                        data.feedbackType,
+                        index,
+                        "granular",
+                        parentIndex,
+                        data
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          );
+        })}
       </FormControl>
-      <FormControl>
-        <FormLabel>
-          <Text fontSize="lg" fontWeight="bold">
-            Pipeline Output
-          </Text>
-        </FormLabel>
-        <Checkbox>Data Tracking</Checkbox>
-        {pipelineOutput.pipelineResponse.map((data, index) => (
-          <HStack>
-            <Input mb="1%" key={index} value={data} placeholder="Output Data" />
-            <IconButton
-              aria-label="Delete"
-              variant={"ghost"}
-              icon={<CloseIcon />}
-              onClick={() => {
-                setPipelineOutput({
-                  ...pipelineOutput,
-                  pipelineResponse: pipelineOutput.pipelineResponse.filter(
-                    (_, i) => i !== index
-                  ),
-                });
-              }}
-            />
-          </HStack>
-        ))}
-        <Button
-          w="100%"
-          onClick={() => {
-            setPipelineOutput({
-              ...pipelineOutput,
-              pipelineResponse: [...pipelineOutput.pipelineResponse, ""],
-            });
-          }}
-        >
-          Add Output
-        </Button>
-      </FormControl>
-      <FormControl>
-        <FormLabel>
-          <Text fontSize="lg" fontWeight="bold">
-            Suggested Pipeline Output
-          </Text>
-        </FormLabel>
-        <Checkbox>Data Tracking</Checkbox>
-        {suggestedPipelineOutput.pipelineResponse.map((data, index) => (
-          <HStack>
-            <Input mb="1%" key={index} value={data} placeholder="Output Data" />
-            <IconButton
-              aria-label="Delete"
-              variant={"ghost"}
-              icon={<CloseIcon />}
-              onClick={() => {
-                setSuggestedPipelineOutput({
-                  ...suggestedPipelineOutput,
-                  pipelineResponse:
-                    suggestedPipelineOutput.pipelineResponse.filter(
-                      (_, i) => i !== index
-                    ),
-                });
-              }}
-            />
-          </HStack>
-        ))}
-        <Button
-          w="100%"
-          onClick={() => {
-            setSuggestedPipelineOutput({
-              ...suggestedPipelineOutput,
-
-              pipelineResponse: [
-                ...suggestedPipelineOutput.pipelineResponse,
-                "",
-              ],
-            });
-          }}
-        >
-          Add Output
-        </Button>
-      </FormControl>
-
-      <Button mt={"2rem"} type="submit">
+      {taskType &&
+        (taskType === ULCATaskType.TRANSLATION ||
+          taskType === ULCATaskType.TRANSLITERATION ||
+          taskType === ULCATaskType.ASR) && (
+          <>
+            <Divider my="2%" />
+            <FormControl>
+              <FormLabel>
+                <HStack>
+                  <Text fontSize="lg" fontWeight="bold">
+                    Do you want to suggest the pipeline output?
+                  </Text>
+                  <Spacer />
+                  <Switch
+                    onChange={() => setSuggest(!suggest)}
+                    isChecked={suggest}
+                  />
+                </HStack>
+              </FormLabel>
+              <Box>
+                {suggest &&
+                  suggestedPipelineOutput?.pipelineResponse?.map(
+                    (data, index) => {
+                      return (
+                        <Box key={index}>
+                          <Text fontSize="md" fontWeight="bold">
+                            {data.taskType.toUpperCase()}
+                          </Text>
+                          {data.output.map((output, i) => {
+                            return (
+                              <Box key={i}>
+                                <Input
+                                  fontSize="md"
+                                  fontWeight="bold"
+                                  value={
+                                    output.target
+                                      ? output.target
+                                      : output.source
+                                  }
+                                  onChange={(e) => {
+                                    let newSuggestedPipelineOutput = {
+                                      ...suggestedPipelineOutput,
+                                    };
+                                    newSuggestedPipelineOutput.pipelineResponse[
+                                      index
+                                    ].output[i].target = e.target.value;
+                                    setSuggestedPipelineOutput(
+                                      newSuggestedPipelineOutput
+                                    );
+                                  }}
+                                />
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      );
+                    }
+                  )}
+              </Box>
+            </FormControl>
+          </>
+        )}
+      <Button mt={"2rem"} type="submit" onClick={onSubmitFeedback}>
         Submit
       </Button>
     </>
   );
 };
 
-export default Feedback;
+export const FeedbackModal = (props) => {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  return (
+    <>
+      <Button
+        variant={"outline"}
+        onClick={onOpen}
+        w="100%"
+        _hover={{
+          backgroundColor(theme) {
+            return "orange.200";
+          },
+        }}
+      >
+        Give us feedback!
+      </Button>
+      <Modal isOpen={isOpen} onClose={onClose} size={"3xl"}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Give us feedback</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Feedback {...props} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};

@@ -19,6 +19,8 @@ import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
 import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label, tag2Color } from "../../config/config";
 import React from "react";
+import { FeedbackModal } from "../Feedback/Feedback";
+import { PipelineInput, PipelineOutput } from "../Feedback/FeedbackTypes";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -38,7 +40,12 @@ const NERTry: React.FC<Props> = (props) => {
   const [fetched, setFetched] = useState(false);
   const [requestTime, setRequestTime] = useState("");
   const [nerTokens, setNERTokens] = useState<{ [key: string]: string }>({});
-
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
   const getNEROutput = (source: string) => {
     setFetched(false);
     setFetching(true);
@@ -209,6 +216,14 @@ const NERTry: React.FC<Props> = (props) => {
             >
               Generate
             </Button>
+            {/* {fetched && (
+              <FeedbackModal
+                pipelineInput={pipelineInput}
+                pipelineOutput={pipelineOutput}
+                serviceId={props.serviceId}
+
+              />
+            )} */}
           </Stack>
         </Stack>
       </GridItem>

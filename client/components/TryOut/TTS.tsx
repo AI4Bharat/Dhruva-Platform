@@ -25,6 +25,12 @@ import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import React from "react";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import { FeedbackModal } from "../Feedback/Feedback";
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCATaskType,
+} from "../Feedback/FeedbackTypes";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -50,7 +56,12 @@ const TTSTry: React.FC<Props> = (props) => {
   const [requestWordCount, setRequestWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
   const [audioDuration, setAudioDuration] = useState(0);
-
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOuput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
   const getTTSAudio = (source: string) => {
     setFetched(false);
     setFetching(true);
@@ -69,7 +80,7 @@ const TTSTry: React.FC<Props> = (props) => {
             },
             gender: voice,
             samplingRate: samplingRate,
-            audioFormat: audioFormat
+            audioFormat: audioFormat,
           },
           controlConfig: {
             dataTracking: true,
@@ -84,6 +95,44 @@ const TTSTry: React.FC<Props> = (props) => {
         }
       )
       .then((response) => {
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              config: {
+                language: {
+                  sourceLanguage: language,
+                },
+                gender: voice,
+                samplingRate: samplingRate,
+                audioFormat: audioFormat,
+              },
+              taskType: ULCATaskType.TTS,
+            },
+          ],
+          inputData: [
+            {
+              input: [
+                {
+                  source: source,
+                },
+              ],
+            },
+          ],
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
+        setPipelineOutput({
+          controlConfig: {
+            dataTracking: true,
+          },
+          pipelineResponse: [
+            {
+              taskType: ULCATaskType.TTS,
+              audio: response.data["audio"],
+            },
+          ],
+        });
         var audioContent = response.data["audio"][0]["audioContent"];
         var audio = "data:audio/wav;base64," + audioContent;
         var audioObject = new Audio(audio);
@@ -135,8 +184,8 @@ const TTSTry: React.FC<Props> = (props) => {
     <>
       <Grid templateRows="repeat(3)" gap={5}>
         <GridItem>
-          <Stack direction={["column","row"]}>
-            <Stack direction={"row"} width={smallscreen?"100%":"50%"}>
+          <Stack direction={["column", "row"]}>
+            <Stack direction={"row"} width={smallscreen ? "100%" : "50%"}>
               <Text className="dview-service-try-option-title">
                 Select Language:
               </Text>
@@ -153,8 +202,8 @@ const TTSTry: React.FC<Props> = (props) => {
                 ))}
               </Select>
             </Stack>
-            <Stack direction={"row"}  width={smallscreen?"100%":"50%"}>
-              <Text className="dview-service-try-option-title" >Voice:</Text>
+            <Stack direction={"row"} width={smallscreen ? "100%" : "50%"}>
+              <Text className="dview-service-try-option-title">Voice:</Text>
               <Select
                 minW="5rem"
                 onChange={(e) => {
@@ -166,16 +215,20 @@ const TTSTry: React.FC<Props> = (props) => {
               </Select>
             </Stack>
           </Stack>
-          <Stack direction={["column","row"]} mt="0.5rem">
-          <Stack direction={"row"}  width={smallscreen?"100%":"50%"}>
-              <Text className="dview-service-try-option-title">Audio Format:</Text>
+          <Stack direction={["column", "row"]} mt="0.5rem">
+            <Stack direction={"row"} width={smallscreen ? "100%" : "50%"}>
+              <Text className="dview-service-try-option-title">
+                Audio Format:
+              </Text>
               <Select
                 minW="5rem"
                 onChange={(e) => {
                   setAudioFormat(e.target.value);
                 }}
               >
-                <option selected value={"wav"}>wav</option>
+                <option selected value={"wav"}>
+                  wav
+                </option>
                 <option value={"mp3"}>mp3</option>
                 <option value={"flac"}>flac</option>
                 <option value={"flv"}>flv</option>
@@ -183,14 +236,19 @@ const TTSTry: React.FC<Props> = (props) => {
                 <option value={"ogg"}>ogg</option>
               </Select>
             </Stack>
-            <Stack direction={"row"} width={smallscreen?"100%":"50%"}>
-              <Text className="dview-service-try-option-title" >Sampling Rate:</Text>
-              <NumberInput 
-                    defaultValue={22050}
-                    minW="5rem"
-                    onChange={(samplingRate) => setSamplingRate(parseInt(samplingRate))}
-                    value={(samplingRate)}>
-                <NumberInputField/>
+            <Stack direction={"row"} width={smallscreen ? "100%" : "50%"}>
+              <Text className="dview-service-try-option-title">
+                Sampling Rate:
+              </Text>
+              <NumberInput
+                defaultValue={22050}
+                minW="5rem"
+                onChange={(samplingRate) =>
+                  setSamplingRate(parseInt(samplingRate))
+                }
+                value={samplingRate}
+              >
+                <NumberInputField />
               </NumberInput>
             </Stack>
           </Stack>
@@ -242,6 +300,15 @@ const TTSTry: React.FC<Props> = (props) => {
                 <FaRegFileAudio />
               </Button>
               <audio style={{ width: "auto" }} src={audio} controls />
+
+              {fetched && (
+                <FeedbackModal
+                  pipelineInput={pipelineInput}
+                  pipelineOutput={pipelineOuput}
+                  serviceId={props.serviceId}
+
+                />
+              )}
             </Stack>
           </Stack>
         </GridItem>

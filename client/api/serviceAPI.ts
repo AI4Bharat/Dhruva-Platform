@@ -1,17 +1,6 @@
+import { ULCAFeedbackRequest } from "../components/Feedback/FeedbackTypes";
 import { dhruvaAPI, apiInstance } from "./apiConfig";
 
-interface LanguageConfig {
-  sourceLanguage: string;
-  targetLanguage: string;
-}
-
-interface IFeedback {
-  language: LanguageConfig;
-  example: string;
-  rating: number;
-  comments: string;
-  service_id: string;
-}
 
 const listServices = async (): Promise<ServiceList[]> => {
   const response = await apiInstance({
@@ -49,12 +38,72 @@ const getService = async (
   return response.data;
 };
 
-const submitFeedback = async (feedback: IFeedback) => {
+const submitFeedback = async (feedback: ULCAFeedbackRequest, serviceId) => {
   const response = await apiInstance.post(
-    `/services/feedback/submit`,
+    `/services/feedback/submit?service_id=${serviceId}`,
     feedback
   );
   return response.data;
+};
+
+const fetchFeedbackQuestions = async (feedbackRequest) => {
+  return {
+    feedbackLanguage: "en",
+    pipelineFeedback: {
+      commonFeedback: [
+        {
+          question: "Are you satisfied with the pipeline so far?",
+          supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+        },
+      ],
+    },
+    taskFeedback: [
+      {
+        taskType: "asr",
+        commonFeedback: [
+          {
+            question: "Are you satisfied with the ASR response so far?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+        ],
+        granularFeedback: [
+          {
+            question:
+              "Which of the following parameters are you not satisfied with?",
+            supportedFeedbackTypes: [
+              "rating-list",
+              "comment-list",
+              "thumbs-list",
+              "checkbox-list",
+            ],
+            parameters: ["accuracy", "speed", "readability"],
+          },
+        ],
+      },
+      {
+        taskType: "translation",
+        commonFeedback: [
+          {
+            question: "Are you satisfied with the Translation response so far?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+        ],
+        granularFeedback: [
+          {
+            question:
+              "Which of the following parameters are you not satisfied with?",
+            supportedFeedbackTypes: [
+              "rating-list",
+              "comment-list",
+              "thumbs-list",
+              "checkbox-list",
+            ],
+            parameters: ["accuracy", "speed", "readability"],
+          },
+        ],
+      },
+    ],
+  };
 };
 
 export {
@@ -63,4 +112,5 @@ export {
   submitFeedback,
   listallkeys,
   listalluserkeys,
+  fetchFeedbackQuestions,
 };

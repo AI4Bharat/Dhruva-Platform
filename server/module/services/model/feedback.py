@@ -13,3 +13,4 @@ class _LanguagePair(BaseModel):
 class Feedback(MongoBaseModel,ULCAFeedbackRequest):
     user_id: ObjectIdField = Field(default=None)
     api_key_name: str = Field(default=None)
+    serviceId: str = Field(default=None)

@@ -24,7 +24,12 @@ import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import { CloseIcon } from "@chakra-ui/icons";
 import React from "react";
-
+import { FeedbackModal } from "../Feedback/Feedback";
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCATaskType,
+} from "../Feedback/FeedbackTypes";
 interface LanguageConfig {
   sourceLanguage: string;
   targetLanguage: string;
@@ -60,6 +65,13 @@ const STSTry: React.FC<Props> = (props) => {
   const [sourceAudioDuration, setSourceAudioDuration] = useState(0);
   const [targetAudioDuration, setTargetAudioDuration] = useState(0);
   const [modal, setModal] = useState(<></>);
+  const [gotOutput, setGotOutput] = useState<boolean>(false);
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
 
   const startRecording = () => {
     setRecording(!recording);
@@ -132,6 +144,41 @@ const STSTry: React.FC<Props> = (props) => {
         }
       )
       .then((response) => {
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              taskType: ULCATaskType.STS,
+              config: {
+                language: JSON.parse(language),
+                audioFormat: "wav",
+                gender: voiceGender,
+              },
+            },
+          ],
+          inputData: [
+            {
+              audio: [
+                {
+                  audioContent: asrInput,
+                },
+              ],
+            },
+          ],
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
+        setPipelineOutput({
+          controlConfig: {
+            dataTracking: true,
+          },
+          pipelineResponse: [
+            {
+              taskType: ULCATaskType.STS,
+              audio: response.data.audio,
+            },
+          ],
+        });
         const data = response.data;
         setSourceText(data["output"][0]["source"]);
         setTargetText(data["output"][0]["target"]);
@@ -146,6 +193,7 @@ const STSTry: React.FC<Props> = (props) => {
           setTargetAudioDuration(audioObject.duration);
         });
         setRequestTime(response.headers["request-duration"]);
+        setGotOutput(true);
       });
   };
 
@@ -326,6 +374,14 @@ const STSTry: React.FC<Props> = (props) => {
               />
             </Stack>
             <audio src={audioContent} style={{ width: "100%" }} controls />
+            {gotOutput && (
+              <FeedbackModal
+                pipelineInput={pipelineInput}
+                pipelineOutput={pipelineOutput}
+                serviceId={props.serviceId}
+
+              />
+            )}
           </Stack>
         </GridItem>
       </Grid>

@@ -1,7 +1,6 @@
 import { HStack, Stack, TabPanel, TabPanels, Text } from '@chakra-ui/react'
 import React from 'react'
 import Documentation from '../Documentation/Documentation';
-import Feedback from '../Feedback/Feedback';
 import Usage from './Usage';
 
 const ViewServiceTabs = ({
@@ -53,14 +52,7 @@ const ViewServiceTabs = ({
     <TabPanel>
       <Documentation serviceInfo={serviceInfo} />
     </TabPanel>
-    <TabPanel>
-      {languages && (
-        <Feedback
-          serviceID={serviceID}
-          serviceLanguages={languages}
-        />
-      )}
-    </TabPanel>
+    
     <TabPanel>
     <Usage serviceID={serviceID}/>
     </TabPanel>

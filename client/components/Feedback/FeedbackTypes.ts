@@ -28,7 +28,7 @@ interface ControlConfig {
 
 export interface PipelineOutput {
   controlConfig: ControlConfig;
-  pipelineResponse: string[];
+  pipelineResponse: ULCAGenericInferenceResponse[];
 }
 
 interface ULCAGenericInferenceResponse {
