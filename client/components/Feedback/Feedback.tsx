@@ -417,7 +417,7 @@ const Feedback: React.FC<FeedbackProps> = ({
       pipelineInput: pipelineInput,
       pipelineOutput: pipelineOutput,
       suggestedPipelineOutput: suggestedPipelineOutput,
-      feedbackTimeStamp: new Date().toISOString(),
+      feedbackTimeStamp: Math.floor(Date.now() / 1000),
       feedbackLanguage: "en",
     };
     try {
@@ -432,6 +432,7 @@ const Feedback: React.FC<FeedbackProps> = ({
       });
     }
   };
+
   return (
     <>
       <FormControl>
@@ -490,29 +491,39 @@ const Feedback: React.FC<FeedbackProps> = ({
           );
         })}
       </FormControl>
-      {taskType &&
-        (taskType === ULCATaskType.TRANSLATION ||
-          taskType === ULCATaskType.TRANSLITERATION ||
-          taskType === ULCATaskType.ASR) && (
-          <>
-            <Divider my="2%" />
-            <FormControl>
-              <FormLabel>
-                <HStack>
-                  <Text fontSize="lg" fontWeight="bold">
-                    Do you want to suggest the pipeline output?
-                  </Text>
-                  <Spacer />
-                  <Switch
-                    onChange={() => setSuggest(!suggest)}
-                    isChecked={suggest}
-                  />
-                </HStack>
-              </FormLabel>
-              <Box>
-                {suggest &&
-                  suggestedPipelineOutput?.pipelineResponse?.map(
-                    (data, index) => {
+      {suggestedPipelineOutput.pipelineResponse.filter((data, index) => {
+        if (
+          data.taskType === ULCATaskType.TRANSLATION ||
+          data.taskType === ULCATaskType.TRANSLITERATION ||
+          data.taskType === ULCATaskType.ASR
+        ) {
+          return data;
+        }
+      }).length !== 0 && (
+        <>
+          <Divider my="2%" />
+          <FormControl>
+            <FormLabel>
+              <HStack>
+                <Text fontSize="lg" fontWeight="bold">
+                  Do you want to suggest the pipeline output?
+                </Text>
+                <Spacer />
+                <Switch
+                  onChange={() => setSuggest(!suggest)}
+                  isChecked={suggest}
+                />
+              </HStack>
+            </FormLabel>
+            <Box>
+              {suggest &&
+                suggestedPipelineOutput?.pipelineResponse?.map(
+                  (data, index) => {
+                    if (
+                      data.taskType === ULCATaskType.TRANSLATION ||
+                      data.taskType === ULCATaskType.TRANSLITERATION ||
+                      data.taskType === ULCATaskType.ASR
+                    ) {
                       return (
                         <Box key={index}>
                           <Text fontSize="md" fontWeight="bold">
@@ -550,11 +561,12 @@ const Feedback: React.FC<FeedbackProps> = ({
                         </Box>
                       );
                     }
-                  )}
-              </Box>
-            </FormControl>
-          </>
-        )}
+                  }
+                )}
+            </Box>
+          </FormControl>
+        </>
+      )}
       <Button mt={"2rem"} type="submit" onClick={onSubmitFeedback}>
         Submit
       </Button>
