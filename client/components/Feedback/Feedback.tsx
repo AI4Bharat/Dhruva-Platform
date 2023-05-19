@@ -294,7 +294,7 @@ const Feedback: React.FC<FeedbackProps> = ({
                   return (
                     <Checkbox
                       key={i}
-                      isChecked={data.checkbox}
+                      isChecked={data.isSelected}
                       onChange={(e) =>
                         changeFeedbackState(
                           index,
@@ -303,7 +303,7 @@ const Feedback: React.FC<FeedbackProps> = ({
                               return {
                                 ...checkboxData,
 
-                                checkbox: e.target.checked,
+                                isSelected: e.target.checked,
                               };
                             } else {
                               return checkboxData;
