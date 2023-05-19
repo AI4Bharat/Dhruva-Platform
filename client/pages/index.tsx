@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { login } from "../api/authAPI";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Login() {
   const router = useRouter();
@@ -21,47 +22,101 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const mutation = useMutation(login);
+
   useEffect(() => {
-    if(localStorage.getItem("refresh_token") && localStorage.getItem("access_token"))
-    {
-      if(localStorage.getItem("currentpage"))
+    if (
+      localStorage.getItem("refresh_token") &&
+      localStorage.getItem("access_token")
+    ) {
+      if (localStorage.getItem("currentpage")) 
       {
-        router.push(localStorage.getItem("current_page"))
-      }
-      else
+        let timeout = setTimeout(()=>{router.push(localStorage.getItem("current_page"))},1000)
+      } 
+      else 
       {
-        router.push("/services")
+        router.push("/services");
       }
     }
   }, []);
 
-  const validateCredentials = async () => {
-    try {
-      await login(username, password);
-      if(localStorage.getItem("current_page"))
+  const validateCredentials = () => {
+    mutation.mutate(
+      { email: username, password: password },
       {
-        router.push(localStorage.getItem("current_page"))
+        onSuccess: (data) => {
+          localStorage.setItem("email", username);
+          if (localStorage.getItem("current_page")) 
+          {
+            let timeout = setTimeout(()=>{router.push(localStorage.getItem("current_page"))},1000)
+          } 
+          else 
+          {
+            router.push("/services");
+          }
+        },
+        onError: (error: any) => {
+          if (
+            error?.response.status === 401 ||
+            error?.response.status === 422
+          ) {
+            toast({
+              title: "Error",
+              description: "Invalid Credentials",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Something went wrong, please try again later",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        },
       }
-    } catch (error) {
-      if (error.response.status === 401 || error.response.status === 422) {
-        toast({
-          title: "Error",
-          description: "Invalid Credentials",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Something went wrong, please try again later",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    }
+    );
   };
+
+  // const validateCredentials = async () => {
+  //   try {
+  //     await login(username, password);
+  //     localStorage.setItem("email", username);
+  //     if(localStorage.getItem("current_page"))
+  //     {
+  //       router.push(localStorage.getItem("current_page"))
+  //     }
+  //     else
+  //     {
+  //       router.push(localStorage.getItem("/services"))
+  //     }
+  //   } catch (error) {
+  //     if(error.response)
+  //     {
+  //     if (error.response.status === 401 || error.response.status === 422) {
+  //       toast({
+  //         title: "Error",
+  //         description: "Invalid Credentials",
+  //         status: "error",
+  //         duration: 5000,
+  //         isClosable: true,
+  //       });
+  //     } else {
+  //       toast({
+  //         title: "Error",
+  //         description: "Something went wrong, please try again later",
+  //         status: "error",
+  //         duration: 5000,
+  //         isClosable: true,
+  //       });
+  //     }
+  //   }
+  //  }
+  // };
+
   return (
     <>
       <Head>

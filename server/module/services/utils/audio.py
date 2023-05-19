@@ -1,8 +1,10 @@
-import io
 import collections
-import webrtcvad
+import io
+
 import numpy as np
+import webrtcvad
 from pydub import AudioSegment
+
 
 class Frame(object):
     """Represents a "frame" of audio data."""
@@ -11,6 +13,7 @@ class Frame(object):
         self.bytes = bytes
         self.timestamp = timestamp
         self.duration = duration
+
 
 def frame_generator(frame_duration_ms, audio, sample_rate):
     """Generates audio frames from PCM audio data.
@@ -26,6 +29,7 @@ def frame_generator(frame_duration_ms, audio, sample_rate):
         yield Frame(audio[offset : offset + n], timestamp, duration)
         timestamp += duration
         offset += n
+
 
 def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_arr):
     num_padding_frames = int(padding_duration_ms / frame_duration_ms)
@@ -122,10 +126,21 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_a
             # If more than 90% of the frames in the ring buffer are
             # unvoiced, then enter NOTTRIGGERED and yield whatever
             # audio we've collected.
-            if (num_unvoiced > 0.9 * ring_buffer.maxlen) or (len(voiced_frames)
-                 > (15000/30) and num_unvoiced > 0.85 * ring_buffer.maxlen) or (len(voiced_frames)
-                 > (20000/30) and num_unvoiced > 0.75 * ring_buffer.maxlen) or (len(voiced_frames)
-                 > (25000/30) and num_unvoiced > 0.65 * ring_buffer.maxlen):
+            if (
+                (num_unvoiced > 0.9 * ring_buffer.maxlen)
+                or (
+                    len(voiced_frames) > (15000 / 30)
+                    and num_unvoiced > 0.85 * ring_buffer.maxlen
+                )
+                or (
+                    len(voiced_frames) > (20000 / 30)
+                    and num_unvoiced > 0.75 * ring_buffer.maxlen
+                )
+                or (
+                    len(voiced_frames) > (25000 / 30)
+                    and num_unvoiced > 0.65 * ring_buffer.maxlen
+                )
+            ):
                 triggered = False
 
                 start_frame = voiced_frames[0].timestamp
@@ -145,6 +160,7 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_a
         end_frame = voiced_frames[-1].timestamp + voiced_frames[-1].duration
         yield b"".join([f.bytes for f in voiced_frames]), (start_frame, end_frame)
 
+
 def webrtc_vad_chunking(vad_level, chunk_size, fp_arr, sample_rate):
     chunk_size = int(chunk_size)
     vad = webrtcvad.Vad(vad_level)
@@ -163,36 +179,43 @@ def webrtc_vad_chunking(vad_level, chunk_size, fp_arr, sample_rate):
         if num_audio_chunks > 1:
             for i in range(num_audio_chunks):
                 yield raw_audio[
-                    chunk_size * i * sample_rate: (i + 1) * chunk_size * sample_rate
+                    chunk_size * i * sample_rate : (i + 1) * chunk_size * sample_rate
                 ]
         else:
             yield raw_audio
 
 
+import os
 import torch
-model, silero_utils = torch.hub.load(
-    repo_or_dir='snakers4/silero-vad',
-    model='silero_vad',
-    # force_reload=True,
-    onnx=False
-)
 
-(get_speech_timestamps,
- save_audio,
- read_audio,
- VADIterator,
- collect_chunks) = silero_utils
+model, silero_utils = torch.hub.load(
+    repo_or_dir=os.environ.get(
+        "VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"
+    ),
+    model="silero_vad",
+    # force_reload=True,
+    source="local",
+    onnx=False,
+)
+(
+    get_speech_timestamps,
+    save_audio,
+    read_audio,
+    VADIterator,
+    collect_chunks,
+) = silero_utils
+
 
 def silero_vad_chunking(raw_audio, sample_rate, chunk_size):
     wav = torch.from_numpy(raw_audio).float()
     speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate)
     for i in speech_timestamps:
-        raw_audio = wav[i['start']: i['end']].numpy()
+        raw_audio = wav[i["start"] : i["end"]].numpy()
         num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / chunk_size))
         if num_audio_chunks > 1:
             for i in range(num_audio_chunks):
                 yield raw_audio[
-                    chunk_size * i * sample_rate: (i + 1) * chunk_size * sample_rate
+                    chunk_size * i * sample_rate : (i + 1) * chunk_size * sample_rate
                 ]
         else:
             yield raw_audio

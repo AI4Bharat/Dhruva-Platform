@@ -59,6 +59,7 @@ export default function App({ Component, pageProps, ...appProps }: AppProps) {
     "/billing",
     "/profile",
     "/admin",
+    "/pipeline",
   ].includes(appProps.router.pathname);
 
   const [queryClient] = useState(() => new QueryClient());

@@ -12,6 +12,10 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  HStack,
+  Input,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -20,6 +24,7 @@ import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import React from "react";
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -33,10 +38,13 @@ interface Props {
 
 const TTSTry: React.FC<Props> = (props) => {
   const [languages, setLanguages] = useState<string[]>([]);
+  const smallscreen = useMediaQuery("(max-width: 1080px)");
   const [language, setLanguage] = useState("hi");
   const [voice, setVoice] = useState("male");
   const [tltText, setTltText] = useState("");
   const [audio, setAudio] = useState("");
+  const [audioFormat, setAudioFormat] = useState("wav");
+  const [samplingRate, setSamplingRate] = useState(22050);
   const [fetching, setFetching] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [requestWordCount, setRequestWordCount] = useState(0);
@@ -60,6 +68,8 @@ const TTSTry: React.FC<Props> = (props) => {
               sourceLanguage: language,
             },
             gender: voice,
+            samplingRate: samplingRate,
+            audioFormat: audioFormat
           },
           controlConfig: {
             dataTracking: true,
@@ -125,12 +135,13 @@ const TTSTry: React.FC<Props> = (props) => {
     <>
       <Grid templateRows="repeat(3)" gap={5}>
         <GridItem>
-          <Stack direction={"column"}>
-            <Stack direction={"row"}>
+          <Stack direction={["column","row"]}>
+            <Stack direction={"row"} width={smallscreen?"100%":"50%"}>
               <Text className="dview-service-try-option-title">
                 Select Language:
               </Text>
               <Select
+                minW="5rem"
                 onChange={(e) => {
                   setLanguage(e.target.value);
                 }}
@@ -142,9 +153,10 @@ const TTSTry: React.FC<Props> = (props) => {
                 ))}
               </Select>
             </Stack>
-            <Stack direction={"row"}>
-              <Text className="dview-service-try-option-title">Voice:</Text>
+            <Stack direction={"row"}  width={smallscreen?"100%":"50%"}>
+              <Text className="dview-service-try-option-title" >Voice:</Text>
               <Select
+                minW="5rem"
                 onChange={(e) => {
                   setVoice(e.target.value);
                 }}
@@ -152,6 +164,34 @@ const TTSTry: React.FC<Props> = (props) => {
                 <option value={"male"}>Male</option>
                 <option value={"female"}>Female</option>
               </Select>
+            </Stack>
+          </Stack>
+          <Stack direction={["column","row"]} mt="0.5rem">
+          <Stack direction={"row"}  width={smallscreen?"100%":"50%"}>
+              <Text className="dview-service-try-option-title">Audio Format:</Text>
+              <Select
+                minW="5rem"
+                onChange={(e) => {
+                  setAudioFormat(e.target.value);
+                }}
+              >
+                <option selected value={"wav"}>wav</option>
+                <option value={"mp3"}>mp3</option>
+                <option value={"flac"}>flac</option>
+                <option value={"flv"}>flv</option>
+                <option value={"pcm"}>pcm</option>
+                <option value={"ogg"}>ogg</option>
+              </Select>
+            </Stack>
+            <Stack direction={"row"} width={smallscreen?"100%":"50%"}>
+              <Text className="dview-service-try-option-title" >Sampling Rate:</Text>
+              <NumberInput 
+                    defaultValue={22050}
+                    minW="5rem"
+                    onChange={(samplingRate) => setSamplingRate(parseInt(samplingRate))}
+                    value={(samplingRate)}>
+                <NumberInputField/>
+              </NumberInput>
             </Stack>
           </Stack>
         </GridItem>

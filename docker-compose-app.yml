@@ -9,21 +9,19 @@ services:
     env_file:
       - .env
     depends_on:
+      - seed
       - appdb-migration
-      - logdb-migration
     volumes:
       - app_data:/server
     ports:
       - "$BACKEND_PORT:$BACKEND_PORT"
-    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0
+    command: uvicorn main:app --workers $BACKEND_WORKERS --port $BACKEND_PORT --host 0.0.0.0 --proxy-headers
     networks:
       - dhruva-network
 
   client:
     container_name: client
-    build:
-      context: ./client
-      dockerfile: Dockerfile.prod
+    image: client
     stdin_open: true
     tty: true
     ports:
@@ -37,28 +35,18 @@ services:
     networks:
       - dhruva-network
 
-  appdb-migration:
-    image: server
-    container_name: appdb-migration
+  seed:
+    image: seed
+    container_name: seed
     env_file:
       - .env
-    environment:
-      - DB_CONNECTION_STRING=$APP_DB_CONNECTION_STRING
-      - DB_NAME=$APP_DB_NAME
-      - MIGRATION_DIR=app_migrations
-    command: sh -c "python3 migrate.py"
+    command: sh -c "python3 main.py"
     networks:
       - dhruva-network
 
-  logdb-migration:
+  appdb-migration:
     image: server
-    container_name: logdb-migration
-    env_file:
-      - .env
-    environment:
-      - DB_CONNECTION_STRING=$LOG_DB_CONNECTION_STRING
-      - DB_NAME=$LOG_DB_NAME
-      - MIGRATION_DIR=log_migrations
+    container_name: appdb-migration
     command: sh -c "python3 migrate.py"
     networks:
       - dhruva-network

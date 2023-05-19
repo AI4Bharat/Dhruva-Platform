@@ -1,31 +1,109 @@
+import base64
+import io
 import json
 import logging
 import os
+import time
 from datetime import datetime
-from time import time
+from urllib.request import urlopen
+
+from ulid import ULID
 
 from ..celery_app import app
-from .database import LogDatabase
+from . import constants
+from .database import LogDatastore
 from .metering import meter_usage
 
-logs_db = None
-LOG_REQUEST_RESPONSE_DATA_FLAG = os.environ.get("LOG_REQUEST_RESPONSE_DATA_FLAG", None)
-if LOG_REQUEST_RESPONSE_DATA_FLAG:
-    logs_db = LogDatabase()
+log_store = LogDatastore()
 
 
-def log_to_db(client_ip: str, inp: str, output: str, api_key_id: str, service_id: str):
+def log_to_db(
+    client_ip: str,
+    error_msg: str,
+    input_data: dict,
+    output_data: dict,
+    api_key_id: str,
+    service_id: str,
+):
     """Log input output data pairs to the DB"""
-    sanitized_service_id = service_id.replace("/", "~")
-    logs_collection = logs_db[sanitized_service_id]
+
+    inp, op = input_data, output_data
+    if output_data.get("taskType") == "asr":
+        inp = (
+            [o["audioContent"] for o in input_data.get("audio")]
+            if input_data and input_data.get("audio")
+            else None
+        )
+        op = (
+            [o["source"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
+    elif (
+        output_data.get("taskType") == "translation"
+        or output_data.get("taskType") == "transliteration"
+    ):
+        inp = (
+            [o["source"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
+        op = (
+            [o["target"] for o in output_data.get("output")]
+            if output_data and output_data.get("output")
+            else None
+        )
+    elif output_data.get("taskType") == "tts":
+        inp = (
+            [o["source"] for o in input_data.get("input")]
+            if input_data and input_data.get("input")
+            else None
+        )
+        op = (
+            [o["audioContent"] for o in output_data.get("audio")]
+            if output_data and output_data.get("audio")
+            else None
+        )
+
     log_document = {
         "client_ip": client_ip,
+        "source_language": input_data.get("config", {})
+        .get("language", {})
+        .get("sourceLanguage"),
+        "target_language": input_data.get("config", {})
+        .get("language", {})
+        .get("targetLanguage"),
         "input": inp,
-        "output": output,
+        "task_type": output_data.get("taskType"),
+        "output": op,
         "api_key_id": api_key_id,
-        "timestamp": datetime.now().strftime("%d-%m-%Y, %H:%M:%S"),
+        "service_id": service_id,
+        "timestamp": datetime.now().strftime("%d-%m-%Y,%H:%M:%S"),
     }
-    logs_collection.insert_one(log_document)
+
+    # Create a file in the local data directory to upload and download
+    local_file_name = str(ULID.from_timestamp(time.time())) + ".json"
+
+    # Create a blob client using the local file name as the name for the blob
+    container_name = constants.LOGS_CONTAINER
+    if error_msg:
+        log_document["error_msg"] = error_msg
+        container_name = constants.ERROR_CONTAINER
+
+    # Write text to the file
+    blob_stream = io.BytesIO()
+    blob_stream.write(json.dumps(log_document, indent=4).encode("utf-8"))
+    blob_stream.seek(0)
+
+    # Files are stored based on the date
+    blob_path = os.path.join(datetime.now().strftime("%Y/%m/%d"), local_file_name)
+    blob_client = log_store.get_blob_client(container=container_name, blob=blob_path)
+    print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
+
+    # Upload the created file
+    t = time.time()
+    blob_client.upload_blob(blob_stream.read())
+    print(f"Upload time: {time.time() - t}")
 
 
 @app.task(name="log.data")
@@ -33,29 +111,36 @@ def log_data(
     usage_type: str,
     service_id: str,
     client_ip: str,
-    # data_collection_consent: bool,
+    data_tracking_consent: bool,
+    error_msg,
     api_key_id: str,
     req_body: str,
     resp_body: str,
-    response_time: time,
+    response_time: time.time,
 ) -> None:
     """Logs I/O and metering data to MongoDB"""
 
-    resp_body = json.loads(resp_body)
+    resp_body = json.loads(resp_body) if resp_body else {}
     req_body = json.loads(req_body)
 
     data_usage = None
-    if usage_type == "tts":
+
+    if usage_type in ("translation", "transliteration", "tts"):
         data_usage = req_body["input"]
+
     elif usage_type == "asr":
+        for i, ele in enumerate(req_body["audio"]):
+            if ele["audioUri"]:
+                req_body["audio"][i]["audioContent"] = base64.b64encode(
+                    urlopen(ele["audioUri"]).read()
+                ).decode("utf-8")
         data_usage = req_body["audio"]
-    elif usage_type == "translation":
-        data_usage = req_body["input"]
+
     else:
         raise ValueError(f"Invalid task type: {usage_type}")
 
-    if LOG_REQUEST_RESPONSE_DATA_FLAG:  # and data_collection_consent:
-        log_to_db(client_ip, req_body, resp_body, api_key_id, service_id)
+    if data_tracking_consent:
+        log_to_db(client_ip, error_msg, req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
     meter_usage(api_key_id, data_usage, usage_type, service_id)

@@ -8,7 +8,7 @@ from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from cache.app_cache import cache
+from cache.app_cache import get_cache_connection
 from db.database import db_clients
 from db.populate_db import seed_collection
 from exception.base_error import BaseError
@@ -71,12 +71,11 @@ app.add_middleware(
 async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
-    if os.environ.get("SEED_DB", "False") == "True":
-        seed_collection(db_clients["app"][os.environ["APP_DB_NAME"]])
 
 
 @app.on_event("startup")
 async def flush_cache():
+    cache = get_cache_connection()
     cache.flushall()
 
 

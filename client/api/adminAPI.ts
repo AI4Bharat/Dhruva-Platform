@@ -4,8 +4,9 @@ interface Icreatekey
 {
   name:string;
   type:string; 
-  regenerate:boolean; 
+  data_tracking:boolean; 
   target_user_id:string;
+  regenerate : boolean;
 }
 
 const listallkeys = async(user_id : string) => {
@@ -25,8 +26,8 @@ const createkey = async (key_details : Icreatekey) => {
     return response.data;
   };
 
-  const setstatus = async ({ name, action, target_user_id }: { name: string, action: string, target_user_id:string }) => {
-    const response = await apiInstance.patch(`/auth/api-key/set-status?api_key_name=${name}&target_user_id=${target_user_id}&action=${action}`);
+  const setstatus = async ({ name, active, target_user_id }: { name: string, active: boolean, target_user_id:string }) => {
+    const response = await apiInstance.patch(`/auth/api-key/modify?api_key_name=${name}&target_user_id=${target_user_id}&active=${active}`);
     return response.data;
   }
   
@@ -35,4 +36,10 @@ const createkey = async (key_details : Icreatekey) => {
      return response.data;
  };
 
-export {listallkeys, createkey, setstatus, listallusers, viewadmindashboard};
+ const getkeydata = async({ api_key_name, target_user_id }: { api_key_name: string, target_user_id:string }) =>{
+    const response = await apiInstance.get(`/auth/api-key?api_key_name=${api_key_name}&target_user_id=${target_user_id}`)
+    return response.data;
+ }
+  
+
+export {listallkeys, createkey, setstatus, listallusers, viewadmindashboard, getkeydata};

@@ -1,12 +1,28 @@
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
+import { StringLiteral } from "typescript";
 import KeyModal from "../../Admin/KeyModal";
 
-const KeyCard = (props) => {
+
+interface IKeyCard
+{
+  name : string;
+  k : string;
+  active : boolean;
+  data_tracking : boolean;
+  type: string;
+  target_user_id : string;
+  total_usage : number;
+  refreshCard : any;
+}
+
+const KeyCard = (props:IKeyCard) => {
 
   interface ModalData {
     name: string;
     active: boolean;
+    type: string;
+    data_tracking: boolean;
     masked_key: string;
   }
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +30,8 @@ const KeyCard = (props) => {
     name: props.name,
     masked_key: props.k,
     active: props.active,
+    data_tracking: props.data_tracking,
+    type: props.type
   });
 
   return (
@@ -61,16 +79,17 @@ const KeyCard = (props) => {
         View
       </Button>
       <KeyModal
-        onRefresh={(data)=>{props.refreshCard();setModalState({name:data.name, masked_key:data.masked_key, active:data.active})}}
+        onRefresh={(data) => { props.refreshCard(); setModalState({type:data.type, data_tracking:data.data_tracking, name: data.name, masked_key: data.masked_key, active: data.active }); } }
         isOpen={isOpen}
         onClose={() => {
-          setIsOpen(false); 
-        }}
+          setIsOpen(false);
+        } }
         name={modalstate.name}
         k={modalstate.masked_key}
         active={modalstate.active}
-        user_id = {props.target_user_id}
-      />
+        user_id={props.target_user_id} 
+        type={modalstate.type} 
+        data_tracking={modalstate.data_tracking}      />
       <br></br>
       <br></br>
     </Box>

@@ -14,6 +14,7 @@ const dhruvaAPI: { [key: string]: string } = {
   asrStreamingInference: `wss://api.dhruva.ai4bharat.org`,
   stsInference: `${dhruvaRootURL}/services/inference/s2s`,
   nerInference: `${dhruvaRootURL}/services/inference/ner`,
+  pipelineInference: `${dhruvaRootURL}/services/inference/pipeline`,
   xlitInference: `${dhruvaRootURL}/services/inference/transliteration`,
 };
 

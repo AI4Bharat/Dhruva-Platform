@@ -12,11 +12,10 @@ const Navbar = () => {
   const {data:user} = useQuery(['User'], ()=>getUser(localStorage.getItem('email')))
   const Logout = () =>
   {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("current_page");
-      localStorage.removeItem("email");
-      router.push('/')
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("email");
+    router.push("/");
   }
   useEffect(() => {
     let url = router.pathname.split("/");
@@ -36,6 +35,9 @@ const Navbar = () => {
         break;
       case "profile":
         setTitle("Profile");
+        break;
+      case "pipeline":
+        setTitle("Pipeline");
         break;
       default:
         setTitle("Dashboard");
@@ -58,7 +60,6 @@ const Navbar = () => {
         <Box pt="2rem" pr="25rem">
         <Menu>
         <MenuButton
-          width="10rem" 
           px={4}
           py={2}
           transition='all 0.2s'
@@ -69,6 +70,7 @@ const Navbar = () => {
           </HStack>
         </MenuButton>
         <MenuList>
+          <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
           <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
         </MenuList>
       </Menu>

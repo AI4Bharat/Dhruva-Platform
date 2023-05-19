@@ -15,6 +15,7 @@ import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { RiFlowChart } from "react-icons/ri";
 
 const Sidebar: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
@@ -36,6 +37,9 @@ const Sidebar: React.FC = () => {
         break;
       case "admin":
         setNumber(2);
+        break;
+      case "pipeline":
+        setNumber(5);
         break;
       default:
         setNumber(0);
@@ -162,6 +166,34 @@ const Sidebar: React.FC = () => {
                 {isOpen ? (
                   <Text marginLeft={4} fontWeight={"normal"}>
                     Models
+                  </Text>
+                ) : (
+                  <></>
+                )}
+              </Button>
+            </Link>
+          </Box>
+          <Box w="100%">
+            <Link href={"/pipeline"}>
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                w="100%"
+                variant={number === 5 ? "solid" : "ghost"}
+                background={number === 5 ? "orange.500" : "transperent"}
+                color={number === 5 ? "white" : "black"}
+                justifyContent="flex-start"
+                size="l"
+                boxShadow={number === 5 ? "xl" : "none"}
+                transition="width 0.2s"
+              >
+                <Box>
+                  <RiFlowChart style={{ marginLeft: 12 }} size={25} />
+                </Box>
+                {isOpen ? (
+                  <Text marginLeft={4} fontWeight={"normal"}>
+                    Pipeline
                   </Text>
                 ) : (
                   <></>

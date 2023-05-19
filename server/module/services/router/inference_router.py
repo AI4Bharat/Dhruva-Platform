@@ -5,9 +5,12 @@ from typing import Any, Callable, Dict, Union
 from fastapi import APIRouter, Depends, Request
 from fastapi.routing import APIRoute, Request, Response
 
+from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from celery_backend.tasks import log_data
+from exception.base_error import BaseError
 from exception.http_error import HttpErrorResponse
+from schema.auth.common import ApiKeyType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
@@ -30,6 +33,8 @@ from schema.services.response import (
     ULCATtsInferenceResponse,
 )
 
+from ..error import Errors
+
 # from ..repository import ServiceRepository, ModelRepository
 from ..service.inference_service import InferenceService
 
@@ -43,24 +48,54 @@ class InferenceLoggingRoute(APIRoute):
             req_body = req_body_bytes.decode("utf-8")
             enable_tracking = False
 
-            if request.state._state.get("api_key_data_tracking"):
-                req_json: Dict[str, Any] = json.loads(req_body)
-                enable_tracking = req_json["controlConfig"]["dataTracking"]
-
             start_time = time.time()
-            response: Response = await original_route_handler(request)
-            res_body = response.body
-            if enable_tracking:
-                log_data.apply_async(
-                    (
-                        request.url._url,
-                        str(request.state.api_key_id),
-                        req_body,
-                        res_body.decode("utf-8"),
-                        time.time() - start_time,
-                    ),
-                    queue="data_log",
-                )
+            api_key_id, res_body, error_msg = None, None, None
+            try:
+                response: Response = await original_route_handler(request)
+                res_body = response.body
+                api_key_id = str(
+                    request.state.api_key_id
+                )  # Having this here to capture all errors
+
+            except BaseError as exc:
+                if exc.error_kind in (
+                    Errors.DHRUVA101.value["kind"],
+                    Errors.DHRUVA102.value["kind"],
+                ):
+                    error_msg = exc.error_kind + "_" + exc.error_message
+                raise exc
+
+            except Exception as other_exception:
+                error_msg = str(other_exception)
+                raise other_exception
+
+            finally:
+                if request.state._state.get("api_key_data_tracking"):
+                    req_json: Dict[str, Any] = json.loads(req_body)
+                    enable_tracking = req_json.get(
+                        "controlConfig", {"dataTracking": True}
+                    )["dataTracking"]
+
+                url_components = request.url._url.split("?serviceId=")
+                if len(url_components) == 2:
+                    usage_type, service_component = url_components
+                    usage_type = usage_type.split("/")[-1]
+                    service_id = service_component.replace("%2F", "/")
+                    log_data.apply_async(
+                        (
+                            usage_type,
+                            service_id,
+                            request.headers.get("X-Forwarded-For", request.client.host),
+                            enable_tracking,
+                            error_msg,
+                            api_key_id,
+                            request.state._state.get("input", req_body),
+                            res_body.decode("utf-8") if res_body else None,
+                            time.time() - start_time,
+                        ),
+                        queue="data_log",
+                    )
+
             return response
 
         return logging_route_handler
@@ -71,8 +106,12 @@ router = APIRouter(
     route_class=InferenceLoggingRoute,
     dependencies=[
         Depends(AuthProvider),
+        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={
+        "401": {"model": HttpErrorResponse},
+        "403": {"model": HttpErrorResponse},
+    },
 )
 
 
