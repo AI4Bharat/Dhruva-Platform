@@ -90,6 +90,7 @@ const ASRTry: React.FC<Props> = (props) => {
             language: {
               sourceLanguage: language,
             },
+            serviceId: props.serviceId,
             audioFormat: "wav",
             encoding: "base64",
             samplingRate: sampleRate,
@@ -409,7 +410,6 @@ const ASRTry: React.FC<Props> = (props) => {
                   <FeedbackModal
                     pipelineInput={pipelineInput}
                     pipelineOutput={pipelineOutput}
-                    serviceId={props.serviceId}
                   />
                 )}
           </GridItem>

@@ -38,9 +38,9 @@ const getService = async (
   return response.data;
 };
 
-const submitFeedback = async (feedback: ULCAFeedbackRequest, serviceId) => {
+const submitFeedback = async (feedback: ULCAFeedbackRequest) => {
   const response = await apiInstance.post(
-    `/services/feedback/submit?service_id=${serviceId}`,
+    `/services/feedback/submit`,
     feedback
   );
   return response.data;

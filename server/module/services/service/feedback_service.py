@@ -12,10 +12,9 @@ class FeedbackService:
     def __init__(self, feedback_repository: FeedbackRepository = Depends(FeedbackRepository)):
         self.feedback_repository = feedback_repository
 
-    def submit_feedback(self, request: ULCAFeedbackRequest, id: ObjectId,serviceId: str):
+    def submit_feedback(self, request: ULCAFeedbackRequest):
         try:
             feedback = request.dict()
-            feedback['serivceId'] = serviceId
             feedback["user_id"] = id
             feedback["api_key_name"] = "default"
             feedback_obj = Feedback(**feedback)

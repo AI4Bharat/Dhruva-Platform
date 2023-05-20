@@ -91,6 +91,7 @@ const NMTTry: React.FC<Props> = (props) => {
             {
               config: {
                 language: JSON.parse(language),
+                serviceId: props.serviceId,
               },
               taskType: ULCATaskType.TRANSLATION,
             },
@@ -241,7 +242,6 @@ const NMTTry: React.FC<Props> = (props) => {
               pipelineInput={pipelineInput}
               pipelineOutput={pipelineOutput}
               taskType={ULCATaskType.TRANSLATION}
-              serviceId={props.serviceId}
 
             />
           )}

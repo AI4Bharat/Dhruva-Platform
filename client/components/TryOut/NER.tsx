@@ -62,6 +62,7 @@ const NERTry: React.FC<Props> = (props) => {
             language: {
               sourceLanguage: language,
             },
+            serviceId: props.serviceId,
           },
           controlConfig: {
             dataTracking: true,
@@ -216,14 +217,13 @@ const NERTry: React.FC<Props> = (props) => {
             >
               Generate
             </Button>
-            {/* {fetched && (
+            {fetched && (
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
-                serviceId={props.serviceId}
 
               />
-            )} */}
+            )}
           </Stack>
         </Stack>
       </GridItem>

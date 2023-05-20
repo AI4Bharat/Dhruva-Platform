@@ -152,6 +152,7 @@ const STSTry: React.FC<Props> = (props) => {
                 language: JSON.parse(language),
                 audioFormat: "wav",
                 gender: voiceGender,
+                serviceId: props.serviceId,
               },
             },
           ],
@@ -378,7 +379,6 @@ const STSTry: React.FC<Props> = (props) => {
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
-                serviceId={props.serviceId}
 
               />
             )}

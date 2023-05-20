@@ -78,6 +78,7 @@ const TTSTry: React.FC<Props> = (props) => {
             language: {
               sourceLanguage: language,
             },
+            serviceId: props.serviceId,
             gender: voice,
             samplingRate: samplingRate,
             audioFormat: audioFormat,
@@ -305,8 +306,6 @@ const TTSTry: React.FC<Props> = (props) => {
                 <FeedbackModal
                   pipelineInput={pipelineInput}
                   pipelineOutput={pipelineOuput}
-                  serviceId={props.serviceId}
-
                 />
               )}
             </Stack>

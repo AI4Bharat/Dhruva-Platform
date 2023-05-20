@@ -54,7 +54,6 @@ interface FeedbackProps {
   pipelineInput: PipelineInput;
   pipelineOutput: PipelineOutput;
   taskType?: ULCATaskType;
-  serviceId: string;
 }
 
 const Feedback: React.FC<FeedbackProps> = ({
@@ -62,7 +61,6 @@ const Feedback: React.FC<FeedbackProps> = ({
   pipelineInput,
   pipelineOutput,
   taskType,
-  serviceId,
 }) => {
   const [feedback, setFeedback] = useState<any>({
     feedbackLanguage: feedbackLanguage,
@@ -421,7 +419,7 @@ const Feedback: React.FC<FeedbackProps> = ({
       feedbackLanguage: "en",
     };
     try {
-      await submitFeedback(feedbackRequest, serviceId);
+      await submitFeedback(feedbackRequest);
     } catch {
       toast({
         title: "Error",
