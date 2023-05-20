@@ -1,0 +1,226 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dhruva-server
+spec:
+  selector:
+    matchLabels:
+      app: dhruva-server
+  template:
+    metadata:
+      labels:
+        app: dhruva-server
+    spec:
+      containers:
+        - name: dhruva-server
+          image: server:latest
+          ports:
+            - containerPort: 8000
+          imagePullPolicy: IfNotPresent
+
+          env:
+            # - name: BACKEND_PORT
+            #   value: "8000"
+            # - name: BACKEND_WORKERS
+            #   value: "1"
+            - name: AZURE_CLIENT_ID # Notice that the case is different here
+              # from the key name in the ConfigMap.
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap # The ConfigMap this value comes from.
+                  key: AZURE_CLIENT_ID # The key to fetch.
+
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: AZURE_CLIENT_SECRET
+
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: AZURE_TENANT_ID
+
+            - name: BLOB_STORE
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: BLOB_STORE
+
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: JWT_SECRET_KEY
+
+            - name: APP_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: APP_DB_NAME
+
+            - name: LOG_DB_CONNECTION_STRING
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: LOG_DB_CONNECTION_STRING
+
+            - name: LOG_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: LOG_DB_NAME
+
+            - name: APP_DB_CONNECTION_STRING
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: APP_DB_CONNECTION_STRING
+
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: CELERY_BROKER_URL
+
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: REDIS_HOST
+
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: REDIS_PORT
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: REDIS_PASSWORD
+
+            - name: REDIS_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: REDIS_DB
+
+            - name: HEARTBEAT_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: HEARTBEAT_API_KEY
+
+            - name: LOG_REQUEST_RESPONSE_DATA_FLAG
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: LOG_REQUEST_RESPONSE_DATA_FLAG
+
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: RABBITMQ_DEFAULT_USER
+
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: RABBITMQ_DEFAULT_PASS
+
+            - name: RABBITMQ_DEFAULT_VHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: RABBITMQ_DEFAULT_VHOST
+
+            - name: PROMETHEUS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: PROMETHEUS_URL
+
+            - name: PROM_AGG_GATEWAY_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: PROM_AGG_GATEWAY_USERNAME
+
+            - name: PROM_AGG_GATEWAY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: PROM_AGG_GATEWAY_PASSWORD
+
+            # - name: NEXT_PUBLIC_API_KEY
+            #   valueFrom:
+            #     configMapKeyRef:
+            #       name: dhruva-configmap
+            #       key: NEXT_PUBLIC_API_KEY
+
+            - name: NEXT_PUBLIC_BACKEND_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: NEXT_PUBLIC_BACKEND_API_URL
+
+            - name: CELERY_FLOWER_BROKER_API
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: CELERY_FLOWER_BROKER_API
+
+            - name: CELERY_FLOWER_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: CELERY_FLOWER_ADDRESS
+
+            - name: CELERY_FLOWER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: CELERY_FLOWER_PORT
+
+            - name: FLOWER_LOGGING_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: FLOWER_LOGGING_LEVEL
+
+            - name: FRONTEND_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: FRONTEND_PORT
+
+            - name: BACKEND_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: BACKEND_PORT
+
+            - name: BACKEND_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: BACKEND_WORKERS
+
+          command:
+            - "uvicorn"
+            - "main:app"
+            - "--workers"
+            - "$(BACKEND_WORKERS)"
+            - "--port"
+            - "$(BACKEND_PORT)"
+            - "--host"
+            - "0.0.0.0"
+            - "--proxy-headers"
+
+      volumes:
+        - name: app-data
+      # restartPolicy: Always

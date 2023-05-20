@@ -14,3 +14,4 @@ celerybeat-schedule
 server/data
 */.cache
 *silero_vad.tar.gz
+k8s/configmap.yaml
