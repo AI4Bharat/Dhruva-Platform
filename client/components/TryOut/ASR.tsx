@@ -28,6 +28,12 @@ import {
 } from "@project-sunbird/open-speech-streaming-client";
 import { CloseIcon } from "@chakra-ui/icons";
 import React from "react";
+import { FeedbackModal } from "../Feedback/Feedback";
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCATaskType,
+} from "../Feedback/FeedbackTypes";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -64,7 +70,12 @@ const ASRTry: React.FC<Props> = (props) => {
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
-
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
   const getASROutput = (asrInput: string) => {
     apiInstance
       .post(
@@ -79,6 +90,7 @@ const ASRTry: React.FC<Props> = (props) => {
             language: {
               sourceLanguage: language,
             },
+            serviceId: props.serviceId,
             audioFormat: "wav",
             encoding: "base64",
             samplingRate: sampleRate,
@@ -96,6 +108,44 @@ const ASRTry: React.FC<Props> = (props) => {
         }
       )
       .then((response) => {
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              config: {
+                language: {
+                  sourceLanguage: language,
+                },
+                audioFormat: "wav",
+                encoding: "base64",
+                samplingRate: sampleRate,
+              },
+              taskType: ULCATaskType.ASR,
+            },
+          ],
+          controlConfig: {
+            dataTracking: true,
+          },
+          inputData: [
+            {
+              audio: [
+                {
+                  audioContent: asrInput,
+                },
+              ],
+            },
+          ],
+        });
+        setPipelineOutput({
+          controlConfig: {
+            dataTracking: true,
+          },
+          pipelineResponse: [
+            {
+              taskType: ULCATaskType.ASR,
+              output: response.data.output,
+            },
+          ],
+        });
         var output = response.data.output[0].source;
         setAudioText(output);
         setResponseWordCount(getWordCount(output));
@@ -356,6 +406,12 @@ const ASRTry: React.FC<Props> = (props) => {
                 />
               </Stack>
             </Stack>
+            {pipelineOutput && (
+                  <FeedbackModal
+                    pipelineInput={pipelineInput}
+                    pipelineOutput={pipelineOutput}
+                  />
+                )}
           </GridItem>
         ) : (
           <GridItem>
@@ -385,6 +441,7 @@ const ASRTry: React.FC<Props> = (props) => {
                     <FaMicrophone size={15} />
                   </Button>
                 )}
+                
               </Stack>
             </Stack>
           </GridItem>

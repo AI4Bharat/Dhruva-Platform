@@ -38,31 +38,38 @@ import { dhruvaAPI } from "../../api/apiConfig";
 import axios from "axios";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
-import {listallusers } from "../../api/adminAPI";
+import { listallusers } from "../../api/adminAPI";
 
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const service_id = props.service_id;
 
-  const [selectedUser, setSelectedUser] = useState<string>(".*")
+  const [selectedUser, setSelectedUser] = useState<string>(".*");
   const [apiKeyName, setAPIKeyName] = useState<string>(".*");
 
   const { data: userslist } = useQuery(["users"], () => listallusers());
 
-  const { data: keyslist, refetch: keyslistrefresh, isSuccess } = useQuery(
+  const {
+    data: keyslist,
+    refetch: keyslistrefresh,
+    isSuccess,
+  } = useQuery(
     ["keys", selectedUser],
-    () => listalluserkeys(service_id ,selectedUser),{onSuccess:data =>{setAPIKeyName(data["api_keys"][0].name)}}
+    () => listalluserkeys(service_id, selectedUser),
+    {
+      onSuccess: (data) => {
+        setAPIKeyName(data["api_keys"][0].name);
+      },
+    }
   );
 
   useEffect(() => {
     keyslistrefresh();
-    if(selectedUser === ".*")
-    {
-      setAPIKeyName(".*")
+    if (selectedUser === ".*") {
+      setAPIKeyName(".*");
     }
   }, [selectedUser]);
 
-  
   return (
     <>
       <Button onClick={onOpen}>
@@ -77,30 +84,40 @@ function ServicePerformanceModal({ ...props }) {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Stack direction={["column","row"]} spacing="1rem">
-              <HStack >
+            <Stack direction={["column", "row"]} spacing="1rem">
+              <HStack>
                 <FormLabel>User:</FormLabel>
-                <Select value={selectedUser}  minWidth="15rem" onChange={e=>{setSelectedUser(e.target.value)}}>
+                <Select
+                  value={selectedUser}
+                  minWidth="15rem"
+                  onChange={(e) => {
+                    setSelectedUser(e.target.value);
+                  }}
+                >
                   <option value=".*">Overall</option>
-                  {
-                    userslist?.map((user: any) => {
-                      return <option value={user._id}>{user.name}</option>;
-                    })
-                  }
+                  {userslist?.map((user: any) => {
+                    return <option value={user._id}>{user.name}</option>;
+                  })}
                 </Select>
               </HStack>
               <HStack>
-              <FormLabel>API&nbsp;Key:</FormLabel>
-                <Select value={apiKeyName} minWidth="15rem" onChange={e=>{setAPIKeyName(e.target.value)}} isDisabled={selectedUser === ".*"}>
-                  {
-                    selectedUser !== ".*"?
-                    keyslist&&
+                <FormLabel>API&nbsp;Key:</FormLabel>
+                <Select
+                  value={apiKeyName}
+                  minWidth="15rem"
+                  onChange={(e) => {
+                    setAPIKeyName(e.target.value);
+                  }}
+                  isDisabled={selectedUser === ".*"}
+                >
+                  {selectedUser !== ".*" ? (
+                    keyslist &&
                     keyslist["api_keys"]?.map((k: any) => {
                       return <option value={k.name}>{k.name}</option>;
                     })
-                    :
+                  ) : (
                     <></>
-                  }
+                  )}
                 </Select>
               </HStack>
             </Stack>
@@ -119,7 +136,7 @@ function ServicePerformanceModal({ ...props }) {
           </ModalBody>
 
           <ModalFooter>
-            <Button  mr={3} onClick={onClose}>
+            <Button mr={3} onClick={onClose}>
               Close
             </Button>
           </ModalFooter>
@@ -201,7 +218,6 @@ export default function ViewService() {
                 >
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
-                  <option value={2}>Feedback</option>
                   <option value={3}>Usage</option>
                 </Select>
                 <ViewServiceTabs
@@ -219,6 +235,7 @@ export default function ViewService() {
                   </Heading>
                 </Box>
                 {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
+                
               </Stack>
             </GridItem>
           </Grid>
@@ -240,7 +257,7 @@ export default function ViewService() {
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
-                  <Tab _selected={{ textColor: "#DD6B20" }}>Feedback</Tab>
+                  
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
                 <ViewServiceTabs
@@ -255,6 +272,7 @@ export default function ViewService() {
                 <Box className="dview-service-try-title-box">
                   <Heading className="dview-service-try-title">
                     Try it out here!
+                    
                   </Heading>
                 </Box>
                 {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
