@@ -206,16 +206,16 @@ model, silero_utils = torch.hub.load(
 ) = silero_utils
 
 
-def silero_vad_chunking(raw_audio, sample_rate, chunk_size):
+def silero_vad_chunking(raw_audio, sample_rate, max_speech_duration_s, min_speech_duration_ms=100):
     wav = torch.from_numpy(raw_audio).float()
-    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate)
+    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate, threshold=0.3, min_silence_duration_ms=400, speech_pad_ms=200, min_speech_duration_ms=min_speech_duration_ms)
     for i in speech_timestamps:
         raw_audio = wav[i["start"] : i["end"]].numpy()
-        num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / chunk_size))
+        num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_speech_duration_s))
         if num_audio_chunks > 1:
             for i in range(num_audio_chunks):
                 yield raw_audio[
-                    chunk_size * i * sample_rate : (i + 1) * chunk_size * sample_rate
+                    max_speech_duration_s * i * sample_rate : (i + 1) * max_speech_duration_s * sample_rate
                 ]
         else:
             yield raw_audio
