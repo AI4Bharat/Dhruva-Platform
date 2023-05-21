@@ -19,6 +19,12 @@ import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import React from "react";
+import { FeedbackModal } from "../Feedback/Feedback";
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCATaskType,
+} from "../Feedback/FeedbackTypes";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -44,6 +50,12 @@ const NMTTry: React.FC<Props> = (props) => {
   const [requestWordCount, setRequestWordCount] = useState(0);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
 
   const getTranslation = (source: string) => {
     setFetched(false);
@@ -74,6 +86,36 @@ const NMTTry: React.FC<Props> = (props) => {
       )
       .then((response) => {
         var output = response.data["output"][0]["target"];
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              config: {
+                language: JSON.parse(language),
+                serviceId: props.serviceId,
+              },
+              taskType: ULCATaskType.TRANSLATION,
+            },
+          ],
+          inputData: [
+            {
+              input: [{ source: source }],
+            },
+          ],
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
+        setPipelineOutput({
+          controlConfig: {
+            dataTracking: true,
+          },
+          pipelineResponse: [
+            {
+              taskType: ULCATaskType.TRANSLATION,
+              output: response.data["output"],
+            },
+          ],
+        });
         setTranslatedText(output);
         setFetching(false);
         setFetched(true);
@@ -195,6 +237,14 @@ const NMTTry: React.FC<Props> = (props) => {
           >
             Translate
           </Button>
+          {fetched && (
+            <FeedbackModal
+              pipelineInput={pipelineInput}
+              pipelineOutput={pipelineOutput}
+              taskType={ULCATaskType.TRANSLATION}
+
+            />
+          )}
         </Stack>
       </GridItem>
     </Grid>
