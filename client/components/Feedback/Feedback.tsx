@@ -95,6 +95,10 @@ const Feedback: React.FC<FeedbackProps> = ({
   };
 
   const getFeedbackTypeString = (feedbackType: string) => {
+    if (feedbackType.includes("-") === false) {
+      return feedbackType;
+    }
+
     return (
       feedbackType.split("-")[0] +
       feedbackType.split("-")[1][0].toUpperCase() +
