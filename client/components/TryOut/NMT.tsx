@@ -96,11 +96,10 @@ const NMTTry: React.FC<Props> = (props) => {
               taskType: ULCATaskType.TRANSLATION,
             },
           ],
-          inputData: [
-            {
-              input: [{ source: source }],
-            },
-          ],
+          inputData: {
+            input: [{ source: source }],
+          },
+
           controlConfig: {
             dataTracking: true,
           },
@@ -242,7 +241,6 @@ const NMTTry: React.FC<Props> = (props) => {
               pipelineInput={pipelineInput}
               pipelineOutput={pipelineOutput}
               taskType={ULCATaskType.TRANSLATION}
-
             />
           )}
         </Stack>

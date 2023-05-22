@@ -125,15 +125,13 @@ const ASRTry: React.FC<Props> = (props) => {
           controlConfig: {
             dataTracking: true,
           },
-          inputData: [
-            {
-              audio: [
-                {
-                  audioContent: asrInput,
-                },
-              ],
-            },
-          ],
+          inputData: {
+            audio: [
+              {
+                audioContent: asrInput,
+              },
+            ],
+          },
         });
         setPipelineOutput({
           controlConfig: {
@@ -407,11 +405,11 @@ const ASRTry: React.FC<Props> = (props) => {
               </Stack>
             </Stack>
             {pipelineOutput && (
-                  <FeedbackModal
-                    pipelineInput={pipelineInput}
-                    pipelineOutput={pipelineOutput}
-                  />
-                )}
+              <FeedbackModal
+                pipelineInput={pipelineInput}
+                pipelineOutput={pipelineOutput}
+              />
+            )}
           </GridItem>
         ) : (
           <GridItem>
@@ -441,7 +439,6 @@ const ASRTry: React.FC<Props> = (props) => {
                     <FaMicrophone size={15} />
                   </Button>
                 )}
-                
               </Stack>
             </Stack>
           </GridItem>

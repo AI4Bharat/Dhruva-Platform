@@ -23,8 +23,13 @@ import {
   ModalCloseButton,
   useToast,
   IconButton,
+  Tabs,
+  Tab,
+  TabPanels,
+  TabPanel,
+  TabList,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   PipelineInput,
   PipelineOutput,
@@ -43,10 +48,10 @@ enum FeedbackType {
   RATING = "rating",
   COMMENT = "comment",
   THUMBS = "thumbs",
-  RATING_LIST = "ratingList",
-  COMMENT_LIST = "commentList",
-  THUMBS_LIST = "thumbsList",
-  CHECKBOX_LIST = "checkboxList",
+  RATING_LIST = "rating-list",
+  COMMENT_LIST = "comment-list",
+  THUMBS_LIST = "thumbs-list",
+  CHECKBOX_LIST = "checkbox-list",
 }
 
 interface FeedbackProps {
@@ -62,62 +67,108 @@ const Feedback: React.FC<FeedbackProps> = ({
   pipelineOutput,
   taskType,
 }) => {
-  const [feedback, setFeedback] = useState<any>({
-    feedbackLanguage: feedbackLanguage,
-    pipelineFeedback: {
-      commonFeedback: [
-        {
-          feedbackType: FeedbackType.RATING,
-          question: "How would you rate the overall quality of the output?",
-          rating: 0,
-        },
-      ],
-    },
-    taskFeedback: [
-      {
-        taskType: ULCATaskType.ASR,
-        commonFeedback: [
-          {
-            feedbackType: FeedbackType.RATING,
-            question: "How would you rate the overall quality of the output?",
-            rating: 0,
-          },
-        ],
-        granularFeedback: [
-          {
-            feedbackType: FeedbackType.RATING_LIST,
-            question: "How would you rate the overall quality of the output?",
-            ratingList: [
-              {
-                parameterName: "parameter1",
-                checkbox: false,
-              },
-              {
-                parameterName: "parameter2",
-                checkbox: false,
-              },
-            ],
-          },
-          {
-            feedbackType: FeedbackType.THUMBS,
-            question: "How would you rate the overall quality of the output?",
-            rating: 0,
-          },
-        ],
-      },
-    ],
-  });
+  const [feedback, setFeedback] = useState<any>();
   const [suggest, setSuggest] = useState(false);
   const [suggestedPipelineOutput, setSuggestedPipelineOutput] =
     useState<PipelineOutput>(pipelineOutput);
   const toast = useToast();
-  const fetchQuestions = () => {
-    const response = fetchFeedbackQuestions({
+  const fetchQuestions = async () => {
+    let response = await fetchFeedbackQuestions({
       feedbackLanguage: feedbackLanguage,
-      supportedTasks: [ULCATaskType.ASR],
+      supportedTasks: [taskType],
     });
+    response.pipelineFeedback.commonFeedback = getFeedbackType(
+      response.pipelineFeedback.commonFeedback
+    );
+    let temp = response.taskFeedback.map((data) => {
+      return {
+        ...data,
+        commonFeedback: getFeedbackType(data.commonFeedback),
+        granularFeedback: getFeedbackType(data.granularFeedback),
+      };
+    });
+    //@ts-ignore
+    response.taskFeedback = temp;
+    console.log(response);
     //TODO: Write parsing function for state management
     setFeedback(response);
+  };
+
+  const getFeedbackTypeString = (feedbackType: string) => {
+    return (
+      feedbackType.split("-")[0] +
+      feedbackType.split("-")[1][0].toUpperCase() +
+      feedbackType.split("-")[1].slice(1)
+    );
+  };
+  const getFeedbackType = (
+    feedbackList: {
+      question: string;
+      supportedFeedbackTypes: string[];
+      parameters?: string[];
+    }[]
+  ) => {
+    let temp = feedbackList.map((data) => {
+      if (data.supportedFeedbackTypes.includes(FeedbackType.RATING)) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.RATING,
+          rating: 0,
+        };
+      } else if (data.supportedFeedbackTypes.includes(FeedbackType.THUMBS)) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.THUMBS,
+          thumbs: false,
+        };
+      } else if (data.supportedFeedbackTypes.includes(FeedbackType.COMMENT)) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.COMMENT,
+          comment: "",
+        };
+      } else if (
+        data.supportedFeedbackTypes.includes(FeedbackType.CHECKBOX_LIST)
+      ) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.CHECKBOX_LIST,
+          checkboxList: data.parameters.map((d) => {
+            return {
+              parameterName: d,
+              isSelected: false,
+            };
+          }),
+        };
+      } else if (
+        data.supportedFeedbackTypes.includes(FeedbackType.THUMBS_LIST)
+      ) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.THUMBS_LIST,
+          thumbsList: data.parameters.map((d) => {
+            return {
+              parameterName: d,
+              thumbs: false,
+            };
+          }),
+        };
+      } else if (
+        data.supportedFeedbackTypes.includes(FeedbackType.RATING_LIST)
+      ) {
+        return {
+          ...data,
+          feedbackType: FeedbackType.RATING_LIST,
+          ratingList: data.parameters.map((d) => {
+            return {
+              parameterName: d,
+              rating: 0,
+            };
+          }),
+        };
+      }
+    });
+    return temp;
   };
 
   const changeFeedbackState = (
@@ -135,7 +186,10 @@ const Feedback: React.FC<FeedbackProps> = ({
             commonFeedback: feedback.pipelineFeedback.commonFeedback.map(
               (data, i) => {
                 if (i === index) {
-                  return { ...data, [feedbackType]: value };
+                  return {
+                    ...data,
+                    [getFeedbackTypeString(feedbackType)]: value,
+                  };
                 } else {
                   return data;
                 }
@@ -145,6 +199,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         });
     } else {
       if (feedbackLocation === "granular") {
+        console.log(parentIndex, index, value, feedbackType);
         setFeedback({
           ...feedback,
           taskFeedback: feedback.taskFeedback.map((data, i) => {
@@ -153,7 +208,10 @@ const Feedback: React.FC<FeedbackProps> = ({
                 ...data,
                 granularFeedback: data.granularFeedback.map((data, j) => {
                   if (j === index) {
-                    return { ...data, [feedbackType]: value };
+                    return {
+                      ...data,
+                      [getFeedbackTypeString(feedbackType)]: value,
+                    };
                   } else {
                     return data;
                   }
@@ -173,7 +231,10 @@ const Feedback: React.FC<FeedbackProps> = ({
                 ...data,
                 commonFeedback: data.commonFeedback.map((data, j) => {
                   if (j === index) {
-                    return { ...data, [feedbackType]: value };
+                    return {
+                      ...data,
+                      [getFeedbackTypeString(feedbackType)]: value,
+                    };
                   } else {
                     return data;
                   }
@@ -200,7 +261,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         let value = data.rating;
         return (
           <Box mt="1%">
-            <Text>How would you rate the overall quality of the output?</Text>
+            <Text>{data.question}</Text>
             {Array(5)
               .fill("")
               .map((_, i) => (
@@ -226,7 +287,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         let comment = data.comment;
         return (
           <Box mt="1%">
-            <Text>How would you rate the overall quality of the output?</Text>
+            <Text>{data.question}</Text>
             <Textarea
               placeholder="Enter your comment here"
               value={comment}
@@ -248,7 +309,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         console.log(thumbs);
         return (
           <Box mt="1%">
-            <Text>How would you rate the overall quality of the output?</Text>
+            <Text>{data.question}</Text>
             <HStack>
               <Button
                 variant={thumbs === false ? "ghost" : "solid"}
@@ -285,7 +346,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         let checkboxList = data.checkboxList;
         return (
           <Box mt="1%">
-            <Text>Which parameters should be improved?</Text>
+            <Text>{data.question}</Text>
             <CheckboxGroup>
               <HStack>
                 {checkboxList.map((data, i) => {
@@ -293,14 +354,13 @@ const Feedback: React.FC<FeedbackProps> = ({
                     <Checkbox
                       key={i}
                       isChecked={data.isSelected}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         changeFeedbackState(
                           index,
                           [...checkboxList].map((checkboxData, j) => {
                             if (j === i) {
                               return {
                                 ...checkboxData,
-
                                 isSelected: e.target.checked,
                               };
                             } else {
@@ -310,8 +370,8 @@ const Feedback: React.FC<FeedbackProps> = ({
                           feedbackLocation,
                           parentIndex,
                           feedbackType
-                        )
-                      }
+                        );
+                      }}
                     >
                       {data.parameterName}
                     </Checkbox>
@@ -325,7 +385,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         let thumbsList = data.thumbsList;
         return (
           <Box mt="1%">
-            <Text>Which parameters should be improved?</Text>
+            <Text>{data.question}</Text>
             <HStack>
               {thumbsList.map((data, i) => {
                 return (
@@ -362,7 +422,7 @@ const Feedback: React.FC<FeedbackProps> = ({
         let ratingList = data.ratingList;
         return (
           <Box mt="1%">
-            <Text>Which parameters should be improved?</Text>
+            <Text>{data.question}</Text>
             <VStack alignItems={"flex-start"}>
               {ratingList.map((data, i) => {
                 return (
@@ -431,64 +491,78 @@ const Feedback: React.FC<FeedbackProps> = ({
     }
   };
 
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
   return (
     <>
-      <FormControl>
-        {feedback.pipelineFeedback.commonFeedback?.map((data, index) => {
-          return (
-            <Box key={index}>
-              {renderFeedbackType(
-                data.feedbackType,
-                index,
-                "pipeline",
-                -1,
-                data
-              )}
-            </Box>
-          );
-        })}
-      </FormControl>
-      <FormControl>
-        {feedback.taskFeedback.map((data, parentIndex) => {
-          return (
-            <Box key={parentIndex}>
-              <Text fontSize="md" fontWeight="bold">
-                {data.taskType}
-              </Text>
-              <Box>
-                {data.commonFeedback?.map((data, index) => {
+      {feedback && (
+        <>
+          <FormControl>
+            {feedback.pipelineFeedback.commonFeedback?.map((data, index) => {
+              return (
+                <Box key={index}>
+                  {renderFeedbackType(
+                    data.feedbackType,
+                    index,
+                    "pipeline",
+                    -1,
+                    data
+                  )}
+                </Box>
+              );
+            })}
+          </FormControl>
+          <FormControl>
+            <Tabs>
+              <TabList>
+                {feedback.taskFeedback.map((data, parentIndex) => {
+                  return <Tab>{data.taskType}</Tab>;
+                })}
+              </TabList>
+              <TabPanels>
+                {feedback.taskFeedback.map((data, parentIndex) => {
                   return (
-                    <Box key={index}>
-                      {renderFeedbackType(
-                        data.feedbackType,
-                        index,
-                        "common",
-                        parentIndex,
-                        data
-                      )}
-                    </Box>
+                    <TabPanel key={parentIndex}>
+                      <Box>
+                        {data.commonFeedback?.map((data, index) => {
+                          return (
+                            <Box key={index}>
+                              {renderFeedbackType(
+                                data.feedbackType,
+                                index,
+                                "common",
+                                parentIndex,
+                                data
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                      <Box>
+                        {data.granularFeedback?.map((data, index) => {
+                          return (
+                            <Box key={index}>
+                              {renderFeedbackType(
+                                data.feedbackType,
+                                index,
+                                "granular",
+                                parentIndex,
+                                data
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </TabPanel>
                   );
                 })}
-              </Box>
-              <Box>
-                {data.granularFeedback?.map((data, index) => {
-                  return (
-                    <Box key={index}>
-                      {renderFeedbackType(
-                        data.feedbackType,
-                        index,
-                        "granular",
-                        parentIndex,
-                        data
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
-            </Box>
-          );
-        })}
-      </FormControl>
+              </TabPanels>
+            </Tabs>
+          </FormControl>
+        </>
+      )}
       {suggestedPipelineOutput.pipelineResponse.filter((data, index) => {
         if (
           data.taskType === ULCATaskType.TRANSLATION ||

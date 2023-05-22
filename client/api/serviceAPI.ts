@@ -1,7 +1,6 @@
 import { ULCAFeedbackRequest } from "../components/Feedback/FeedbackTypes";
 import { dhruvaAPI, apiInstance } from "./apiConfig";
 
-
 const listServices = async (): Promise<ServiceList[]> => {
   const response = await apiInstance({
     method: "GET",
@@ -47,12 +46,17 @@ const submitFeedback = async (feedback: ULCAFeedbackRequest) => {
 };
 
 const fetchFeedbackQuestions = async (feedbackRequest) => {
-  return {
+  // const response = await apiInstance.post(
+  //   "https://dev-auth.ulcacontrib.org/ulca/mdms/v0/pipelineQuestions",
+  //   feedbackRequest
+  // );
+  // return response.data;
+  let res = {
     feedbackLanguage: "en",
     pipelineFeedback: {
       commonFeedback: [
         {
-          question: "Are you satisfied with the pipeline so far?",
+          question: "Are you satisfied with the pipeline response?",
           supportedFeedbackTypes: ["rating", "thumbs", "comment"],
         },
       ],
@@ -62,21 +66,49 @@ const fetchFeedbackQuestions = async (feedbackRequest) => {
         taskType: "asr",
         commonFeedback: [
           {
-            question: "Are you satisfied with the ASR response so far?",
+            question: "Are you satisfied with the ASR response?",
             supportedFeedbackTypes: ["rating", "thumbs", "comment"],
           },
         ],
         granularFeedback: [
           {
-            question:
-              "Which of the following parameters are you not satisfied with?",
+            question: "Was the speech accurately recognised?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+          {
+            question: "Which are the areas that ASR can improve upon?",
             supportedFeedbackTypes: [
               "rating-list",
               "comment-list",
               "thumbs-list",
               "checkbox-list",
             ],
-            parameters: ["accuracy", "speed", "readability"],
+            parameters: [
+              "names",
+              "places",
+              "numbers",
+              "dates",
+              "English words / code mixed words",
+              "technical terms",
+            ],
+          },
+          {
+            question: "Was the background noise handled properly?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+          {
+            question:
+              "Was the application able to recognise the speech if you spoke in an accented tone?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+          {
+            question:
+              "Is there any other specific case where the Speech was constantly incorrectly recognised?",
+            supportedFeedbackTypes: ["comment"],
+          },
+          {
+            question: "How would you rate the Speech Recognition?",
+            supportedFeedbackTypes: ["rating"],
           },
         ],
       },
@@ -91,19 +123,46 @@ const fetchFeedbackQuestions = async (feedbackRequest) => {
         granularFeedback: [
           {
             question:
-              "Which of the following parameters are you not satisfied with?",
+              "Was the application able to translate complex sentences?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+          {
+            question: "Which are the areas that Translation can improve upon?",
             supportedFeedbackTypes: [
               "rating-list",
               "comment-list",
               "thumbs-list",
               "checkbox-list",
             ],
-            parameters: ["accuracy", "speed", "readability"],
+            parameters: [
+              "names",
+              "places",
+              "numbers",
+              "dates",
+              "English words / code mixed words",
+              "technical terms",
+              "URLs",
+            ],
+          },
+          {
+            question:
+              "Was the translated text grammatically correct and well-structured?",
+            supportedFeedbackTypes: ["rating", "thumbs", "comment"],
+          },
+          {
+            question:
+              "Is there any other specific case where the translation seemed to fail?",
+            supportedFeedbackTypes: ["comment"],
+          },
+          {
+            question: "How would you rate the translation?",
+            supportedFeedbackTypes: ["rating"],
           },
         ],
       },
     ],
   };
+  return res;
 };
 
 export {

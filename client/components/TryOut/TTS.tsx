@@ -110,15 +110,14 @@ const TTSTry: React.FC<Props> = (props) => {
               taskType: ULCATaskType.TTS,
             },
           ],
-          inputData: [
-            {
-              input: [
-                {
-                  source: source,
-                },
-              ],
-            },
-          ],
+          inputData: {
+            input: [
+              {
+                source: source,
+              },
+            ],
+          },
+
           controlConfig: {
             dataTracking: true,
           },

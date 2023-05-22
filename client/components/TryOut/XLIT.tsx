@@ -18,6 +18,12 @@ import { dhruvaAPI, apiInstance } from "../../api/apiConfig";
 import { lang2label } from "../../config/config";
 import { getWordCount } from "../../utils/utils";
 import React from "react";
+import {
+  PipelineInput,
+  PipelineOutput,
+  ULCATaskType,
+} from "../Feedback/FeedbackTypes";
+import { FeedbackModal } from "../Feedback/Feedback";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -43,6 +49,12 @@ const XLITTry: React.FC<Props> = (props) => {
   const [requestWordCount, setRequestWordCount] = useState(0);
   const [responseWordCount, setResponseWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<
+    PipelineOutput | undefined
+  >();
 
   const getTransliteration = (source: string) => {
     setFetched(false);
@@ -82,6 +94,42 @@ const XLITTry: React.FC<Props> = (props) => {
       .then((response) => {
         console.log(response);
         var output = response.data["output"][0]["target"][0];
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              config: {
+                serviceId: props.serviceId,
+                language: {
+                  sourceLanguage: JSON.parse(language)["sourceLanguage"],
+                  sourceScriptCode: "",
+                  targetLanguage: JSON.parse(language)["targetLanguage"],
+                  targetScriptCode: "",
+                },
+                isSentence: true,
+                numSuggestions: 5,
+              },
+              taskType: ULCATaskType.TRANSLITERATION,
+            },
+          ],
+          inputData: {
+            input: [{ source: source }],
+          },
+
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
+        setPipelineOutput({
+          controlConfig: {
+            dataTracking: true,
+          },
+          pipelineResponse: [
+            {
+              taskType: ULCATaskType.TRANSLITERATION,
+              output: response.data["output"],
+            },
+          ],
+        });
         settransliteratedText(output);
         setFetching(false);
         setFetched(true);
@@ -191,6 +239,13 @@ const XLITTry: React.FC<Props> = (props) => {
           >
             Transliterate
           </Button>
+          {fetched && (
+            <FeedbackModal
+              pipelineInput={pipelineInput}
+              pipelineOutput={pipelineOutput}
+              taskType={ULCATaskType.TRANSLATION}
+            />
+          )}
         </Stack>
       </GridItem>
     </Grid>
