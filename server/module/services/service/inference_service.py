@@ -167,7 +167,7 @@ class InferenceService:
             temp.cleanup()
 
         else:
-            file_bytes = urlopen(input.audioUri).read()
+            file_bytes = urlopen(url).read()
 
         return file_bytes
 
