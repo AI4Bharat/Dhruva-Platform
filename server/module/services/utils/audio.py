@@ -206,7 +206,7 @@ model, silero_utils = torch.hub.load(
     repo_or_dir=os.environ.get("VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"),
     model="silero_vad",
     # force_reload=True,
-    # source="local",
+    source="local",
     onnx=False,
 )
 (
