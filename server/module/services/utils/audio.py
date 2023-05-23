@@ -266,7 +266,7 @@ def windowed_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duratio
     else:
         yield raw_audio
 
-def download_audio(self, url: str):
+def download_audio(url: str):
     if "youtube.com" in url or "youtu.be" in url or "drive.google/com" in url:
         temp = tempfile.TemporaryDirectory()
         subprocess.call(
