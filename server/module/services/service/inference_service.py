@@ -216,14 +216,15 @@ class InferenceService:
 
             transcript = ""
             for i in range(0, len(audio_chunks), batch_size):
-                inputs, outputs = get_asr_io_for_triton(audio_chunks[i : i + batch_size])
+                batch = audio_chunks[i : i + batch_size]
+                inputs, outputs = get_asr_io_for_triton(batch)
                 
                 if "conformer-hi" not in serviceId and "whisper" not in serviceId and language != "en":
                     # The other endpoints are multilingual and hence have LANG_ID as extra input
                     # TODO: Standardize properly as a string similar to NMT and TTS, in all Triton repos
-                    input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
-                    lang_id = [language] * len(o[1])
-                    input2.set_data_from_numpy(np.asarray(lang_id).astype("object").reshape(o[1].shape))
+                    input2 = http_client.InferInput("LANG_ID", (len(batch), 1), "BYTES")
+                    lang_id = [language] * len(batch)
+                    input2.set_data_from_numpy(np.asarray(lang_id).astype("object").reshape((len(batch), 1)))
                     inputs.append(input2)
                 
                 response = await self.inference_gateway.send_triton_request(
