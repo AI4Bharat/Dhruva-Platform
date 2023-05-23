@@ -31,7 +31,7 @@ def frame_generator(frame_duration_ms, audio, sample_rate):
         offset += n
 
 
-def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_arr):
+def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes):
     num_padding_frames = int(padding_duration_ms / frame_duration_ms)
     # We use a deque for our sliding window/ring buffer.
     ring_buffer = collections.deque(maxlen=num_padding_frames)
@@ -40,7 +40,7 @@ def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, 
     triggered = False
 
     voiced_frames = []
-    for frame in frame_generator(frame_duration_ms, fp_arr, sample_rate):
+    for frame in frame_generator(frame_duration_ms, audio_bytes, sample_rate):
         is_speech = vad.is_speech(frame.bytes, sample_rate)
 
         #         sys.stdout.write('1' if is_speech else '0')
@@ -91,7 +91,7 @@ def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, 
         yield b"".join([f.bytes for f in voiced_frames]), (start_frame, end_frame)
 
 
-def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_arr):
+def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes):
     num_padding_frames = int(padding_duration_ms / frame_duration_ms)
     # We use a deque for our sliding window/ring buffer.
     ring_buffer = collections.deque(maxlen=num_padding_frames)
@@ -100,7 +100,7 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_a
     triggered = False
 
     voiced_frames = []
-    for frame in frame_generator(frame_duration_ms, fp_arr, sample_rate):
+    for frame in frame_generator(frame_duration_ms, audio_bytes, sample_rate):
         is_speech = vad.is_speech(frame.bytes, sample_rate)
 
         if not triggered:
@@ -161,11 +161,11 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, fp_a
         yield b"".join([f.bytes for f in voiced_frames]), (start_frame, end_frame)
 
 
-def webrtc_vad_chunking(vad_level, chunk_size, fp_arr, sample_rate):
+def webrtc_vad_chunking(vad_level: int, chunk_size: int, raw_audio_bytes: bytes, sample_rate: int):
     chunk_size = int(chunk_size)
     vad = webrtcvad.Vad(vad_level)
     for i, (segment, (start_frame, end_frame)) in enumerate(
-        vad_collector(sample_rate, 30, 300, vad, fp_arr)
+        vad_collector(sample_rate, 30, 300, vad, raw_audio_bytes)
     ):
         audio_chunk = AudioSegment.from_raw(
             io.BytesIO(segment), sample_width=2, frame_rate=sample_rate, channels=1
@@ -194,7 +194,7 @@ model, silero_utils = torch.hub.load(
     ),
     model="silero_vad",
     # force_reload=True,
-    source="local",
+    # source="local",
     onnx=False,
 )
 (
@@ -206,16 +206,51 @@ model, silero_utils = torch.hub.load(
 ) = silero_utils
 
 
-def silero_vad_chunking(raw_audio, sample_rate, max_speech_duration_s, min_speech_duration_ms=100):
+def silero_vad_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duration_s: float, min_chunk_duration_s: float = None, min_speech_duration_ms: int = 100):
     wav = torch.from_numpy(raw_audio).float()
     speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate, threshold=0.3, min_silence_duration_ms=400, speech_pad_ms=200, min_speech_duration_ms=min_speech_duration_ms)
-    for i in speech_timestamps:
-        raw_audio = wav[i["start"] : i["end"]].numpy()
-        num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_speech_duration_s))
-        if num_audio_chunks > 1:
-            for i in range(num_audio_chunks):
-                yield raw_audio[
-                    max_speech_duration_s * i * sample_rate : (i + 1) * max_speech_duration_s * sample_rate
-                ]
+
+    # Add metadata in seconds
+    for speech_dict in speech_timestamps:
+        speech_dict['start_secs'] = round(speech_dict['start'] / sample_rate, 3)
+        speech_dict['end_secs'] = round(speech_dict['end'] / sample_rate, 3)
+    
+    curr_start = speech_timestamps[0]['start']
+    curr_end = speech_timestamps[0]['end']
+    curr_start_secs = speech_timestamps[0]['start_secs']
+    curr_end_secs = speech_timestamps[0]['end_secs']
+
+    for i in range(1, len(speech_timestamps)):
+        if min_chunk_duration_s and \
+            curr_end_secs - speech_timestamps[i]['start_secs'] < 3 \
+            and speech_timestamps[i]['end_secs'] - curr_start_secs <= min_chunk_duration_s:
+
+            curr_end_secs = speech_timestamps[i]['end_secs']
+            curr_end = speech_timestamps[i]['end']
         else:
-            yield raw_audio
+            raw_audio = wav[curr_start : curr_end].numpy()
+            num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
+
+            if num_audio_chunks > 1:
+                for chunk_idx in range(num_audio_chunks):
+                    yield raw_audio[
+                        max_chunk_duration_s * chunk_idx * sample_rate : (chunk_idx + 1) * max_chunk_duration_s * sample_rate
+                    ]
+            else:
+                yield raw_audio
+
+            curr_start = speech_timestamps[i]['start']
+            curr_end = speech_timestamps[i]['end']
+            curr_start_secs = speech_timestamps[i]['start_secs']
+            curr_end_secs = speech_timestamps[i]['end_secs']
+
+    raw_audio = wav[curr_start : curr_end].numpy()
+    num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
+
+    if num_audio_chunks > 1:
+        for chunk_idx in range(num_audio_chunks):
+            yield raw_audio[
+                max_chunk_duration_s * chunk_idx * sample_rate : (chunk_idx + 1) * max_chunk_duration_s * sample_rate
+            ]
+    else:
+        yield raw_audio

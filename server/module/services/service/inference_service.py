@@ -192,7 +192,7 @@ class InferenceService:
 
             # Dequantize
             raw_audio = np.array(pydub_audio.get_array_of_samples()).astype("float64") / (2**15 - 1)
-            audio_chunks = list(silero_vad_chunking(raw_audio, standard_rate, chunk_size))
+            audio_chunks = list(silero_vad_chunking(raw_audio, standard_rate, max_chunk_duration_s=chunk_size, min_chunk_duration_s=6.0))
 
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 
