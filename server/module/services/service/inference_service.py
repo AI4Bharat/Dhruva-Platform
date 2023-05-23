@@ -42,7 +42,7 @@ from ..model.model import ModelCache
 from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
 from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking, windowed_chunking
-from ..utils.triton import get_translation_io_for_triton, get_transliteration_io_for_triton, get_tts_io_for_triton
+from ..utils.triton import get_translation_io_for_triton, get_transliteration_io_for_triton, get_tts_io_for_triton, get_asr_io_for_triton
 
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
@@ -141,6 +141,9 @@ class InferenceService:
         headers = {"Authorization": "Bearer " + service.api_key}
 
         language = request_body.config.language.sourceLanguage
+        lm_enabled = "lm" in request_body.config.postProcessors if request_body.config.postProcessors else False
+        model_name = "asr_am_lm_ensemble" if lm_enabled else "asr_am_ensemble"
+        
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
             if input.audioContent is None and input.audioUri is not None:
@@ -200,30 +203,23 @@ class InferenceService:
             else:
                 audio_chunks = list(silero_vad_chunking(raw_audio, standard_rate, max_chunk_duration_s=chunk_size, min_chunk_duration_s=6.0))
 
-            output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
-
             transcript = ""
             for i in range(0, len(audio_chunks), batch_size):
-                o = self.__pad_batch(audio_chunks[i : i + batch_size])
-                input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
-                input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
-                input0.set_data_from_numpy(o[0])
-                input1.set_data_from_numpy(o[1].astype("int32"))
-                input_list = [input0, input1]
-
+                inputs, outputs = get_asr_io_for_triton(audio_chunks[i : i + batch_size])
+                
                 if "conformer-hi" not in serviceId and "whisper" not in serviceId and language != "en":
                     # The other endpoints are multilingual and hence have LANG_ID as extra input
                     # TODO: Standardize properly as a string similar to NMT and TTS, in all Triton repos
                     input2 = http_client.InferInput("LANG_ID", o[1].shape, "BYTES")
                     lang_id = [language] * len(o[1])
                     input2.set_data_from_numpy(np.asarray(lang_id).astype("object").reshape(o[1].shape))
-                    input_list.append(input2)
-
+                    inputs.append(input2)
+                
                 response = await self.inference_gateway.send_triton_request(
                     url=service.endpoint,
-                    model_name="asr_am_ensemble",
-                    input_list=input_list,
-                    output_list=[output0],
+                    model_name=model_name,
+                    input_list=inputs,
+                    output_list=outputs,
                     headers=headers,
                 )
                 encoded_result = response.as_numpy("TRANSCRIPTS")
@@ -384,16 +380,6 @@ class InferenceService:
         # TODO: Replace with real deployments
         res = requests.post(service.endpoint, json=request_body.dict()).json()
         return ULCANerInferenceResponse(**res)
-
-    def __pad_batch(self, batch_data):
-        batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
-        max_length = max(batch_data_lens)
-        batch_size = len(batch_data)
-
-        padded_zero_array = np.zeros((batch_size, max_length), dtype=np.float32)
-        for idx, data in enumerate(batch_data):
-            padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
-        return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
 
     def auto_select_service_id(self, task_type: str, config: dict) -> str:
         serviceId = None

@@ -2,6 +2,8 @@ import tritonclient.http as http_client
 from tritonclient.utils import *
 import numpy as np
 
+from .audio import pad_batch
+
 def get_string_tensor(string_values, tensor_name: str):
     string_obj = np.array(string_values, dtype="object")
     input_obj = http_client.InferInput(tensor_name, string_obj.shape, np_to_triton_dtype(string_obj.dtype))
@@ -54,3 +56,17 @@ def get_tts_io_for_triton(input_string: str, ip_gender: str, ip_language: str):
         http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
     ]
     return inputs, outputs
+
+def get_asr_io_for_triton(audio_chunks: list):
+    o = pad_batch(audio_chunks)
+    input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
+    input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
+    input0.set_data_from_numpy(o[0])
+    input1.set_data_from_numpy(o[1].astype("int32"))
+    inputs = [input0, input1]
+
+    outputs = [
+        http_client.InferRequestedOutput("TRANSCRIPTS")
+    ]
+    return inputs, outputs
+
