@@ -40,7 +40,7 @@ class InferenceGateway:
             response = triton_client.async_infer(
                 model_name, model_version="1", inputs=input_list, outputs=output_list, headers=headers
             )
-            response = response.get_result(block=True, timeout=4)
+            response = response.get_result(block=True, timeout=20)
 
         except:
             raise BaseError(Errors.DHRUVA101.value, traceback.format_exc()) 

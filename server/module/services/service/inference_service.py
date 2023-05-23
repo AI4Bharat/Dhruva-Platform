@@ -41,7 +41,7 @@ from ..gateway import InferenceGateway
 from ..model.model import ModelCache
 from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
-from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking
+from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking, windowed_chunking
 from ..utils.triton import get_translation_io_for_triton, get_transliteration_io_for_triton, get_tts_io_for_triton
 
 
@@ -192,7 +192,13 @@ class InferenceService:
 
             # Dequantize
             raw_audio = np.array(pydub_audio.get_array_of_samples()).astype("float64") / (2**15 - 1)
-            audio_chunks = list(silero_vad_chunking(raw_audio, standard_rate, max_chunk_duration_s=chunk_size, min_chunk_duration_s=6.0))
+
+            # Do not perform VAD-chunking for Hindi-Whisper, it was not trained with audio of len < 6secs
+            if serviceId == "ai4bharat/whisper-medium-hi--gpu--t4":
+                # FIXME: Remove this patch once Kaushal has trained a better Hindi-Whisper or after the model is removed from Dhruva
+                audio_chunks = list(windowed_chunking(raw_audio, standard_rate, max_chunk_duration_s=chunk_size))
+            else:
+                audio_chunks = list(silero_vad_chunking(raw_audio, standard_rate, max_chunk_duration_s=chunk_size, min_chunk_duration_s=6.0))
 
             output0 = http_client.InferRequestedOutput("TRANSCRIPTS")
 

@@ -210,6 +210,9 @@ def silero_vad_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_durat
     wav = torch.from_numpy(raw_audio).float()
     speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate, threshold=0.3, min_silence_duration_ms=400, speech_pad_ms=200, min_speech_duration_ms=min_speech_duration_ms)
 
+    if not speech_timestamps:
+        return
+
     # Add metadata in seconds
     for speech_dict in speech_timestamps:
         speech_dict['start_secs'] = round(speech_dict['start'] / sample_rate, 3)
@@ -229,15 +232,8 @@ def silero_vad_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_durat
             curr_end = speech_timestamps[i]['end']
         else:
             raw_audio = wav[curr_start : curr_end].numpy()
-            num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
-
-            if num_audio_chunks > 1:
-                for chunk_idx in range(num_audio_chunks):
-                    yield raw_audio[
-                        max_chunk_duration_s * chunk_idx * sample_rate : (chunk_idx + 1) * max_chunk_duration_s * sample_rate
-                    ]
-            else:
-                yield raw_audio
+            for audio_chunk in windowed_chunking(raw_audio, sample_rate, max_chunk_duration_s):
+                yield audio_chunk
 
             curr_start = speech_timestamps[i]['start']
             curr_end = speech_timestamps[i]['end']
@@ -245,8 +241,11 @@ def silero_vad_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_durat
             curr_end_secs = speech_timestamps[i]['end_secs']
 
     raw_audio = wav[curr_start : curr_end].numpy()
-    num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
+    for audio_chunk in windowed_chunking(raw_audio, sample_rate, max_chunk_duration_s):
+        yield audio_chunk
 
+def windowed_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duration_s: float):
+    num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
     if num_audio_chunks > 1:
         for chunk_idx in range(num_audio_chunks):
             yield raw_audio[
