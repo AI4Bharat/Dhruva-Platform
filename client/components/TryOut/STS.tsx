@@ -156,15 +156,14 @@ const STSTry: React.FC<Props> = (props) => {
               },
             },
           ],
-          inputData: [
-            {
-              audio: [
-                {
-                  audioContent: asrInput,
-                },
-              ],
-            },
-          ],
+          inputData: {
+            audio: [
+              {
+                audioContent: asrInput,
+              },
+            ],
+          },
+
           controlConfig: {
             dataTracking: true,
           },
@@ -379,7 +378,6 @@ const STSTry: React.FC<Props> = (props) => {
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
-
               />
             )}
           </Stack>
