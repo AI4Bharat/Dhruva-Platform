@@ -1,8 +1,6 @@
 import base64
 import io
 import json
-import subprocess
-import tempfile
 import time
 import traceback
 from copy import deepcopy
@@ -46,7 +44,7 @@ from ..gateway import InferenceGateway
 from ..model.model import ModelCache
 from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
-from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking
+from ..utils.audio import download_audio, silero_vad_chunking, webrtc_vad_chunking
 
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
@@ -144,33 +142,6 @@ class InferenceService:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
 
-    def __download_audio(self, url: str):
-        if "youtube" in url or "drive" in url:
-            temp = tempfile.TemporaryDirectory()
-            subprocess.call(
-                [
-                    "yt-dlp",
-                    "-x",
-                    "--audio-format",
-                    "mp3",
-                    "--audio-quality",
-                    "0",
-                    url,
-                    "--output",
-                    temp.name + "/file.mp3",
-                ]
-            )
-
-            with open(temp.name + "/file.mp3", "rb") as fhand:
-                file_bytes = fhand.read()
-
-            temp.cleanup()
-
-        else:
-            file_bytes = urlopen(url).read()
-
-        return file_bytes
-
     async def run_asr_triton_inference(
         self, request_body: ULCAAsrInferenceRequest, serviceId: str
     ) -> ULCAAsrInferenceResponse:
@@ -183,7 +154,7 @@ class InferenceService:
             if input.audioContent:
                 file_bytes = base64.b64decode(input.audioContent)
             elif input.audioUri:
-                file_bytes = self.__download_audio(input.audioUri)
+                file_bytes = download_audio(input.audioUri)
 
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
