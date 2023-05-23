@@ -224,7 +224,7 @@ def silero_vad_chunking(raw_audio, sample_rate, chunk_size):
 
 
 def download_audio(self, url: str):
-    if "youtube" in url or "drive" in url:
+    if "youtube.com" in url or "youtu.be" in url or "drive.google/com" in url:
         temp = tempfile.TemporaryDirectory()
         subprocess.call(
             [
