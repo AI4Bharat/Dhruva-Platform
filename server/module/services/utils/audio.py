@@ -1,5 +1,8 @@
 import collections
 import io
+import subprocess
+import tempfile
+from urllib.request import urlopen
 
 import numpy as np
 import webrtcvad
@@ -196,12 +199,11 @@ def webrtc_vad_chunking(vad_level: int, chunk_size: int, raw_audio_bytes: bytes,
 
 
 import os
+
 import torch
 
 model, silero_utils = torch.hub.load(
-    repo_or_dir=os.environ.get(
-        "VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"
-    ),
+    repo_or_dir=os.environ.get("VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"),
     model="silero_vad",
     # force_reload=True,
     # source="local",
@@ -263,3 +265,30 @@ def windowed_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duratio
             ]
     else:
         yield raw_audio
+
+def download_audio(self, url: str):
+    if "youtube.com" in url or "youtu.be" in url or "drive.google/com" in url:
+        temp = tempfile.TemporaryDirectory()
+        subprocess.call(
+            [
+                "yt-dlp",
+                "-x",
+                "--audio-format",
+                "mp3",
+                "--audio-quality",
+                "0",
+                url,
+                "--output",
+                temp.name + "/file.mp3",
+            ]
+        )
+
+        with open(temp.name + "/file.mp3", "rb") as fhand:
+            file_bytes = fhand.read()
+
+        temp.cleanup()
+
+    else:
+        file_bytes = urlopen(url).read()
+
+    return file_bytes

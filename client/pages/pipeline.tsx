@@ -30,6 +30,12 @@ import ContentLayout from "../components/Layouts/ContentLayout";
 import { lang2label } from "../config/config";
 import useMediaQuery from "../hooks/useMediaQuery";
 import { getWordCount } from "../utils/utils";
+import {
+  PipelineInput,
+  PipelineOutput,
+} from "../components/Feedback/FeedbackTypes";
+import { ULCATaskType } from "../components/Feedback/FeedbackTypes";
+import { FeedbackModal } from "../components/Feedback/Feedback";
 
 function PipelineInterface() {
   const { data: services } = useQuery(["services"], listServices);
@@ -65,6 +71,10 @@ function PipelineInterface() {
   const [sourceText, setsourceText] = useState("");
   const [targetText, settargetText] = useState("");
   const [audio, setAudio] = useState("");
+  const [pipelineInput, setPipelineInput] = useState<
+    PipelineInput | undefined
+  >();
+  const [pipelineOutput, setPipelineOutput] = useState<PipelineOutput>();
 
   const asrFilter = (service) => {
     return service["task"]["type"] === "asr";
@@ -247,6 +257,56 @@ function PipelineInterface() {
         }
       )
       .then((response) => {
+        setPipelineInput({
+          pipelineTasks: [
+            {
+              taskType: ULCATaskType.ASR,
+              config: {
+                serviceId: currentASRService,
+                language: {
+                  sourceLanguage: sourceLanguage,
+                },
+              },
+            },
+            {
+              taskType: ULCATaskType.TRANSLATION,
+              config: {
+                serviceId: currentNMTService,
+                language: {
+                  sourceLanguage: sourceLanguage,
+                  targetLanguage: targetLanguage,
+                },
+              },
+            },
+            {
+              taskType: ULCATaskType.TTS,
+              config: {
+                serviceId: currentTTSService,
+                language: {
+                  sourceLanguage: targetLanguage,
+                },
+                gender: "male",
+              },
+            },
+          ],
+          inputData: {
+            input: [],
+            audio: [
+              {
+                audioContent: asrInput,
+              },
+            ],
+          },
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
+        setPipelineOutput({
+          pipelineResponse: response.data["pipelineResponse"],
+          controlConfig: {
+            dataTracking: true,
+          },
+        });
         const pipelineData = response.data["pipelineResponse"];
         const nmtOutput = pipelineData[1]["output"][0];
         const audioContent = pipelineData[2]["audio"][0]["audioContent"];
@@ -468,6 +528,12 @@ function PipelineInterface() {
             <Textarea readOnly value={sourceText} />
             <Textarea readOnly value={targetText} />
             <audio style={{ width: "auto" }} src={audio} controls />
+            {pipelineOutput && (
+              <FeedbackModal
+                pipelineInput={pipelineInput}
+                pipelineOutput={pipelineOutput}
+              />
+            )}
           </Stack>
         </Stack>
       </GridItem>

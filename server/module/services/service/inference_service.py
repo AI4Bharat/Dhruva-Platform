@@ -1,11 +1,12 @@
 import base64
 import io
-import time
 import json
+import time
 import traceback
 from copy import deepcopy
 from typing import Union
 from urllib.request import urlopen
+
 import numpy as np
 import requests
 import scipy.signal as sps
@@ -16,6 +17,7 @@ from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
+
 from celery_backend.tasks import log_data
 from exception.base_error import BaseError
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
@@ -36,12 +38,13 @@ from schema.services.response import (
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
+
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
 from ..model.service import ServiceCache
 from ..repository import ModelRepository, ServiceRepository
-from ..utils.audio import silero_vad_chunking, webrtc_vad_chunking, windowed_chunking
+from ..utils.audio import download_audio, silero_vad_chunking, webrtc_vad_chunking, windowed_chunking
 from ..utils.triton import get_translation_io_for_triton, get_transliteration_io_for_triton, get_tts_io_for_triton, get_asr_io_for_triton
 
 
@@ -69,7 +72,9 @@ def validate_service_id(serviceId: str, service_repository):
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
     if not service:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"})
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
     return service
 
 
@@ -83,7 +88,9 @@ def validate_model_id(modelId: str, model_repository):
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
     if not service:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"})
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail={"message": "Invalid service id"}
+        )
     return service
 
 
@@ -120,7 +127,9 @@ class InferenceService:
             return await self.run_translation_triton_inference(request_obj, serviceId)
         elif task_type == _ULCATaskType.TRANSLITERATION:
             request_obj = ULCATransliterationInferenceRequest(**request_body)
-            return await self.run_transliteration_triton_inference(request_obj, serviceId)
+            return await self.run_transliteration_triton_inference(
+                request_obj, serviceId
+            )
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
             return await self.run_asr_triton_inference(request_obj, serviceId)
@@ -146,10 +155,10 @@ class InferenceService:
         
         res = {"config": request_body.config, "output": []}
         for input in request_body.audio:
-            if input.audioContent is None and input.audioUri is not None:
-                file_bytes = urlopen(input.audioUri).read()
-            else:
+            if input.audioContent:
                 file_bytes = base64.b64decode(input.audioContent)
+            elif input.audioUri:
+                file_bytes = download_audio(input.audioUri)
 
             file_handle = io.BytesIO(file_bytes)
             data, sampling_rate = sf.read(file_handle)
@@ -162,7 +171,9 @@ class InferenceService:
 
             standard_rate = 16000
             if sampling_rate != standard_rate:
-                number_of_samples = round(len(raw_audio) * float(standard_rate) / sampling_rate)
+                number_of_samples = round(
+                    len(raw_audio) * float(standard_rate) / sampling_rate
+                )
                 raw_audio = sps.resample(raw_audio, number_of_samples)
 
             # Amplitude Equalization, assuming mono-streamed
@@ -224,7 +235,9 @@ class InferenceService:
                 )
                 encoded_result = response.as_numpy("TRANSCRIPTS")
                 # Combine all outputs
-                outputs = " ".join([result.decode("utf-8") for result in encoded_result.tolist()])
+                outputs = " ".join(
+                    [result.decode("utf-8") for result in encoded_result.tolist()]
+                )
                 transcript += " " + outputs
             res["output"].append({"source": transcript.strip()})
 
@@ -243,14 +256,16 @@ class InferenceService:
         if (
             request_body.config.language.sourceScriptCode
             and source_lang in LANG_CODE_TO_SCRIPT_CODE
-            and request_body.config.language.sourceScriptCode != LANG_CODE_TO_SCRIPT_CODE[source_lang]
+            and request_body.config.language.sourceScriptCode
+            != LANG_CODE_TO_SCRIPT_CODE[source_lang]
         ):
             source_lang += "_" + request_body.config.language.sourceScriptCode
 
         if (
             request_body.config.language.targetScriptCode
             and target_lang in LANG_CODE_TO_SCRIPT_CODE
-            and request_body.config.language.targetScriptCode != LANG_CODE_TO_SCRIPT_CODE[target_lang]
+            and request_body.config.language.targetScriptCode
+            != LANG_CODE_TO_SCRIPT_CODE[target_lang]
         ):
             target_lang += "_" + request_body.config.language.targetScriptCode
         
@@ -323,9 +338,9 @@ class InferenceService:
         target_sr = request_body.config.samplingRate
         standard_rate = 22050
         format = request_body.config.audioFormat
-        if format == "pcm" :
+        if format == "pcm":
             format = "s16le"
-        
+
         results = []
 
         for input in request_body.input:
@@ -341,15 +356,17 @@ class InferenceService:
                     headers=headers,
                 )
                 raw_audio = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-                
+
                 if target_sr != standard_rate:
-                    number_of_samples = round(len(raw_audio) * target_sr / standard_rate)
+                    number_of_samples = round(
+                        len(raw_audio) * target_sr / standard_rate
+                    )
                     raw_audio = sps.resample(raw_audio, number_of_samples)
                 byte_io = io.BytesIO()
-               
+
                 wavfile.write(byte_io, target_sr, raw_audio)
 
-                if format != "wav" :
+                if format != "wav":
                     AudioSegment.from_file_using_temporary_files(byte_io).export(
                         byte_io, format=format
                     )
@@ -446,9 +463,15 @@ class InferenceService:
         data_tracking_consent = False
         previous_output_json = request_body.inputData.dict()
         for pipeline_task in request_body.pipelineTasks:
-            serviceId = pipeline_task.config["serviceId"] if "serviceId" in pipeline_task.config else None
+            serviceId = (
+                pipeline_task.config["serviceId"]
+                if "serviceId" in pipeline_task.config
+                else None
+            )
             if not serviceId:
-                serviceId = self.auto_select_service_id(pipeline_task.taskType, pipeline_task.config)
+                serviceId = self.auto_select_service_id(
+                    pipeline_task.taskType, pipeline_task.config
+                )
 
             start_time = time.perf_counter()
             new_request = ULCAGenericInferenceRequest(
@@ -459,14 +482,17 @@ class InferenceService:
 
             error_msg, exception = None, None
             try:
-                api_key_id = str(request_state.state.api_key_id)  # Having this here to capture all errors
+                api_key_id = str(
+                    request_state.state.api_key_id
+                )  # Having this here to capture all errors
                 previous_output_json = await self.run_inference(
                     request=new_request, serviceId=serviceId
                 )
             except BaseError as exc:
                 exception = exc
                 if exc.error_kind in (
-                    Errors.DHRUVA101.value["kind"], Errors.DHRUVA102.value["kind"]
+                    Errors.DHRUVA101.value["kind"],
+                    Errors.DHRUVA102.value["kind"],
                 ):
                     error_msg = exc.error_kind + "_" + exc.error_message
             except Exception as other_exception:
@@ -475,21 +501,27 @@ class InferenceService:
 
             if request_state.state._state.get("api_key_data_tracking"):
                 data_tracking_consent = True
-                if new_request.controlConfig and new_request.controlConfig.dataTracking is False:
+                if (
+                    new_request.controlConfig
+                    and new_request.controlConfig.dataTracking is False
+                ):
                     data_tracking_consent = False
 
             log_data.apply_async(
                 (
                     pipeline_task.taskType,
                     serviceId,
-                    request_state.headers.get("X-Forwarded-For", request_state.client.host),
+                    request_state.headers.get(
+                        "X-Forwarded-For", request_state.client.host
+                    ),
                     data_tracking_consent,
                     error_msg,
                     api_key_id,
                     new_request.json(),
                     # Error in first task will result in a dict, not pydantic model response
-                    json.dumps(previous_output_json) if isinstance(previous_output_json, dict) \
-                        else previous_output_json.json(),
+                    json.dumps(previous_output_json)
+                    if isinstance(previous_output_json, dict)
+                    else previous_output_json.json(),
                     time.perf_counter() - start_time,
                 ),
                 queue="data_log",
@@ -509,7 +541,9 @@ class InferenceService:
                 if pipeline_task.taskType == _ULCATaskType.TRANSLATION:
                     # The output (target) of translation should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
-                        previous_output_json["input"][i]["source"] = previous_output_json["input"][i]["target"]
+                        previous_output_json["input"][i][
+                            "source"
+                        ] = previous_output_json["input"][i]["target"]
                         del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
