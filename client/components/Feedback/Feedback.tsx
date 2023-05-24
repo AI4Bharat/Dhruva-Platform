@@ -611,6 +611,7 @@ const Feedback: React.FC<FeedbackProps> = ({
                                 <Input
                                   fontSize="md"
                                   fontWeight="bold"
+                                  // @ts-ignore
                                   value={
                                     output.target
                                       ? output.target

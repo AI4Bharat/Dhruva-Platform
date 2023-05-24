@@ -99,15 +99,8 @@ const NMTTry: React.FC<Props> = (props) => {
           inputData: {
             input: [{ source: source }],
           },
-
-          controlConfig: {
-            dataTracking: true,
-          },
         });
         setPipelineOutput({
-          controlConfig: {
-            dataTracking: true,
-          },
           pipelineResponse: [
             {
               taskType: ULCATaskType.TRANSLATION,

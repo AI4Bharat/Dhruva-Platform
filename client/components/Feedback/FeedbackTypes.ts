@@ -2,10 +2,10 @@ export enum FeedbackType {
   RATING = "rating",
   COMMENT = "comment",
   THUMBS = "thumbs",
-  RATING_LIST = "ratingList",
-  COMMENT_LIST = "commentList",
-  THUMBS_LIST = "thumbsList",
-  CHECKBOX_LIST = "checkboxList",
+  RATING_LIST = "rating-list",
+  COMMENT_LIST = "comment-list",
+  THUMBS_LIST = "thumbs-list",
+  CHECKBOX_LIST = "checkbox-list",
 }
 
 export enum ULCATaskType {
@@ -22,12 +22,8 @@ interface RequestConfig {
   config: any;
 }
 
-interface ControlConfig {
-  dataTracking: boolean;
-}
 
 export interface PipelineOutput {
-  controlConfig: ControlConfig;
   pipelineResponse: ULCAGenericInferenceResponse[];
 }
 
@@ -41,7 +37,6 @@ interface ULCAGenericInferenceResponse {
 export interface PipelineInput {
   pipelineTasks: RequestConfig[];
   inputData: any;
-  controlConfig: ControlConfig;
 }
 interface BaseFeedbackType {
   parameterName: string;

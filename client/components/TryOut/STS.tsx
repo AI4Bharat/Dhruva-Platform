@@ -163,15 +163,8 @@ const STSTry: React.FC<Props> = (props) => {
               },
             ],
           },
-
-          controlConfig: {
-            dataTracking: true,
-          },
         });
         setPipelineOutput({
-          controlConfig: {
-            dataTracking: true,
-          },
           pipelineResponse: [
             {
               taskType: ULCATaskType.STS,

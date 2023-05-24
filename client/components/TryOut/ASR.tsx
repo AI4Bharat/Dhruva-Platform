@@ -122,9 +122,6 @@ const ASRTry: React.FC<Props> = (props) => {
               taskType: ULCATaskType.ASR,
             },
           ],
-          controlConfig: {
-            dataTracking: true,
-          },
           inputData: {
             audio: [
               {
@@ -134,9 +131,6 @@ const ASRTry: React.FC<Props> = (props) => {
           },
         });
         setPipelineOutput({
-          controlConfig: {
-            dataTracking: true,
-          },
           pipelineResponse: [
             {
               taskType: ULCATaskType.ASR,
