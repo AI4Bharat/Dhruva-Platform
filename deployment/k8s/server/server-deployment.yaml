@@ -14,23 +14,16 @@ spec:
       containers:
         - name: dhruva-server
           image: dhruvacr.azurecr.io/dhruvaserver
-          # image: server:latest
           ports:
             - containerPort: 8000
           imagePullPolicy: Always
-          # imagePullPolicy: IfNotPresent
 
-          env:
-            # - name: BACKEND_PORT
-            #   value: "8000"
-            # - name: BACKEND_WORKERS
-            #   value: "1"
-            - name: AZURE_CLIENT_ID # Notice that the case is different here
-              # from the key name in the secret.
+          ENV:
+            - name: AZURE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  key: AZURE_CLIENT_ID # The key to fetch.
-                  name: dhruva-secret # The secret this value comes from.
+                  key: AZURE_CLIENT_ID
+                  name: dhruva-secret
 
             - name: AZURE_CLIENT_SECRET
               valueFrom:
@@ -158,41 +151,11 @@ spec:
                   key: PROM_AGG_GATEWAY_PASSWORD
                   name: dhruva-secret
 
-            # - name: NEXT_PUBLIC_API_KEY
-            #   valueFrom:
-            #     secretKeyRef:
-            #       key: NEXT_PUBLIC_API_KEY
-            #       name: dhruva-secret
-
             - name: NEXT_PUBLIC_BACKEND_API_URL
               valueFrom:
                 secretKeyRef:
                   key: NEXT_PUBLIC_BACKEND_API_URL
                   name: dhruva-secret
-
-            - name: CELERY_FLOWER_BROKER_API
-              valueFrom:
-                secretKeyRef:
-                  key: CELERY_FLOWER_BROKER_API
-                  name: dhruva-secret
-
-            - name: CELERY_FLOWER_ADDRESS
-              valueFrom:
-                secretKeyRef:
-                  key: CELERY_FLOWER_ADDRESS
-                  name: dhruva-secret
-
-            - name: CELERY_FLOWER_PORT
-              valueFrom:
-                secretKeyRef:
-                  key: CELERY_FLOWER_PORT
-                  name: dhruva-secret
-
-            # - name: FLOWER_LOGGING_LEVEL
-            #   valueFrom:
-            #     secretKeyRef:
-            #       key: FLOWER_LOGGING_LEVEL
-            #       name: dhruva-secret
 
             - name: FRONTEND_PORT
               valueFrom:
@@ -243,4 +206,3 @@ spec:
 
       volumes:
         - name: app-data
-      # restartPolicy: Always
