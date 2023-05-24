@@ -18,7 +18,6 @@ const login = async (userDetails : loginFormat) => {
   if (role) {
     localStorage.setItem("user_role", role);
   }
-  await timeout(500);
   await timeout(1000);
   await getNewAccessToken();
 };
