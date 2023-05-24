@@ -18,17 +18,26 @@ const dhruvaAPI: { [key: string]: string } = {
   xlitInference: `${dhruvaRootURL}/services/inference/transliteration`,
 };
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
 const apiInstance = axios.create({ baseURL: dhruvaRootURL });
+
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach((subscriber) => subscriber(token));
+  refreshSubscribers = [];
+}
 
 apiInstance.interceptors.request.use((config: any) => {
   if (window.location.pathname !== "/") {
     localStorage.setItem("current_page", window.location.href);
   }
   config.headers["request-startTime"] = new Date().getTime();
-  config.headers["Authorization"] = `Bearer ${localStorage.getItem(
-    "access_token"
-  )}`;
-  config.headers["x-auth-source"] = "AUTH_TOKEN";
+  const accessToken = localStorage.getItem("access_token");
+  if (accessToken) {
+    config.headers["Authorization"] = `Bearer ${accessToken}`;
+    config.headers["x-auth-source"] = "AUTH_TOKEN";
+  }
   return config;
 });
 
@@ -46,24 +55,37 @@ apiInstance.interceptors.response.use(
       !originalRequest._retry &&
       originalRequest.url !== `${dhruvaRootURL}/auth/refresh`
     ) {
-      originalRequest._retry = true;
-      const refreshToken = localStorage.getItem("refresh_token");
-      return axios
-        .post(`${dhruvaRootURL}/auth/refresh`, { token: refreshToken })
-        .then((res) => {
-          if (res.status === 200) {
-            localStorage.setItem("access_token", res.data.token);
-            apiInstance.defaults.headers.common["Authorization"] =
-              "Bearer " + localStorage.getItem("access_token");
-            return apiInstance(originalRequest);
-          }
-        })
-        .catch((e) => {
-          if (window.location.pathname !== "/") {
-            window.location.replace("/");
-          }
-          throw e;
+      if (!isRefreshing) {
+        isRefreshing = true;
+        const refreshToken = localStorage.getItem("refresh_token");
+        return axios
+          .post(`${dhruvaRootURL}/auth/refresh`, { token: refreshToken })
+          .then((res) => {
+            if (res.status === 200) {
+              localStorage.setItem("access_token", res.data.token);
+              apiInstance.defaults.headers.common["Authorization"] =
+                "Bearer " + res.data.token;
+              onTokenRefreshed(res.data.token);
+              return apiInstance(originalRequest);
+            }
+          })
+          .catch((e) => {
+            if (window.location.pathname !== "/") {
+              window.location.replace("/");
+            }
+            throw e;
+          })
+          .finally(() => {
+            isRefreshing = false;
+          });
+      } else {
+        return new Promise((resolve) => {
+          refreshSubscribers.push((token) => {
+            originalRequest.headers["Authorization"] = `Bearer ${token}`;
+            resolve(apiInstance(originalRequest));
+          });
         });
+      }
     } else {
       throw error;
     }
