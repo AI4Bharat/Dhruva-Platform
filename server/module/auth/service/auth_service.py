@@ -31,7 +31,7 @@ from schema.auth.request import (
     RefreshRequest,
     SignInRequest,
     ULCACreateApiKeyRequest,
-    ULCASetApiKeyTrackingQuery,
+    ULCASetApiKeyTrackingRequest,
 )
 from schema.auth.response import (
     GetAllApiKeysDetailsResponse,
@@ -410,9 +410,9 @@ class AuthService:
         )
 
     def set_api_key_tracking_ulca(
-        self, params: ULCASetApiKeyTrackingQuery, id: ObjectId
+        self, request: ULCASetApiKeyTrackingRequest, id: ObjectId
     ):
-        api_key_name = params.emailId + "/" + params.appName
+        api_key_name = request.emailId + "/" + request.appName
 
         try:
             api_key = self.api_key_repository.find_one(
@@ -428,7 +428,7 @@ class AuthService:
                 status.HTTP_404_NOT_FOUND, "API Key not found"
             )
 
-        if params.dataTracking:
+        if request.dataTracking:
             api_key.enable_tracking()
         else:
             api_key.disable_tracking()
