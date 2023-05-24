@@ -1,0 +1,208 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dhruva-server
+spec:
+  selector:
+    matchLabels:
+      app: dhruva-server
+  template:
+    metadata:
+      labels:
+        app: dhruva-server
+    spec:
+      containers:
+        - name: dhruva-server
+          image: dhruvacr.azurecr.io/dhruvaserver
+          ports:
+            - containerPort: 8000
+          imagePullPolicy: Always
+
+          ENV:
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: AZURE_CLIENT_ID
+                  name: dhruva-secret
+
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: AZURE_CLIENT_SECRET
+                  name: dhruva-secret
+
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: AZURE_TENANT_ID
+                  name: dhruva-secret
+
+            - name: BLOB_STORE
+              valueFrom:
+                secretKeyRef:
+                  key: BLOB_STORE
+                  name: dhruva-secret
+
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: JWT_SECRET_KEY
+                  name: dhruva-secret
+
+            - name: APP_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: APP_DB_NAME
+                  name: dhruva-secret
+
+            - name: LOG_DB_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  key: LOG_DB_CONNECTION_STRING
+                  name: dhruva-secret
+
+            - name: LOG_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: LOG_DB_NAME
+                  name: dhruva-secret
+
+            - name: APP_DB_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  key: APP_DB_CONNECTION_STRING
+                  name: dhruva-secret
+
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  key: CELERY_BROKER_URL
+                  name: dhruva-secret
+
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_HOST
+                  name: dhruva-secret
+
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_PORT
+                  name: dhruva-secret
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_PASSWORD
+                  name: dhruva-secret
+
+            - name: REDIS_DB
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_DB
+                  name: dhruva-secret
+
+            - name: HEARTBEAT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: HEARTBEAT_API_KEY
+                  name: dhruva-secret
+
+            - name: LOG_REQUEST_RESPONSE_DATA_FLAG
+              valueFrom:
+                secretKeyRef:
+                  key: LOG_REQUEST_RESPONSE_DATA_FLAG
+                  name: dhruva-secret
+
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_DEFAULT_USER
+                  name: dhruva-secret
+
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_DEFAULT_PASS
+                  name: dhruva-secret
+
+            - name: RABBITMQ_DEFAULT_VHOST
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_DEFAULT_VHOST
+                  name: dhruva-secret
+
+            - name: PROMETHEUS_URL
+              valueFrom:
+                secretKeyRef:
+                  key: PROMETHEUS_URL
+                  name: dhruva-secret
+
+            - name: PROM_AGG_GATEWAY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: PROM_AGG_GATEWAY_USERNAME
+                  name: dhruva-secret
+
+            - name: PROM_AGG_GATEWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: PROM_AGG_GATEWAY_PASSWORD
+                  name: dhruva-secret
+
+            - name: NEXT_PUBLIC_BACKEND_API_URL
+              valueFrom:
+                secretKeyRef:
+                  key: NEXT_PUBLIC_BACKEND_API_URL
+                  name: dhruva-secret
+
+            - name: FRONTEND_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: FRONTEND_PORT
+
+            - name: BACKEND_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: BACKEND_PORT
+
+            - name: BACKEND_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: BACKEND_WORKERS
+
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: ENV
+
+            - name: VAD_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: VAD_DIR
+
+            - name: MIGRATION_ACTION
+              valueFrom:
+                configMapKeyRef:
+                  name: dhruva-configmap
+                  key: MIGRATION_ACTION
+
+          command:
+            - "uvicorn"
+            - "main:app"
+            - "--workers"
+            - "$(BACKEND_WORKERS)"
+            - "--port"
+            - "$(BACKEND_PORT)"
+            - "--host"
+            - "0.0.0.0"
+            - "--proxy-headers"
+
+      volumes:
+        - name: app-data
