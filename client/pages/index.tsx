@@ -31,7 +31,7 @@ export default function Login() {
     ) {
       if (localStorage.getItem("currentpage")) 
       {
-        let timeout = setTimeout(()=>{router.push(localStorage.getItem("current_page"))},1000)
+        router.push(localStorage.getItem("current_page"));
       } 
       else 
       {
@@ -48,7 +48,7 @@ export default function Login() {
           localStorage.setItem("email", username);
           if (localStorage.getItem("current_page")) 
           {
-            let timeout = setTimeout(()=>{router.push(localStorage.getItem("current_page"))},1000)
+            router.push(localStorage.getItem("current_page"))
           } 
           else 
           {
