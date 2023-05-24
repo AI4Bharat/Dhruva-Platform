@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dhruva-configmap
+data:
+  FRONTEND_PORT: "8000"
+  BACKEND_PORT: "8000"
+  BACKEND_WORKERS: "1"
+  ENV: prod
+  VAD_DIR: "/root/.cache/torch/hub/snakers_silero_vad"
+  MIGRATION_ACTION: "migrate"
