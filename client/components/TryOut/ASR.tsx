@@ -402,6 +402,7 @@ const ASRTry: React.FC<Props> = (props) => {
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
+                taskType={ULCATaskType.ASR}
               />
             )}
           </GridItem>

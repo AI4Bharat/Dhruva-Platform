@@ -298,6 +298,7 @@ const TTSTry: React.FC<Props> = (props) => {
                 <FeedbackModal
                   pipelineInput={pipelineInput}
                   pipelineOutput={pipelineOuput}
+                  taskType={ULCATaskType.TTS}
                 />
               )}
             </Stack>

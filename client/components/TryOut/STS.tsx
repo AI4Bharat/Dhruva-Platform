@@ -371,6 +371,11 @@ const STSTry: React.FC<Props> = (props) => {
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
+                taskType={[
+                  ULCATaskType.ASR,
+                  ULCATaskType.TRANSLATION,
+                  ULCATaskType.TTS,
+                ]}
               />
             )}
           </Stack>
