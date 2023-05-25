@@ -297,15 +297,9 @@ function PipelineInterface() {
               },
             ],
           },
-          controlConfig: {
-            dataTracking: true,
-          },
         });
         setPipelineOutput({
           pipelineResponse: response.data["pipelineResponse"],
-          controlConfig: {
-            dataTracking: true,
-          },
         });
         const pipelineData = response.data["pipelineResponse"];
         const nmtOutput = pipelineData[1]["output"][0];
@@ -532,6 +526,7 @@ function PipelineInterface() {
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
+                taskType={[ULCATaskType.ASR, ULCATaskType.TRANSLATION, ULCATaskType.TTS]}
               />
             )}
           </Stack>

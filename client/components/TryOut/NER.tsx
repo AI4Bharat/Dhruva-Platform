@@ -217,13 +217,13 @@ const NERTry: React.FC<Props> = (props) => {
             >
               Generate
             </Button>
-            {fetched && (
+            {/* {fetched && (
               <FeedbackModal
                 pipelineInput={pipelineInput}
                 pipelineOutput={pipelineOutput}
 
               />
-            )}
+            )} */}
           </Stack>
         </Stack>
       </GridItem>

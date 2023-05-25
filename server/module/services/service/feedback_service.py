@@ -1,6 +1,6 @@
-from bson import ObjectId
+import requests
 from fastapi import Depends
-from schema.services.request import ULCAFeedbackRequest
+from schema.services.request import ULCAFeedbackRequest,ULCAFeedbackQuestionRequest
 from ..model import Feedback
 from ..repository import FeedbackRepository
 from exception.base_error import BaseError
@@ -21,3 +21,6 @@ class FeedbackService:
             return self.feedback_repository.insert_one(feedback_obj)
         except Exception:
             return BaseError(Errors.DHRUVA110.value, traceback.format_exc())
+
+    def fetch_questions(self,request:ULCAFeedbackQuestionRequest):
+        return requests.post("https://dev-auth.ulcacontrib.org/ulca/mdms/v0/pipelineQuestions",json=request.dict()).json()

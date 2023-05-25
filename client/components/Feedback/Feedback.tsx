@@ -58,7 +58,7 @@ interface FeedbackProps {
   feedbackLanguage: string;
   pipelineInput: PipelineInput;
   pipelineOutput: PipelineOutput;
-  taskType?: ULCATaskType;
+  taskType?: ULCATaskType | ULCATaskType[];
 }
 
 const Feedback: React.FC<FeedbackProps> = ({
