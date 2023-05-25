@@ -11,6 +11,7 @@ from schema.auth.request import (
     GetApiKeyQuery,
     ModifyApiKeyParamsQuery,
     ULCACreateApiKeyRequest,
+    ULCADeleteApiKeyRequest,
     ULCASetApiKeyTrackingRequest,
 )
 from schema.auth.request.create_api_key_request import ApiKeyType
@@ -108,7 +109,7 @@ async def _create_ulca_api_key(
     include_in_schema=False,
 )
 async def _delete_ulca_api_key(
-    request: ULCACreateApiKeyRequest,
+    request: ULCADeleteApiKeyRequest,
     auth_service: AuthService = Depends(AuthService),
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
