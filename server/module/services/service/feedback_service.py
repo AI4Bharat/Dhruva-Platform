@@ -6,13 +6,13 @@ from ..repository import FeedbackRepository
 from exception.base_error import BaseError
 from ..error.errors import Errors
 import traceback
-
+from bson import ObjectId
 
 class FeedbackService:
     def __init__(self, feedback_repository: FeedbackRepository = Depends(FeedbackRepository)):
         self.feedback_repository = feedback_repository
 
-    def submit_feedback(self, request: ULCAFeedbackRequest):
+    def submit_feedback(self, request: ULCAFeedbackRequest, id: ObjectId):
         try:
             feedback = request.dict()
             feedback["user_id"] = id

@@ -5,7 +5,7 @@ from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.http_error import HttpErrorResponse
 from schema.auth.common import ApiKeyType
-from schema.services.request import ULCAFeedbackRequest
+from schema.services.request import ULCAFeedbackRequest, ULCAFeedbackQuestionRequest
 
 from ..service import FeedbackService
 
@@ -26,3 +26,10 @@ async def _submit_feedback(
     request_session: RequestSession = Depends(InjectRequestSession),
 ):
     return feedback_service.submit_feedback(request, request_session.id)
+
+
+@router.post("/questions")
+async def _get_feedback_questions(
+    request: ULCAFeedbackQuestionRequest,
+    feedback_service: FeedbackService = Depends(FeedbackService)):
+    return feedback_service.fetch_questions(request)
