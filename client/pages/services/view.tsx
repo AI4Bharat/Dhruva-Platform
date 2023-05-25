@@ -149,12 +149,14 @@ function ServicePerformanceModal({ ...props }) {
 export default function ViewService() {
   const router = useRouter();
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { data: serviceInfo, isLoading } = useQuery(
     ["service", router.query["serviceId"]],
     () => getService(router.query["serviceId"] as string),
     { enabled: router.isReady }
   );
+
 
   const [languages, setLanguages] = useState<LanguageConfig[]>();
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -218,7 +220,8 @@ export default function ViewService() {
                 >
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
-                  <option value={3}>Usage</option>
+                  <option value={3}>Performance</option>
+                  <option value={4}>Usage</option>
                 </Select>
                 <ViewServiceTabs
                   languages={languages}
@@ -257,7 +260,7 @@ export default function ViewService() {
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
-                  
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
                 </TabList>
                 <ViewServiceTabs

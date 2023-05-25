@@ -19,10 +19,12 @@ import { RiFlowChart } from "react-icons/ri";
 
 const Sidebar: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
+  const [userRole, setUserRole] = useState<String>("CONSUMER");
   const [isOpen, setNavbar] = useState<Boolean>(false);
   const [number, setNumber] = useState<Number>(0);
   const router = useRouter();
   useEffect(() => {
+    setUserRole(localStorage.getItem("user_role"));
     switch (router.pathname.split("/")[1]) {
       case "services":
         setNumber(1);
@@ -228,31 +230,35 @@ const Sidebar: React.FC = () => {
             </Link>
           </Box> */}
 
-          <Box>
-            <Link href="/admin">
-              <Button
-                mb="2"
-                ml={isOpen ? 0 : 0}
-                h={10}
-                w="100%"
-                variant={number === 2 ? "solid" : "ghost"}
-                background={number === 2 ? "orange.500" : "transperent"}
-                color={number === 2 ? "white" : "black"}
-                justifyContent="flex-start"
-                size="l"
-                boxShadow={number === 2 ? "xl" : "none"}
-                transition="width 0.2s"
-              >
-                <Box>
-                  <MdOutlineAdminPanelSettings
-                    style={{ marginLeft: 12, marginRight: 12 }}
-                    size={25}
-                  />
-                </Box>
-                {isOpen ? <Text fontWeight={"normal"}> Admin</Text> : <></>}
-              </Button>
-            </Link>
-          </Box>
+          {userRole === "ADMIN" ? (
+            <Box>
+              <Link href="/admin">
+                <Button
+                  mb="2"
+                  ml={isOpen ? 0 : 0}
+                  h={10}
+                  w="100%"
+                  variant={number === 2 ? "solid" : "ghost"}
+                  background={number === 2 ? "orange.500" : "transperent"}
+                  color={number === 2 ? "white" : "black"}
+                  justifyContent="flex-start"
+                  size="l"
+                  boxShadow={number === 2 ? "xl" : "none"}
+                  transition="width 0.2s"
+                >
+                  <Box>
+                    <MdOutlineAdminPanelSettings
+                      style={{ marginLeft: 12, marginRight: 12 }}
+                      size={25}
+                    />
+                  </Box>
+                  {isOpen ? <Text fontWeight={"normal"}> Admin</Text> : <></>}
+                </Button>
+              </Link>
+            </Box>
+          ) : (
+            <></>
+          )}
           {/* <Box position={"absolute"} bottom="10">
             <Box>
               <Link href="/profile">

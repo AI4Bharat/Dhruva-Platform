@@ -20,8 +20,10 @@ const SidebarMobile: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
   const [isOpen, setNavbar] = useState<Boolean>(false);
   const [number, setNumber] = useState<Number>(0);
+  const [userRole, setUserRole] = useState<String>("CONSUMER");
   const router = useRouter();
   useEffect(() => {
+    setUserRole(localStorage.getItem("user_role"));
     switch (router.pathname.split("/")[1]) {
       case "services":
         setNumber(1);
@@ -219,6 +221,7 @@ const SidebarMobile: React.FC = () => {
               </Button>
             </Link>
           </Box>
+
           {/* 
           <Box position={"absolute"} bottom="10">
             <Box>
