@@ -30,7 +30,7 @@ from schema.auth.request import (
     ModifyApiKeyParamsQuery,
     RefreshRequest,
     SignInRequest,
-    ULCACreateApiKeyRequest,
+    ULCADeleteApiKeyRequest,
     ULCASetApiKeyTrackingRequest,
 )
 from schema.auth.response import (
@@ -375,7 +375,7 @@ class AuthService:
 
         return api_key
 
-    def set_api_key_status_ulca(self, request: ULCACreateApiKeyRequest, id: ObjectId):
+    def set_api_key_status_ulca(self, request: ULCADeleteApiKeyRequest, id: ObjectId):
         api_key_name = request.emailId + "/" + request.appName
 
         try:
