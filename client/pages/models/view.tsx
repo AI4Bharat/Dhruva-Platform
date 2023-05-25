@@ -16,6 +16,7 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  Button,
 } from "@chakra-ui/react";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import { useRouter } from "next/router";
@@ -24,6 +25,7 @@ import useMediaQuery from "../../hooks/useMediaQuery";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { getModel } from "../../api/modelAPI";
+import { HiArrowLeft } from "react-icons/hi";
 
 interface LanguageConfig {
   sourceLanguage: string;
@@ -137,6 +139,7 @@ export default function ViewModel({ ...props }) {
             gap={10}
           >
             <GridItem p="1rem" bg="white">
+            <Button variant={"link"} mb="1rem" onClick={()=>router.push("/services")}><HiArrowLeft/> &nbsp;Models</Button>
               <Stack spacing={10} direction={"row"}>
                 <Heading>{modelInfo["name"]}</Heading>
               </Stack>
@@ -270,6 +273,7 @@ export default function ViewModel({ ...props }) {
           >
             <GridItem p="1rem" bg="white">
               <Stack spacing={10} direction={"row"}>
+              <Button variant={"ghost"} fontSize={"2xl"} onClick={()=>router.push("/services")}><HiArrowLeft/></Button>
                 <Heading>{modelInfo["name"]}</Heading>
               </Stack>
               <Tabs isFitted>

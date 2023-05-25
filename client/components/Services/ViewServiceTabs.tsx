@@ -52,9 +52,8 @@ const ViewServiceTabs = ({
     <TabPanel>
       <Documentation serviceInfo={serviceInfo} />
     </TabPanel>
-    
     <TabPanel>
-    <Usage serviceID={serviceID}/>
+    <Usage serviceID={serviceID as string} type={serviceInfo["model"]["task"]["type"]}/>
     </TabPanel>
   </TabPanels>
   )
