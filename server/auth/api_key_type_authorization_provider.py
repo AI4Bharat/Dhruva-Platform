@@ -8,7 +8,7 @@ class ApiKeyTypeAuthorizationProvider:
     def __init__(self, required_type: ApiKeyType):
         self.required_type = required_type
 
-    def __call__(self, request: Request, x_auth_source: TokenType = Header()):
+    def __call__(self, request: Request, x_auth_source: TokenType = Header(default=TokenType.API_KEY)):
         if x_auth_source == TokenType.AUTH_TOKEN:
             return
 
