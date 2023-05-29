@@ -8,7 +8,8 @@ const Documentation = ({ ...props }) => {
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   const router = useRouter();
   return (
-    <OrderedList spacing={7.5}>
+    <>
+    <OrderedList spacing={7.5} width={smallscreen?"70vw":"35vw"}>
       <ListItem>
         Set the Dhruva Inference URL in an endpoint url variable.
       </ListItem>
@@ -16,7 +17,7 @@ const Documentation = ({ ...props }) => {
         colorScheme="blackAlpha"
         padding={10}
         borderRadius={10}
-        width={smallscreen ? "70vw" : "40vw"}
+        width={smallscreen ? "70vw" : "35vw"}
       >
         endpoint_url = {dhruvaAPI.genericInference}
       </Code>
@@ -29,7 +30,7 @@ const Documentation = ({ ...props }) => {
         colorScheme="blackAlpha"
         padding={10}
         borderRadius={10}
-        width={smallscreen ? "70vw" : "40vw"}
+        width={smallscreen ? "70vw" : "35vw"}
       >
         {JSON.stringify({
           serviceId: router.query["serviceId"],
@@ -54,7 +55,7 @@ const Documentation = ({ ...props }) => {
         colorScheme="blackAlpha"
         padding={10}
         borderRadius={10}
-        width={smallscreen ? "70vw" : "40vw"}
+        width={smallscreen ? "70vw" : "35vw"}
       >
         fetch(endpoint_url,
         {JSON.stringify(
@@ -76,7 +77,7 @@ const Documentation = ({ ...props }) => {
         colorScheme="blackAlpha"
         padding={10}
         borderRadius={10}
-        width={smallscreen ? "70vw" : "40vw"}
+        width={smallscreen ? "70vw" : "35vw"}
       >
         {JSON.stringify(
           props.serviceInfo.model.inferenceEndPoint["schema"]["response"],
@@ -85,6 +86,7 @@ const Documentation = ({ ...props }) => {
         )}
       </Code>
     </OrderedList>
+    </>
   );
 };
 

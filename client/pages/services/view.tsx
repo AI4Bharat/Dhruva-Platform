@@ -39,6 +39,9 @@ import axios from "axios";
 import Head from "next/head";
 import { useQuery } from "@tanstack/react-query";
 import { listallusers } from "../../api/adminAPI";
+import { AiOutlineBackward } from "react-icons/ai";
+import { BiLeftArrow } from "react-icons/bi";
+import { HiArrowLeft } from "react-icons/hi";
 
 function ServicePerformanceModal({ ...props }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -206,6 +209,7 @@ export default function ViewService() {
             gap={10}
           >
             <GridItem p="1rem" bg="white">
+            <Button variant={"link"} mb="1rem" onClick={()=>router.push("/services")}><HiArrowLeft/> &nbsp;Services</Button>
               <Stack spacing={10} direction={"row"}>
                 <Heading>{serviceInfo["name"]}</Heading>
                 <ServicePerformanceModal
@@ -220,8 +224,8 @@ export default function ViewService() {
                 >
                   <option value={0}>Details</option>
                   <option value={1}>Documentation</option>
+                  <option value={2}>Usage</option>
                   <option value={3}>Performance</option>
-                  <option value={4}>Usage</option>
                 </Select>
                 <ViewServiceTabs
                   languages={languages}
@@ -251,6 +255,7 @@ export default function ViewService() {
           >
             <GridItem>
               <Stack spacing={10} direction={"row"} mb="1rem">
+              <Button variant={"ghost"} fontSize={"2xl"} onClick={()=>router.push("/services")}><HiArrowLeft/></Button>
                 <Heading>{serviceInfo["name"]}</Heading>
                 <ServicePerformanceModal
                   service_id={router.query["serviceId"]}
@@ -260,8 +265,8 @@ export default function ViewService() {
                 <TabList mb="1em">
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
-                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
+                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
                 </TabList>
                 <ViewServiceTabs
                   languages={languages}
