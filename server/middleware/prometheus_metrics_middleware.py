@@ -35,7 +35,7 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
             request.url.components.path,
             int(response.status_code),
             self.app_name,
-            *await self._get_custom_labels_values(request),
+            *self._get_custom_labels_values(request),
         ]
 
         self.request_count.labels(*labels).inc()
@@ -109,7 +109,7 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
 
         return list(self.custom_labels.keys())
 
-    async def _get_custom_labels_values(self, request: Request):
+    def _get_custom_labels_values(self, request: Request):
         if self.custom_labels is None:
             return []
 
@@ -120,7 +120,7 @@ class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
                 parsed_value = ""
                 # if provided a callable, try to use it on the request.
                 try:
-                    result = await v(request)
+                    result = v(request)
                 except Exception:
                     logger.warn(f"label function for {k} failed", exc_info=True)
                 else:
