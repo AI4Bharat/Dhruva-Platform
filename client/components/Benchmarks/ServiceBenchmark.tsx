@@ -37,7 +37,9 @@ export default function ServiceBenchmark({ ...props }) {
           <Card key={key}>
             <CardHeader fontWeight={"bold"}>GPU Count: {key}</CardHeader>
             <CardBody>
-              {value.map((benchmark) => {
+              {
+              // @ts-ignore
+              value.map((benchmark) => {
                 return (
                   <Accordion
                     outline={"none"}
