@@ -13,12 +13,14 @@ spec:
     spec:
       containers:
         - name: dhruva-server
-          image: dhruvacr.azurecr.io/dhruvaserver
+          # image: dhruvacr.azurecr.io/dhruvaserver
+          image: servertest.azurecr.io/server:latest
           ports:
             - containerPort: 8000
+
           imagePullPolicy: Always
 
-          ENV:
+          env:
             - name: AZURE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
