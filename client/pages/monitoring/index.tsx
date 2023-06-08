@@ -1,10 +1,13 @@
-import { Box, FormLabel, HStack, Select, Stack, useMediaQuery } from "@chakra-ui/react";
+import { Box, FormLabel, HStack, Select, Stack } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { setLazyProp } from "next/dist/server/api-utils";
 import Head from "next/head";
+import { taskOptions } from '../../components/Utils/Options';
 import React, { useEffect, useState } from "react";
 import { listallkeys, listallusers } from "../../api/adminAPI";
 import { listalluserkeys, listServices } from "../../api/serviceAPI";
+import useMediaQuery from "../../hooks/useMediaQuery";
+import ServicesList from "../../components/Mobile/Services/ServicesList";
 
 const monitoring = () => {
   const [selectedUser, setSelectedUser] = useState<string>(".*");
@@ -12,11 +15,17 @@ const monitoring = () => {
   const [inferenceServiceId, setInferenceServiceId] = useState<string>(".*");
   const [sourceLanguage, setSourceLanguage] = useState<string>(".*");
   const [taskType, setTaskType] = useState<string>(".*");
+  const [filteredServices, setFilteredServices] = useState<ServiceList[]>([]);
   
   const smallscreen = useMediaQuery("(max-width: 1080px)");
   
   const { data: userslist } = useQuery(["users"], () => listallusers());
-  const { data: serviceslist } = useQuery(["services"], () => listServices());
+  const { data: serviceslist } = useQuery(["services"], () => listServices(), 
+  {
+    onSuccess: data =>{
+      setFilteredServices(data);
+    }
+  });
 
   const { data: keyslist, refetch: keyslistrefresh } = useQuery(
     ["keys", selectedUser],
@@ -52,6 +61,22 @@ const monitoring = () => {
     }
   }, [setInferenceServiceId]);
 
+
+  useEffect(() => {
+    if(taskType == ".*")
+    {
+      setFilteredServices(serviceslist);
+    }
+    else
+    {
+      setFilteredServices(
+        serviceslist.filter((service) => 
+          service.task.type.includes(taskType)
+        )
+      );
+      
+      }
+ }, [taskType]);
   return (
     <>
       <Head>
@@ -61,7 +86,25 @@ const monitoring = () => {
         <Box>
           <br></br>
           <br></br>
+          <br></br>
           <Stack direction={["column", "row"]} spacing="1rem">
+            <HStack>
+              <FormLabel>Task:</FormLabel>
+              <Select
+                background={"white"}
+                value={taskType}
+                minWidth="15rem"
+                onChange={(e) => {
+                  setTaskType(e.target.value);
+                }}
+              >
+                <option value=".*">Overall</option>
+                {taskOptions}
+              </Select>
+            </HStack>
+          </Stack>
+          <br/>
+          <Stack direction={["column","column","column","row"]} spacing="1rem">'
             <HStack>
               <FormLabel>User:</FormLabel>
               <Select
@@ -91,9 +134,11 @@ const monitoring = () => {
                 }}
               >
                 <option value=".*">Overall</option>
-                {serviceslist?.map((s: any) => {
-                  return <option value={s._id}>{s.name}</option>;
-                })}
+                { 
+                  filteredServices?.map((s: any) => {
+                    return <option value={s._id}>{s.name}</option>;
+                    })
+                }
               </Select>
             </HStack>
             <HStack>
@@ -146,34 +191,22 @@ const monitoring = () => {
                   })} */}
               </Select>
             </HStack>
-            <HStack>
-              <FormLabel>Task:</FormLabel>
-              <Select
-                background={"white"}
-                value={taskType}
-                minWidth="15rem"
-                onChange={(e) => {
-                  setTaskType(e.target.value);
-                }}
-              >
-                <option value=".*">Overall</option>
-                {/* {serviceslist?.map((s: any) => {
-                    return <option value={s._id}>{s.name}</option>;
-                  })} */}
-              </Select>
-            </HStack>
           </Stack>
         </Box>
         <br></br>
         <br></br>
+        {smallscreen?
+        <iframe
+          src={`https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
+          height={640}
+          width={360}
+        />:
         <iframe
           src={`https://grafana.dhruva.co/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
           width={"95%"}
           height={600}
-        //   width={"400%"}
-        //   height={400}
-
         />
+        }
         <br></br>
         <br></br>
       </Box>
