@@ -5,9 +5,10 @@ import Head from "next/head";
 import { taskOptions } from '../../components/Utils/Options';
 import React, { useEffect, useState } from "react";
 import { listallkeys, listallusers } from "../../api/adminAPI";
-import { listalluserkeys, listServices } from "../../api/serviceAPI";
+import { getService, listalluserkeys, listServices } from "../../api/serviceAPI";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import ServicesList from "../../components/Mobile/Services/ServicesList";
+import { lang2label } from "../../config/config";
 
 const monitoring = () => {
   const [selectedUser, setSelectedUser] = useState<string>(".*");
@@ -26,6 +27,8 @@ const monitoring = () => {
       setFilteredServices(data);
     }
   });
+
+  const { data: selectedService, refetch: servicerefresh } = useQuery(["keys"],() => getService(inferenceServiceId));
 
   const { data: keyslist, refetch: keyslistrefresh } = useQuery(
     ["keys", selectedUser],
@@ -55,12 +58,23 @@ const monitoring = () => {
   }, [selectedUser]);
 
   useEffect(() => {
+
+    if (inferenceServiceId === ".*") {
+      setSourceLanguage(".*");
+    }
+    else
+    { 
+      servicerefresh();
+    }
+  }, [inferenceServiceId]);
+
+
+  useEffect(() => {
     keyslistrefresh2();
     if (selectedUser === ".*") {
       setAPIKeyName(".*");
     }
   }, [setInferenceServiceId]);
-
 
   useEffect(() => {
     if(taskType == ".*")
@@ -77,6 +91,9 @@ const monitoring = () => {
       
       }
  }, [taskType]);
+
+
+
   return (
     <>
       <Head>
@@ -136,7 +153,7 @@ const monitoring = () => {
                 <option value=".*">Overall</option>
                 { 
                   filteredServices?.map((s: any) => {
-                    return <option value={s._id}>{s.name}</option>;
+                    return <option value={s.serviceId}>{s.name}</option>;
                     })
                 }
               </Select>
@@ -186,9 +203,11 @@ const monitoring = () => {
                 }}
               >
                 <option value=".*">Overall</option>
-                {/* {serviceslist?.map((s: any) => {
-                    return <option value={s._id}>{s.name}</option>;
-                  })} */}
+                {
+                  Array.from(new Set(selectedService?.model.languages.map((s: any) => s.sourceLanguage))).map((language: string) => (
+                    <option key={language} value={language}>{lang2label[language]}</option>
+                  ))
+                }
               </Select>
             </HStack>
           </Stack>
