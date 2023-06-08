@@ -1,4 +1,4 @@
-import { Box, FormLabel, HStack, Select, Stack } from "@chakra-ui/react";
+import { Box, FormLabel, HStack, Select, Stack, useMediaQuery } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { setLazyProp } from "next/dist/server/api-utils";
 import Head from "next/head";
@@ -12,9 +12,10 @@ const monitoring = () => {
   const [inferenceServiceId, setInferenceServiceId] = useState<string>(".*");
   const [sourceLanguage, setSourceLanguage] = useState<string>(".*");
   const [taskType, setTaskType] = useState<string>(".*");
-
+  
+  const smallscreen = useMediaQuery("(max-width: 1080px)");
+  
   const { data: userslist } = useQuery(["users"], () => listallusers());
-
   const { data: serviceslist } = useQuery(["services"], () => listServices());
 
   const { data: keyslist, refetch: keyslistrefresh } = useQuery(
@@ -22,7 +23,7 @@ const monitoring = () => {
     () => listalluserkeys(inferenceServiceId, selectedUser),
     {
       onSuccess: (data) => {
-        setAPIKeyName(data["api_keys"][0].name);
+        data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
       },
     }
   );
@@ -32,18 +33,24 @@ const monitoring = () => {
     () => listallkeys(selectedUser),
     {
       onSuccess: (data) => {
-        setAPIKeyName(data["api_keys"][0].name);
+        data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
       },
     }
   );
 
   useEffect(() => {
     keyslistrefresh();
+    if (selectedUser === ".*") {
+      setAPIKeyName(".*");
+    }
+  }, [selectedUser]);
+
+  useEffect(() => {
     keyslistrefresh2();
     if (selectedUser === ".*") {
       setAPIKeyName(".*");
     }
-  }, [selectedUser, inferenceServiceId]);
+  }, [setInferenceServiceId]);
 
   return (
     <>
