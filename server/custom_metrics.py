@@ -3,7 +3,7 @@ from prometheus_client import Counter, Histogram, CollectorRegistry
 registry = CollectorRegistry()
 
 INFERENCE_REQUEST_COUNT = Counter(
-    "dhruva_inference_request_count",
+    "dhruva_inference_request_total",
     "Total requests made to inference services",
     registry=registry,
     labelnames=(
