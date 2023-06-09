@@ -60,6 +60,7 @@ app.add_middleware(
 app.add_middleware(
     PrometheusGlobalMetricsMiddleware,
     app_name="Dhruva",
+    registry=registry,
     custom_labels=["api_key_name", "user_id"],
     custom_metrics=[INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS],
 )

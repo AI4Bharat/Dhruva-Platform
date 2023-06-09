@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import jsonpickle
 from fastapi import Request
 from fastapi.logger import logger
-from prometheus_client import REGISTRY, Counter, Histogram
+from prometheus_client import REGISTRY, Counter, Histogram, CollectorRegistry
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from celery_backend.tasks import push_metrics
@@ -25,11 +25,13 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
         self,
         app,
         app_name: str,
+        registry: CollectorRegistry,
         custom_labels: List[str] = None,
         custom_metrics: List[Any] = None,
     ):
         super().__init__(app)
         self.app_name = app_name.lower()
+        self.registry = registry
         self.custom_labels = custom_labels
         self.custom_metrics = custom_metrics
 
@@ -52,7 +54,7 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
         self.request_duration_seconds.labels(*labels).observe(end - begin)
 
         push_metrics.apply_async(
-            (jsonpickle.encode(REGISTRY, keys=True),), queue="metrics_log"
+            (jsonpickle.encode(self.registry, keys=True),), queue="metrics_log"
         )
 
         self.request_count.clear()
@@ -75,6 +77,7 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
             metric = Counter(
                 metric_name,
                 "Total HTTP requests",
+                registry=self.registry,
                 labelnames=(
                     "method",
                     "path",
@@ -100,6 +103,7 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
             metric = Histogram(
                 metric_name,
                 "Request duration seconds",
+                registry=self.registry,
                 labelnames=(
                     "method",
                     "path",
