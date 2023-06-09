@@ -132,59 +132,67 @@ router = APIRouter(
 #         ULCATranslationInferenceRequest,
 #         ULCATtsInferenceRequest,
 #     ],
+#     request_state: Request,
 #     params: ULCAInferenceQuery = Depends(),
-#     inference_service: InferenceService = Depends(InferenceService),
+#     inference_service: InferenceService = Depends(InferenceService)
 # ):
-#     return await inference_service.run_inference(request, params.serviceId)
+#     return await inference_service.run_inference(request, params.serviceId, request_state)
 
 
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)
 async def _run_inference_translation(
     request: ULCATranslationInferenceRequest,
+    request_state: Request,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_translation_triton_inference(
-        request, params.serviceId
+        request, params.serviceId, request_state
     )
 
 
 @router.post("/transliteration", response_model=ULCATransliterationInferenceResponse)
 async def _run_inference_transliteration(
     request: ULCATransliterationInferenceRequest,
+    request_state: Request,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
     return await inference_service.run_transliteration_triton_inference(
-        request, params.serviceId
+        request, params.serviceId, request_state
     )
 
 
 @router.post("/asr", response_model=ULCAAsrInferenceResponse)
 async def _run_inference_asr(
     request: ULCAAsrInferenceRequest,
+    request_state: Request,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_asr_triton_inference(request, params.serviceId)
+    return await inference_service.run_asr_triton_inference(
+        request, params.serviceId, request_state
+    )
 
 
 @router.post("/tts", response_model=ULCATtsInferenceResponse)
 async def _run_inference_tts(
     request: ULCATtsInferenceRequest,
+    request_state: Request,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_tts_triton_inference(request, params.serviceId)
+    return await inference_service.run_tts_triton_inference(request, params.serviceId, request_state)
 
 
 @router.post("/ner", response_model=ULCANerInferenceResponse)
 async def _run_inference_ner(
     request: ULCANerInferenceRequest,
+    request_state: Request,
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    return await inference_service.run_ner_triton_inference(request, params.serviceId)
+    return await inference_service.run_ner_triton_inference(request, params.serviceId, request_state)
 
 
 # Temporary endpoint; will be removed/standardized soon
@@ -193,6 +201,7 @@ async def _run_inference_ner(
 @router.post("/s2s", response_model=ULCAS2SInferenceResponse)
 async def _run_inference_sts(
     request: ULCAS2SInferenceRequest,
+    request_state: Request,
     inference_service: InferenceService = Depends(InferenceService),
 ):
     if request.config.language.sourceLanguage == "en":
@@ -204,7 +213,7 @@ async def _run_inference_sts(
     else:
         serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
 
-    asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
+    asr_response = await inference_service.run_asr_triton_inference(request, serviceId, request_state)
 
     translation_request = ULCATranslationInferenceRequest(
         config=request.config,
@@ -212,7 +221,7 @@ async def _run_inference_sts(
         controlConfig=request.controlConfig,
     )
     translation_response = await inference_service.run_translation_triton_inference(
-        translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4"
+        translation_request, "ai4bharat/indictrans-fairseq-all-gpu--t4", request_state
     )
 
     for i in range(len(translation_response.output)):
@@ -235,7 +244,7 @@ async def _run_inference_sts(
         controlConfig=request.controlConfig,
     )
     tts_response = await inference_service.run_tts_triton_inference(
-        tts_request, serviceId
+        tts_request, serviceId, request_state
     )
 
     for i in range(len(translation_response.output)):

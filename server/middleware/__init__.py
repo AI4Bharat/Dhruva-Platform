@@ -1,1 +1,1 @@
-from .prometheus_metrics_middleware import PrometheusMetricsMiddleware
+from .prometheus_global_metrics_middleware import PrometheusGlobalMetricsMiddleware
