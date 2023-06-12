@@ -153,7 +153,9 @@ class InferenceService:
         lm_enabled = "lm" in request_body.config.postProcessors if request_body.config.postProcessors else False
         model_name = "asr_am_lm_ensemble" if lm_enabled else "asr_am_ensemble"
         
-        res = {"config": request_body.config, "output": []}
+        res = {
+            "output": []
+        }
         for input in request_body.audio:
             if input.audioContent:
                 file_bytes = base64.b64decode(input.audioContent)
@@ -288,7 +290,6 @@ class InferenceService:
             results.append({"source": source_text, "target": result[0].decode("utf-8")})
 
         res = {
-            # "config": request_body.config,
             "output": results
         }
         return ULCATranslationInferenceResponse(**res)
@@ -324,7 +325,6 @@ class InferenceService:
                 result = [input_string]
             results.append({"source": input_string, "target": result})
         res = {
-            # "config": request_body.config,
             "output": results
         }
         return ULCATransliterationInferenceResponse(**res)
