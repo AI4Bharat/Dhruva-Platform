@@ -153,7 +153,9 @@ class InferenceService:
         lm_enabled = "lm" in request_body.config.postProcessors if request_body.config.postProcessors else False
         model_name = "asr_am_lm_ensemble" if lm_enabled else "asr_am_ensemble"
         
-        res = {"config": request_body.config, "output": []}
+        res = {
+            "output": []
+        }
         for input in request_body.audio:
             if input.audioContent:
                 file_bytes = base64.b64decode(input.audioContent)
@@ -288,7 +290,6 @@ class InferenceService:
             results.append({"source": source_text, "target": result[0].decode("utf-8")})
 
         res = {
-            # "config": request_body.config,
             "output": results
         }
         return ULCATranslationInferenceResponse(**res)
@@ -324,7 +325,6 @@ class InferenceService:
                 result = [input_string]
             results.append({"source": input_string, "target": result})
         res = {
-            # "config": request_body.config,
             "output": results
         }
         return ULCATransliterationInferenceResponse(**res)
@@ -453,6 +453,14 @@ class InferenceService:
                 if next_task_type not in {_ULCATaskType.TTS}:
                     is_pipeline_valid = False
                     break
+            elif current_task_type == _ULCATaskType.TRANSLITERATION:
+                if next_task_type not in {_ULCATaskType.TRANSLATION, _ULCATaskType.TTS}:
+                    is_pipeline_valid = False
+                    break
+                if "isSentence" in request_body.pipelineTasks[i].config and not request_body.pipelineTasks[i].config["isSentence"]:
+                    # Word-level does not make sense in pipeline
+                    is_pipeline_valid = False
+                    break
             else:
                 is_pipeline_valid = False
                 break
@@ -545,6 +553,13 @@ class InferenceService:
                         previous_output_json["input"][i][
                             "source"
                         ] = previous_output_json["input"][i]["target"]
+                        del previous_output_json["input"][i]["target"]
+                elif pipeline_task.taskType == _ULCATaskType.TRANSLITERATION:
+                    # The first output (target) of xlit should be input (source) to next
+                    for i in range(len(previous_output_json["input"])):
+                        previous_output_json["input"][i][
+                            "source"
+                        ] = previous_output_json["input"][i]["target"][0]
                         del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*

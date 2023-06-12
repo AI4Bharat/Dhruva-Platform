@@ -72,9 +72,17 @@ class InferenceLoggingRoute(APIRoute):
             finally:
                 if request.state._state.get("api_key_data_tracking"):
                     req_json: Dict[str, Any] = json.loads(req_body)
-                    enable_tracking = req_json.get(
-                        "controlConfig", {"dataTracking": True}
-                    )["dataTracking"]
+                    # enable_tracking = req_json.get(
+                    #     "controlConfig", {"dataTracking": True}
+                    # )["dataTracking"]
+
+                    controlConfig = req_json.get(
+                        "controlConfig", {}
+                    )
+                    if "dataTracking" not in controlConfig:
+                        enable_tracking = True
+                    else:
+                        enable_tracking = controlConfig["dataTracking"]
 
                 url_components = request.url._url.split("?serviceId=")
                 if len(url_components) == 2:
@@ -243,70 +251,6 @@ async def _run_inference_sts(
     )
 
     return response
-
-
-@router.post("/s2s_new_mt", response_model=ULCAS2SInferenceResponse)
-async def _run_inference_sts_new_mt(
-    request: ULCAS2SInferenceRequest,
-    inference_service: InferenceService = Depends(InferenceService),
-):
-    if request.config.language.sourceLanguage == "en":
-        serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
-    elif request.config.language.sourceLanguage == "hi":
-        serviceId = "ai4bharat/conformer-hi-gpu--t4"
-    elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
-        serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
-    else:
-        serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
-
-    asr_response = await inference_service.run_asr_triton_inference(request, serviceId)
-
-    translation_request = ULCATranslationInferenceRequest(
-        config=request.config,
-        input=asr_response.output,
-        controlConfig=request.controlConfig,
-    )
-    translation_response = await inference_service.run_translation_triton_inference(
-        translation_request, "ai4bharat/indictrans-v2-all-gpu--t4"
-    )
-
-    for i in range(len(translation_response.output)):
-        translation_response.output[i].source, translation_response.output[i].target = (
-            translation_response.output[i].target,
-            translation_response.output[i].source,
-        )
-
-    request.config.language.sourceLanguage = request.config.language.targetLanguage
-    if request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
-        serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
-    elif request.config.language.sourceLanguage in {"en", "brx", "mni"}:
-        serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
-    else:
-        serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
-
-    tts_request = ULCATtsInferenceRequest(
-        config=request.config,
-        input=translation_response.output,
-        controlConfig=request.controlConfig,
-    )
-    tts_response = await inference_service.run_tts_triton_inference(
-        tts_request, serviceId
-    )
-
-    for i in range(len(translation_response.output)):
-        translation_response.output[i].source, translation_response.output[i].target = (
-            translation_response.output[i].target,
-            translation_response.output[i].source,
-        )
-
-    response = ULCAS2SInferenceResponse(
-        output=translation_response.output,
-        audio=tts_response.audio,
-        config=tts_response.config,
-    )
-
-    return response
-
 
 @router.post("/pipeline", response_model=ULCAPipelineInferenceResponse)
 async def _run_inference_pipeline(
