@@ -10,7 +10,7 @@ providers:
     allowUiUpdates: true
     options:
       path: /etc/grafana/provisioning/dashboards/dhruva_global.json
-  - name: "Dhruva Service Specific"
+  - name: "Dhruva General Requests"
     orgId: 2
     folder: ""
     type: file
@@ -18,4 +18,13 @@ providers:
     editable: true
     allowUiUpdates: true
     options:
-      path: /etc/grafana/provisioning/dashboards/dhruva_service_specific.json
+      path: /etc/grafana/provisioning/dashboards/dhruva_general_requests.json
+  - name: "Dhruva Inference Requests"
+    orgId: 2
+    folder: ""
+    type: file
+    disableDeletion: false
+    editable: true
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/dhruva_inference_requests.json
