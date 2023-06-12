@@ -453,6 +453,14 @@ class InferenceService:
                 if next_task_type not in {_ULCATaskType.TTS}:
                     is_pipeline_valid = False
                     break
+            elif current_task_type == _ULCATaskType.TRANSLITERATION:
+                if next_task_type not in {_ULCATaskType.TRANSLATION, _ULCATaskType.TTS}:
+                    is_pipeline_valid = False
+                    break
+                if "isSentence" in request_body.pipelineTasks[i].config and not request_body.pipelineTasks[i].config["isSentence"]:
+                    # Word-level does not make sense in pipeline
+                    is_pipeline_valid = False
+                    break
             else:
                 is_pipeline_valid = False
                 break
@@ -545,6 +553,13 @@ class InferenceService:
                         previous_output_json["input"][i][
                             "source"
                         ] = previous_output_json["input"][i]["target"]
+                        del previous_output_json["input"][i]["target"]
+                elif pipeline_task.taskType == _ULCATaskType.TRANSLITERATION:
+                    # The first output (target) of xlit should be input (source) to next
+                    for i in range(len(previous_output_json["input"])):
+                        previous_output_json["input"][i][
+                            "source"
+                        ] = previous_output_json["input"][i]["target"][0]
                         del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
