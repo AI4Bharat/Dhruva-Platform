@@ -19,8 +19,8 @@ from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
 
 from celery_backend.tasks import log_data
-from exception.base_error import BaseError
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
+from exception.base_error import BaseError
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
@@ -187,10 +187,8 @@ class InferenceService:
             else False
         )
         model_name = "asr_am_lm_ensemble" if lm_enabled else "asr_am_ensemble"
-        
-        res = {
-            "output": []
-        }
+
+        res = {"output": []}
         for input in request_body.audio:
             if input.audioContent:
                 file_bytes = base64.b64decode(input.audioContent)
@@ -372,9 +370,7 @@ class InferenceService:
         for source_text, result in zip(input_texts, output_batch):
             results.append({"source": source_text, "target": result[0].decode("utf-8")})
 
-        res = {
-            "output": results
-        }
+        res = {"output": results}
         return ULCATranslationInferenceResponse(**res)
 
     async def run_transliteration_triton_inference(
@@ -427,9 +423,7 @@ class InferenceService:
             else:
                 result = [input_string]
             results.append({"source": input_string, "target": result})
-        res = {
-            "output": results
-        }
+        res = {"output": results}
         return ULCATransliterationInferenceResponse(**res)
 
     async def run_tts_triton_inference(
@@ -601,7 +595,10 @@ class InferenceService:
                 if next_task_type not in {_ULCATaskType.TRANSLATION, _ULCATaskType.TTS}:
                     is_pipeline_valid = False
                     break
-                if "isSentence" in request_body.pipelineTasks[i].config and not request_body.pipelineTasks[i].config["isSentence"]:
+                if (
+                    "isSentence" in request_body.pipelineTasks[i].config
+                    and not request_body.pipelineTasks[i].config["isSentence"]
+                ):
                     # Word-level does not make sense in pipeline
                     is_pipeline_valid = False
                     break
@@ -639,7 +636,9 @@ class InferenceService:
                     request_state.state.api_key_id
                 )  # Having this here to capture all errors
                 previous_output_json = await self.run_inference(
-                    request=new_request, serviceId=serviceId
+                    request=new_request,
+                    serviceId=serviceId,
+                    request_state=request_state,
                 )
             except BaseError as exc:
                 exception = exc
