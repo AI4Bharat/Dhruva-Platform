@@ -166,16 +166,9 @@ class InferenceService:
     async def run_asr_triton_inference(
         self,
         request_body: ULCAAsrInferenceRequest,
-        serviceId: str,
         request_state: Request,
     ) -> ULCAAsrInferenceResponse:
-        INFERENCE_REQUEST_COUNT.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "asr",
-            request_body.config.language.sourceLanguage,
-        ).inc()
+        serviceId = request_body.config.serviceId
 
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
@@ -281,20 +274,17 @@ class InferenceService:
                     )
                     inputs.append(input2)
 
-                with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-                    request_state.state.api_key_name,
-                    request_state.state.user_id,
-                    request_body.config.serviceId,
-                    "asr",
-                    request_body.config.language.sourceLanguage,
-                ).time():
-                    response = await self.inference_gateway.send_triton_request(
-                        url=service.endpoint,
-                        model_name=model_name,
-                        input_list=inputs,
-                        output_list=outputs,
-                        headers=headers,
-                    )
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name=model_name,
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                    request_state=request_state,
+                    task_type="asr",
+                    request_body=request_body,
+                )
+
                 encoded_result = response.as_numpy("TRANSCRIPTS")
                 # Combine all outputs
                 outputs = " ".join(
@@ -308,18 +298,12 @@ class InferenceService:
     async def run_translation_triton_inference(
         self,
         request_body: ULCATranslationInferenceRequest,
-        serviceId: str,
         request_state: Request,
     ) -> ULCATranslationInferenceResponse:
-        INFERENCE_REQUEST_COUNT.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "translation",
-            request_body.config.language.sourceLanguage,
-        ).inc()
+        serviceId = request_body.config.serviceId
 
         service = validate_service_id(serviceId, self.service_repository)
+
         headers = {"Authorization": "Bearer " + service.api_key}
 
         source_lang = request_body.config.language.sourceLanguage
@@ -349,20 +333,18 @@ class InferenceService:
         inputs, outputs = get_translation_io_for_triton(
             input_texts, source_lang, target_lang
         )
-        with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "translation",
-            request_body.config.language.sourceLanguage,
-        ).time():
-            response = await self.inference_gateway.send_triton_request(
-                url=service.endpoint,
-                model_name="nmt",
-                input_list=inputs,
-                output_list=outputs,
-                headers=headers,
-            )
+
+        response = await self.inference_gateway.send_triton_request(
+            url=service.endpoint,
+            model_name="nmt",
+            input_list=inputs,
+            output_list=outputs,
+            headers=headers,
+            request_state=request_state,
+            task_type="translation",
+            request_body=request_body,
+        )
+
         encoded_result = response.as_numpy("OUTPUT_TEXT")
         output_batch = encoded_result.tolist()
 
@@ -376,16 +358,9 @@ class InferenceService:
     async def run_transliteration_triton_inference(
         self,
         request_body: ULCATransliterationInferenceRequest,
-        serviceId: str,
         request_state: Request,
     ) -> ULCATransliterationInferenceResponse:
-        INFERENCE_REQUEST_COUNT.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "transliteration",
-            request_body.config.language.sourceLanguage,
-        ).inc()
+        serviceId = request_body.config.serviceId
 
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
@@ -403,20 +378,17 @@ class InferenceService:
                     input_string, source_lang, target_lang, is_word_level, top_k
                 )
 
-                with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-                    request_state.state.api_key_name,
-                    request_state.state.user_id,
-                    request_body.config.serviceId,
-                    "transliteration",
-                    request_body.config.language.sourceLanguage,
-                ).time():
-                    response = await self.inference_gateway.send_triton_request(
-                        url=service.endpoint,
-                        model_name="transliteration",
-                        input_list=inputs,
-                        output_list=outputs,
-                        headers=headers,
-                    )
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="transliteration",
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                    request_state=request_state,
+                    task_type="transliteration",
+                    request_body=request_body,
+                )
+
                 encoded_result = response.as_numpy("OUTPUT_TEXT")
                 result = encoded_result.tolist()[0]
                 result = [r.decode("utf-8") for r in result]
@@ -429,17 +401,9 @@ class InferenceService:
     async def run_tts_triton_inference(
         self,
         request_body: ULCATtsInferenceRequest,
-        serviceId: str,
         request_state: Request,
     ) -> ULCATtsInferenceResponse:
-        INFERENCE_REQUEST_COUNT.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "tts",
-            request_body.config.language.sourceLanguage,
-        ).inc()
-
+        serviceId = request_body.config.serviceId
         service = self.service_repository.find_by_id(serviceId)
         headers = {"Authorization": "Bearer " + service.api_key}
         ip_language = request_body.config.language.sourceLanguage
@@ -460,20 +424,16 @@ class InferenceService:
                     input_string, ip_gender, ip_language
                 )
 
-                with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-                    request_state.state.api_key_name,
-                    request_state.state.user_id,
-                    request_body.config.serviceId,
-                    "tts",
-                    request_body.config.language.sourceLanguage,
-                ).time():
-                    response = await self.inference_gateway.send_triton_request(
-                        url=service.endpoint,
-                        model_name="tts",
-                        input_list=inputs,
-                        output_list=outputs,
-                        headers=headers,
-                    )
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="tts",
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                    request_state=request_state,
+                    task_type="tts",
+                    request_body=request_body,
+                )
 
                 raw_audio = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
 
@@ -511,29 +471,19 @@ class InferenceService:
     async def run_ner_triton_inference(
         self,
         request_body: ULCANerInferenceRequest,
-        serviceId: str,
         request_state: Request,
     ) -> ULCANerInferenceResponse:
-        INFERENCE_REQUEST_COUNT.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "ner",
-            request_body.config.language.sourceLanguage,
-        ).inc()
-
+        serviceId = request_body.config.serviceId
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
 
         # TODO: Replace with real deployments
-        with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-            request_state.state.api_key_name,
-            request_state.state.user_id,
-            request_body.config.serviceId,
-            "transliteration",
-            request_body.config.language.sourceLanguage,
-        ).time():
-            res = requests.post(service.endpoint, json=request_body.dict()).json()
+        res = self.inference_gateway.send_inference_request(
+            request_body=request_body,
+            service=service,
+            request_state=request_state,
+            task_type="tts",
+        )
 
         return ULCANerInferenceResponse(**res)
 
