@@ -70,7 +70,12 @@ class InferenceLoggingRoute(APIRoute):
             finally:
                 if request.state._state.get("api_key_data_tracking"):
                     req_json: Dict[str, Any] = json.loads(req_body)
-                    enable_tracking = req_json["controlConfig"]["dataTracking"]
+                    
+                    controlConfig = req_json.get("controlConfig", {})
+                    if "dataTracking" not in controlConfig:
+                        enable_tracking = True
+                    else:
+                        enable_tracking = controlConfig["dataTracking"]
 
                 url_components = request.url._url.split("?serviceId=")
                 if len(url_components) == 2:
