@@ -125,9 +125,9 @@ class InferenceService:
             ULCATransliterationInferenceRequest,
             ULCATtsInferenceRequest,
         ],
-        serviceId: str,
         request_state: Request,
     ) -> dict:
+        serviceId = request.config.serviceId
         service = validate_service_id(serviceId, self.service_repository)
         model = validate_model_id(service.modelId, self.model_repository)
 
@@ -587,7 +587,6 @@ class InferenceService:
                 )  # Having this here to capture all errors
                 previous_output_json = await self.run_inference(
                     request=new_request,
-                    serviceId=serviceId,
                     request_state=request_state,
                 )
             except BaseError as exc:
