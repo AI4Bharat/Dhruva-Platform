@@ -70,7 +70,7 @@ class InferenceLoggingRoute(APIRoute):
             finally:
                 if request.state._state.get("api_key_data_tracking"):
                     req_json: Dict[str, Any] = json.loads(req_body)
-                    
+
                     controlConfig = req_json.get("controlConfig", {})
                     if "dataTracking" not in controlConfig:
                         enable_tracking = True
@@ -136,10 +136,10 @@ router = APIRouter(
 async def _run_inference_translation(
     request: ULCATranslationInferenceRequest,
     request_state: Request,
-    params: Optional[ULCAInferenceQuery] = Depends(),
+    params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    if params:
+    if params.serviceId:
         request.set_service_id(params.serviceId)
 
     return await inference_service.run_translation_triton_inference(
@@ -154,7 +154,7 @@ async def _run_inference_transliteration(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    if params:
+    if params.serviceId:
         request.set_service_id(params.serviceId)
 
     return await inference_service.run_transliteration_triton_inference(
@@ -169,7 +169,7 @@ async def _run_inference_asr(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    if params:
+    if params.serviceId:
         request.set_service_id(params.serviceId)
 
     return await inference_service.run_asr_triton_inference(request, request_state)
@@ -182,7 +182,7 @@ async def _run_inference_tts(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    if params:
+    if params.serviceId:
         request.set_service_id(params.serviceId)
 
     return await inference_service.run_tts_triton_inference(request, request_state)
@@ -195,7 +195,7 @@ async def _run_inference_ner(
     params: ULCAInferenceQuery = Depends(),
     inference_service: InferenceService = Depends(InferenceService),
 ):
-    if params:
+    if params.serviceId:
         request.set_service_id(params.serviceId)
 
     return await inference_service.run_ner_triton_inference(request, request_state)
