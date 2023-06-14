@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 from logging.config import dictConfig
 
 import pymongo
@@ -21,8 +22,8 @@ from exception.ulca_set_api_key_tracking_server_error import (
     ULCASetApiKeyTrackingServerError,
 )
 from log.logger import LogConfig
-from metrics import api_key_name_callback, inference_service_callback, user_id_callback
-from middleware import PrometheusMetricsMiddleware
+from custom_metrics import *
+from middleware import PrometheusGlobalMetricsMiddleware
 from module import *
 from seq_streamer import StreamingServerTaskSequence
 
@@ -57,13 +58,11 @@ app.add_middleware(
 )
 
 app.add_middleware(
-    PrometheusMetricsMiddleware,
+    PrometheusGlobalMetricsMiddleware,
     app_name="Dhruva",
-    custom_labels={
-        "inference_service": inference_service_callback,
-        "api_key_name": api_key_name_callback,
-        "user_id": user_id_callback,
-    },
+    registry=registry,
+    custom_labels=["api_key_name", "user_id"],
+    custom_metrics=[INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS],
 )
 
 
