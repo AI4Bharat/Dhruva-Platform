@@ -1,14 +1,16 @@
 import { Box, FormLabel, HStack, Select, Stack } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
-import { setLazyProp } from "next/dist/server/api-utils";
 import Head from "next/head";
-import { taskOptions } from '../../components/Utils/Options';
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { listallkeys, listallusers } from "../../api/adminAPI";
-import { getService, listalluserkeys, listServices } from "../../api/serviceAPI";
-import useMediaQuery from "../../hooks/useMediaQuery";
-import ServicesList from "../../components/Mobile/Services/ServicesList";
+import {
+  getService,
+  listServices,
+  listalluserkeys,
+} from "../../api/serviceAPI";
+import { taskOptions } from "../../components/Utils/Options";
 import { lang2label } from "../../config/config";
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 const monitoring = () => {
   const [selectedUser, setSelectedUser] = useState<string>(".*");
@@ -17,18 +19,20 @@ const monitoring = () => {
   const [sourceLanguage, setSourceLanguage] = useState<string>(".*");
   const [taskType, setTaskType] = useState<string>(".*");
   const [filteredServices, setFilteredServices] = useState<ServiceList[]>([]);
-  
+
   const smallscreen = useMediaQuery("(max-width: 1080px)");
-  
+
   const { data: userslist } = useQuery(["users"], () => listallusers());
-  const { data: serviceslist } = useQuery(["services"], () => listServices(), 
-  {
-    onSuccess: data =>{
+  const { data: serviceslist } = useQuery(["services"], () => listServices(), {
+    onSuccess: (data) => {
       setFilteredServices(data);
-    }
+    },
   });
 
-  const { data: selectedService, refetch: servicerefresh } = useQuery(["keys"],() => getService(inferenceServiceId));
+  const { data: selectedService, refetch: servicerefresh } = useQuery(
+    ["keys"],
+    () => getService(inferenceServiceId)
+  );
 
   const { data: keyslist, refetch: keyslistrefresh } = useQuery(
     ["keys", selectedUser],
@@ -58,16 +62,12 @@ const monitoring = () => {
   }, [selectedUser]);
 
   useEffect(() => {
-
     if (inferenceServiceId === ".*") {
       setSourceLanguage(".*");
-    }
-    else
-    { 
+    } else {
       servicerefresh();
     }
   }, [inferenceServiceId]);
-
 
   useEffect(() => {
     keyslistrefresh2();
@@ -77,22 +77,14 @@ const monitoring = () => {
   }, [setInferenceServiceId]);
 
   useEffect(() => {
-    if(taskType == ".*")
-    {
+    if (taskType == ".*") {
       setFilteredServices(serviceslist);
-    }
-    else
-    {
+    } else {
       setFilteredServices(
-        serviceslist.filter((service) => 
-          service.task.type.includes(taskType)
-        )
+        serviceslist.filter((service) => service.task.type.includes(taskType))
       );
-      
-      }
- }, [taskType]);
-
-
+    }
+  }, [taskType]);
 
   return (
     <>
@@ -120,8 +112,12 @@ const monitoring = () => {
               </Select>
             </HStack>
           </Stack>
-          <br/>
-          <Stack direction={["column","column","column","row"]} spacing="1rem">'
+          <br />
+          <Stack
+            direction={["column", "column", "column", "row"]}
+            spacing="1rem"
+          >
+            '
             <HStack>
               <FormLabel>User:</FormLabel>
               <Select
@@ -151,11 +147,9 @@ const monitoring = () => {
                 }}
               >
                 <option value=".*">Overall</option>
-                { 
-                  filteredServices?.map((s: any) => {
-                    return <option value={s.serviceId}>{s.name}</option>;
-                    })
-                }
+                {filteredServices?.map((s: any) => {
+                  return <option value={s.serviceId}>{s.name}</option>;
+                })}
               </Select>
             </HStack>
             <HStack>
@@ -203,30 +197,37 @@ const monitoring = () => {
                 }}
               >
                 <option value=".*">Overall</option>
-                {
-                  Array.from(new Set(selectedService?.model.languages.map((s: any) => s.sourceLanguage))).map((language: string) => (
-                    <option key={language} value={language}>{lang2label[language]}</option>
-                  ))
-                }
+                {Array.from(
+                  new Set(
+                    selectedService?.model.languages.map(
+                      (s: any) => s.sourceLanguage
+                    )
+                  )
+                ).map((language: string) => (
+                  <option key={language} value={language}>
+                    {lang2label[language]}
+                  </option>
+                ))}
               </Select>
             </HStack>
           </Stack>
         </Box>
         <br></br>
         <br></br>
-        {smallscreen?
-        // https://grafana.dhruva.co
-        <iframe
-          src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
-          height={640}
-          width={360}
-        />:
-        <iframe
-          src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
-          width={"95%"}
-          height={600}
-        />
-        }
+        {smallscreen ? (
+          // https://grafana.dhruva.co
+          <iframe
+            src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
+            height={640}
+            width={360}
+          />
+        ) : (
+          <iframe
+            src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-language=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
+            width={"95%"}
+            height={600}
+          />
+        )}
         <br></br>
         <br></br>
       </Box>
