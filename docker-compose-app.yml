@@ -47,6 +47,8 @@ services:
   appdb-migration:
     image: server
     container_name: appdb-migration
+    env_file:
+      - .env
     command: sh -c "python3 migrate.py"
     networks:
       - dhruva-network
