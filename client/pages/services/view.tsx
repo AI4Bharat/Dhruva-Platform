@@ -14,16 +14,19 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
-  Spacer,
   Stack,
   Tab,
   TabList,
   Tabs,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useQuery } from "@tanstack/react-query";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { HiArrowLeft } from "react-icons/hi";
 import { SlGraph } from "react-icons/sl";
+import { listallusers } from "../../api/adminAPI";
 import { getService, listalluserkeys } from "../../api/serviceAPI";
 import ContentLayout from "../../components/Layouts/ContentLayout";
 import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
@@ -34,120 +37,7 @@ import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { dhruvaAPI } from "../../api/apiConfig";
-import axios from "axios";
-import Head from "next/head";
-import { useQuery } from "@tanstack/react-query";
-import { listallusers } from "../../api/adminAPI";
-import { AiOutlineBackward } from "react-icons/ai";
-import { BiLeftArrow } from "react-icons/bi";
-import { HiArrowLeft } from "react-icons/hi";
-
-function ServicePerformanceModal({ ...props }) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const service_id = props.service_id;
-
-  const [selectedUser, setSelectedUser] = useState<string>(".*");
-  const [apiKeyName, setAPIKeyName] = useState<string>(".*");
-
-  const { data: userslist } = useQuery(["users"], () => listallusers());
-
-  const {
-    data: keyslist,
-    refetch: keyslistrefresh,
-    isSuccess,
-  } = useQuery(
-    ["keys", selectedUser],
-    () => listalluserkeys(service_id, selectedUser),
-    {
-      onSuccess: (data) => {
-        setAPIKeyName(data["api_keys"][0].name);
-      },
-    }
-  );
-
-  useEffect(() => {
-    keyslistrefresh();
-    if (selectedUser === ".*") {
-      setAPIKeyName(".*");
-    }
-  }, [selectedUser]);
-
-  return (
-    <>
-      <Button onClick={onOpen}>
-        <SlGraph />
-      </Button>
-
-      <Modal isOpen={isOpen} size="8xl" onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            <Heading>Dashboard</Heading>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Stack direction={["column", "row"]} spacing="1rem">
-              <HStack>
-                <FormLabel>User:</FormLabel>
-                <Select
-                  value={selectedUser}
-                  minWidth="15rem"
-                  onChange={(e) => {
-                    setSelectedUser(e.target.value);
-                  }}
-                >
-                  <option value=".*">Overall</option>
-                  {userslist?.map((user: any) => {
-                    return <option value={user._id}>{user.name}</option>;
-                  })}
-                </Select>
-              </HStack>
-              <HStack>
-                <FormLabel>API&nbsp;Key:</FormLabel>
-                <Select
-                  value={apiKeyName}
-                  minWidth="15rem"
-                  onChange={(e) => {
-                    setAPIKeyName(e.target.value);
-                  }}
-                  isDisabled={selectedUser === ".*"}
-                >
-                  {selectedUser !== ".*" ? (
-                    keyslist &&
-                    keyslist["api_keys"]?.map((k: any) => {
-                      return <option value={k.name}>{k.name}</option>;
-                    })
-                  ) : (
-                    <></>
-                  )}
-                </Select>
-              </HStack>
-            </Stack>
-            <br />
-            {/* {apiKeyName}
-            <br/>
-            {selectedUser}
-            <br/>
-            {service_id}
-            <br/> */}
-            <iframe
-              src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Zj4zOgA7y/dhruva-service-specific-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${service_id}&from=now-1h&to=now&kiosk=tv`}
-              width={"100%"}
-              height={600}
-            />
-          </ModalBody>
-
-          <ModalFooter>
-            <Button mr={3} onClick={onClose}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  );
-}
+import ServicePerformanceModal from "../../components/Services/ServicePerformanceModal";
 
 export default function ViewService() {
   const router = useRouter();
@@ -160,14 +50,12 @@ export default function ViewService() {
     { enabled: router.isReady }
   );
 
-
   const [languages, setLanguages] = useState<LanguageConfig[]>();
   const [tabIndex, setTabIndex] = useState<number>(0);
 
   useEffect(() => {
     if (serviceInfo) {
       setLanguages(serviceInfo["model"]["languages"]);
-      console.log(serviceInfo);
     }
   }, [serviceInfo]);
 
@@ -209,7 +97,13 @@ export default function ViewService() {
             gap={10}
           >
             <GridItem p="1rem" bg="white">
-            <Button variant={"link"} mb="1rem" onClick={()=>router.push("/services")}><HiArrowLeft/> &nbsp;Services</Button>
+              <Button
+                variant={"link"}
+                mb="1rem"
+                onClick={() => router.push("/services")}
+              >
+                <HiArrowLeft /> &nbsp;Services
+              </Button>
               <Stack spacing={10} direction={"row"}>
                 <Heading>{serviceInfo["name"]}</Heading>
                 <ServicePerformanceModal
@@ -242,7 +136,6 @@ export default function ViewService() {
                   </Heading>
                 </Box>
                 {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
-                
               </Stack>
             </GridItem>
           </Grid>
@@ -255,7 +148,13 @@ export default function ViewService() {
           >
             <GridItem>
               <Stack spacing={10} direction={"row"} mb="1rem">
-              <Button variant={"ghost"} fontSize={"2xl"} onClick={()=>router.push("/services")}><HiArrowLeft/></Button>
+                <Button
+                  variant={"ghost"}
+                  fontSize={"2xl"}
+                  onClick={() => router.push("/services")}
+                >
+                  <HiArrowLeft />
+                </Button>
                 <Heading>{serviceInfo["name"]}</Heading>
                 <ServicePerformanceModal
                   service_id={router.query["serviceId"]}
@@ -280,7 +179,6 @@ export default function ViewService() {
                 <Box className="dview-service-try-title-box">
                   <Heading className="dview-service-try-title">
                     Try it out here!
-                    
                   </Heading>
                 </Box>
                 {languages && renderTryIt(serviceInfo["model"]["task"]["type"])}
