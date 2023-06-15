@@ -1,12 +1,12 @@
 import time
 
 # from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import jsonpickle
 from fastapi import Request
 from fastapi.logger import logger
-from prometheus_client import REGISTRY, Counter, Histogram, CollectorRegistry
+from prometheus_client import CollectorRegistry, Counter, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from celery_backend.tasks import push_metrics
@@ -127,7 +127,7 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
         if self.custom_labels is None:
             return []
 
-        values: List[str] = [
+        values: List[Optional[str]] = [
             request.state._state.get(label) for label in self.custom_labels
         ]
 
