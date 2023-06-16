@@ -16,6 +16,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { RiFlowChart } from "react-icons/ri";
+import { BiChart } from "react-icons/bi";
 
 const Sidebar: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
@@ -29,9 +30,6 @@ const Sidebar: React.FC = () => {
       case "services":
         setNumber(1);
         break;
-      case "billing":
-        setNumber(4);
-        break;
       case "models":
         setNumber(3);
         break;
@@ -40,6 +38,9 @@ const Sidebar: React.FC = () => {
         break;
       case "pipeline":
         setNumber(5);
+        break;
+      case "monitoring":
+        setNumber(4);
         break;
       default:
         setNumber(0);
@@ -89,33 +90,6 @@ const Sidebar: React.FC = () => {
           width={"100%"}
           marginLeft={"0"}
         >
-          {/* <Box>
-            <Link href={"/home"}>
-              <Button
-                mb="2"
-                ml={isOpen ? 0 : 0}
-                h={10}
-                variant={number === 0 ? "solid" : "ghost"}
-                background={number === 0 ? "orange.500" : "transperent"}
-                color={number === 0 ? "white" : "black"}
-                size="l"
-                boxShadow={number === 0 ? "xl" : "none"}
-                w={"100%"}
-                justifyContent="flex-start"
-              >
-                <Box>
-                  <BiHomeCircle style={{ marginLeft: 12 }} size={25} />
-                </Box>
-                {isOpen ? (
-                  <Text marginLeft={4} fontWeight={"normal"}>
-                    Home
-                  </Text>
-                ) : (
-                  <></>
-                )}
-              </Button>
-            </Link>
-          </Box> */}
           <Box>
             <Link href={"/services"}>
               <Button
@@ -229,6 +203,33 @@ const Sidebar: React.FC = () => {
               </Button>
             </Link>
           </Box> */}
+          <Box>
+            <Link href={"/monitoring"}>
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                variant={number === 4 ? "solid" : "ghost"}
+                background={number === 4 ? "orange.500" : "transperent"}
+                color={number === 4 ? "white" : "black"}
+                size="l"
+                boxShadow={number === 4 ? "xl" : "none"}
+                w={"100%"}
+                justifyContent="flex-start"
+              >
+                <Box>
+                  <BiChart style={{ marginLeft: 12 }} size={25} />
+                </Box>
+                {isOpen ? (
+                  <Text marginLeft={4} fontWeight={"normal"}>
+                    Monitoring
+                  </Text>
+                ) : (
+                  <></>
+                )}
+              </Button>
+            </Link>
+          </Box>
 
           {userRole === "ADMIN" ? (
             <Box>

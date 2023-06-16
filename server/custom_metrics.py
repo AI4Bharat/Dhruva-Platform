@@ -1,4 +1,4 @@
-from prometheus_client import Counter, Histogram, CollectorRegistry
+from prometheus_client import CollectorRegistry, Counter, Histogram
 
 registry = CollectorRegistry()
 
@@ -9,7 +9,7 @@ INFERENCE_REQUEST_COUNT = Counter(
     labelnames=(
         "api_key_name",
         "user_id",
-        "inference_service_id",
+        "inference_service",
         "task_type",
         "source_language",
     ),
@@ -22,7 +22,7 @@ INFERENCE_REQUEST_DURATION_SECONDS = Histogram(
     labelnames=(
         "api_key_name",
         "user_id",
-        "inference_service_id",
+        "inference_service",
         "task_type",
         "source_language",
     ),
