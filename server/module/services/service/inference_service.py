@@ -414,7 +414,7 @@ class InferenceService:
         if format == "pcm":
             format = "s16le"
 
-        inputs_ = [input.source.replace("।", ".").strip() for input in request_body.input]
+        inputs_ = [input.source.strip() for input in request_body.input]
         inputs, outputs = get_tts_batched_io_for_triton(inputs_, ip_gender.value, ip_language)
         response = await self.inference_gateway.send_triton_request(
             url=service.endpoint,
@@ -448,8 +448,9 @@ class InferenceService:
             encoded_bytes = base64.b64encode(byte_io.read())
             encoded_string = encoded_bytes.decode()
             results.append({"audioContent": encoded_string})
-        else:
-            results.append({"audioContent": ""})
+
+        if len(results) < len(inputs_):
+            results.extend([{"audioContent": ""} for j in range(len(inputs_) - len(results))])
 
         res = {
             "config": {
