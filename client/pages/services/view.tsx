@@ -165,7 +165,11 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
-                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
+                  {serviceInfo["benchmarks"] === null ? (
+                    <></>
+                  ) : (
+                    <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
+                  )}
                 </TabList>
                 <ViewServiceTabs
                   languages={languages}
