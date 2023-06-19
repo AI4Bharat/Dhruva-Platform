@@ -55,6 +55,7 @@ from ..utils.triton import (
     get_asr_io_for_triton,
     get_translation_io_for_triton,
     get_transliteration_io_for_triton,
+    get_tts_batched_io_for_triton,
     get_tts_io_for_triton,
 )
 
@@ -397,14 +398,13 @@ class InferenceService:
             results.append({"source": input_string, "target": result})
         res = {"output": results}
         return ULCATransliterationInferenceResponse(**res)
-
+    
     async def run_tts_triton_inference(
-        self,
-        request_body: ULCATtsInferenceRequest,
-        request_state: Request,
+        self, request_body: ULCATtsInferenceRequest, request_state: Request,
     ) -> ULCATtsInferenceResponse:
+
         serviceId = request_body.config.serviceId
-        service = self.service_repository.find_by_id(serviceId)
+        service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
         ip_language = request_body.config.language.sourceLanguage
         ip_gender = request_body.config.gender
@@ -414,48 +414,42 @@ class InferenceService:
         if format == "pcm":
             format = "s16le"
 
+        inputs_ = [input.source.replace("।", ".").strip() for input in request_body.input]
+        inputs, outputs = get_tts_batched_io_for_triton(inputs_, ip_gender.value, ip_language)
+        response = await self.inference_gateway.send_triton_request(
+            url=service.endpoint,
+            model_name="deployment",
+            input_list=inputs,
+            output_list=outputs,
+            headers=headers,
+            request_state=request_state,
+            task_type="tts",
+            request_body=request_body,
+        )
+        raw_audios = response.as_numpy("OUTPUT_GENERATED_AUDIO")
+
         results = []
+        for raw_audio in raw_audios:
+            raw_audio = raw_audio[raw_audio != -100]
+            if target_sr != standard_rate:
+                number_of_samples = round(
+                    len(raw_audio) * target_sr / standard_rate
+                )
+                raw_audio = sps.resample(raw_audio, number_of_samples)
+            byte_io = io.BytesIO()
 
-        for input in request_body.input:
-            input_string = input.source.replace("।", ".").strip()
+            wavfile.write(byte_io, target_sr, raw_audio)
 
-            if input_string:
-                inputs, outputs = get_tts_io_for_triton(
-                    input_string, ip_gender, ip_language
+            if format != "wav":
+                AudioSegment.from_file_using_temporary_files(byte_io).export(
+                    byte_io, format=format
                 )
 
-                response = await self.inference_gateway.send_triton_request(
-                    url=service.endpoint,
-                    model_name="tts",
-                    input_list=inputs,
-                    output_list=outputs,
-                    headers=headers,
-                    request_state=request_state,
-                    task_type="tts",
-                    request_body=request_body,
-                )
-
-                raw_audio = response.as_numpy("OUTPUT_GENERATED_AUDIO")[0]
-
-                if target_sr != standard_rate:
-                    number_of_samples = round(
-                        len(raw_audio) * target_sr / standard_rate
-                    )
-                    raw_audio = sps.resample(raw_audio, number_of_samples)
-                byte_io = io.BytesIO()
-
-                wavfile.write(byte_io, target_sr, raw_audio)
-
-                if format != "wav":
-                    AudioSegment.from_file_using_temporary_files(byte_io).export(
-                        byte_io, format=format
-                    )
-
-                encoded_bytes = base64.b64encode(byte_io.read())
-                encoded_string = encoded_bytes.decode()
-            else:
-                encoded_string = ""
+            encoded_bytes = base64.b64encode(byte_io.read())
+            encoded_string = encoded_bytes.decode()
             results.append({"audioContent": encoded_string})
+        else:
+            results.append({"audioContent": ""})
 
         res = {
             "config": {

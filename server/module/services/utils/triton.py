@@ -57,6 +57,17 @@ def get_tts_io_for_triton(input_string: str, ip_gender: str, ip_language: str):
     ]
     return inputs, outputs
 
+def get_tts_batched_io_for_triton(input_list: list, ip_gender: str, ip_language: str):
+    inputs = [
+        get_string_tensor([[ip_text] for ip_text in input_list], "INPUT_TEXT"),
+        get_string_tensor([[ip_gender] for i in range(len(input_list))], "INPUT_SPEAKER_ID"),
+        get_string_tensor([[ip_language] for i in range(len(input_list))], "INPUT_LANGUAGE_ID"),
+    ]
+    outputs = [
+        http_client.InferRequestedOutput("OUTPUT_GENERATED_AUDIO")
+    ]
+    return inputs, outputs
+
 def get_asr_io_for_triton(audio_chunks: list):
     o = pad_batch(audio_chunks)
     input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
