@@ -418,7 +418,7 @@ class InferenceService:
         inputs, outputs = get_tts_batched_io_for_triton(inputs_, ip_gender.value, ip_language)
         response = await self.inference_gateway.send_triton_request(
             url=service.endpoint,
-            model_name="deployment",
+            model_name="tts",
             input_list=inputs,
             output_list=outputs,
             headers=headers,
