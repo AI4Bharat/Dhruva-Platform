@@ -15,6 +15,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { RiFlowChart } from "react-icons/ri";
+import { BiChart } from "react-icons/bi";
 
 const SidebarMobile: React.FC = () => {
   const bg = useColorModeValue("light.100", "dark.100");
@@ -30,6 +31,9 @@ const SidebarMobile: React.FC = () => {
         break;
       case "admin":
         setNumber(2);
+        break;
+      case "monitoring":
+        setNumber(4);
         break;
       case "models":
         setNumber(3);
@@ -168,6 +172,29 @@ const SidebarMobile: React.FC = () => {
                 <Text marginLeft={4} fontWeight={"normal"}>
                   Pipeline
                 </Text>
+              </Button>
+            </Link>
+          </Box>
+          <Box>
+            <Link href={"/monitoring"}>
+              <Button
+                mb="2"
+                ml={isOpen ? 0 : 0}
+                h={10}
+                variant={number === 4 ? "solid" : "ghost"}
+                background={number === 4 ? "orange.500" : "transperent"}
+                color={number === 4 ? "white" : "black"}
+                size="l"
+                boxShadow={number === 4 ? "xl" : "none"}
+                w={"100%"}
+                justifyContent="flex-start"
+              >
+                <Box>
+                  <BiChart style={{ marginLeft: 12 }} size={25} />
+                </Box>
+                  <Text marginLeft={4} fontWeight={"normal"}>
+                    Monitoring
+                  </Text>
               </Button>
             </Link>
           </Box>

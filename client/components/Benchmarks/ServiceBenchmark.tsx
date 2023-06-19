@@ -16,6 +16,17 @@ import {
   CardBody,
   CardHeader,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+
+interface Benchmark {
+  language: string;
+  output_length: number;
+  generated: number;
+  actual: number;
+  throughput: number;
+  "50%": number;
+  "99%": number;
+}
 
 export default function ServiceBenchmark({ ...props }) {
   const renderThroughputTag = (type) => {
@@ -30,14 +41,23 @@ export default function ServiceBenchmark({ ...props }) {
         return "TKS";
     }
   };
+
+  const [benchmarks, setBenchmarks] = useState([]);
+
+  useEffect(() => {
+    if (props.benchmarks !== null) {
+      setBenchmarks(props.benchmarks);
+    }
+  }, [props.benchmarks]);
+
   return (
     <Grid>
-      {Object.entries(props.benchmarks).map(([key, value]) => {
+      {Object.entries(benchmarks).map(([key, value]) => {
         return (
           <Card key={key}>
             <CardHeader fontWeight={"bold"}>GPU Count: {key}</CardHeader>
             <CardBody>
-              {value.map((benchmark) => {
+              {(value as Benchmark[]).map((benchmark) => {
                 return (
                   <Accordion
                     outline={"none"}

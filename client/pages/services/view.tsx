@@ -29,6 +29,7 @@ import { SlGraph } from "react-icons/sl";
 import { listallusers } from "../../api/adminAPI";
 import { getService, listalluserkeys } from "../../api/serviceAPI";
 import ContentLayout from "../../components/Layouts/ContentLayout";
+import ServicePerformanceModal from "../../components/Services/ServicePerformanceModal";
 import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 import ASRTry from "../../components/TryOut/ASR";
 import NERTry from "../../components/TryOut/NER";
@@ -37,7 +38,6 @@ import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import ServicePerformanceModal from "../../components/Services/ServicePerformanceModal";
 
 export default function ViewService() {
   const router = useRouter();
@@ -165,7 +165,11 @@ export default function ViewService() {
                   <Tab _selected={{ textColor: "#DD6B20" }}>Details</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Documentation</Tab>
                   <Tab _selected={{ textColor: "#DD6B20" }}>Usage</Tab>
-                  <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
+                  {serviceInfo["benchmarks"] === null ? (
+                    <></>
+                  ) : (
+                    <Tab _selected={{ textColor: "#DD6B20" }}>Performance</Tab>
+                  )}
                 </TabList>
                 <ViewServiceTabs
                   languages={languages}
