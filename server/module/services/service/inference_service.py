@@ -437,7 +437,7 @@ class InferenceService:
                 raw_audio = sps.resample(raw_audio, number_of_samples)
             byte_io = io.BytesIO()
 
-            wavfile.write(byte_io, target_sr, raw_audio)
+            wavfile.write(byte_io, target_sr, raw_audio.astype(np.int16))
 
             if format != "wav":
                 AudioSegment.from_file_using_temporary_files(byte_io).export(
