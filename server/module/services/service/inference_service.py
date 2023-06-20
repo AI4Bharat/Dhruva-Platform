@@ -55,8 +55,7 @@ from ..utils.triton import (
     get_asr_io_for_triton,
     get_translation_io_for_triton,
     get_transliteration_io_for_triton,
-    get_tts_batched_io_for_triton,
-    get_tts_io_for_triton,
+    get_tts_batched_io_for_triton
 )
 
 
