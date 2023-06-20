@@ -43,6 +43,7 @@ def validate_credentials(credentials: str, request: Request, db: Database) -> bo
 
         request.state.api_key_id = api_key["_id"]
         request.state.api_key_type = api_key["type"]
+        request.state.api_key_name = "default"
 
     request.state.user_id = claims["sub"]
 
