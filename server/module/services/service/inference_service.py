@@ -55,8 +55,7 @@ from ..utils.triton import (
     get_asr_io_for_triton,
     get_translation_io_for_triton,
     get_transliteration_io_for_triton,
-    get_tts_batched_io_for_triton,
-    get_tts_io_for_triton,
+    get_tts_batched_io_for_triton
 )
 
 
@@ -138,27 +137,27 @@ class InferenceService:
         if task_type == _ULCATaskType.TRANSLATION:
             request_obj = ULCATranslationInferenceRequest(**request_body)
             return await self.run_translation_triton_inference(
-                request_obj, serviceId, request_state
+                request_obj, request_state
             )
         elif task_type == _ULCATaskType.TRANSLITERATION:
             request_obj = ULCATransliterationInferenceRequest(**request_body)
             return await self.run_transliteration_triton_inference(
-                request_obj, serviceId, request_state
+                request_obj, request_state
             )
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
             return await self.run_asr_triton_inference(
-                request_obj, serviceId, request_state
+                request_obj, request_state
             )
         elif task_type == _ULCATaskType.TTS:
             request_obj = ULCATtsInferenceRequest(**request_body)
             return await self.run_tts_triton_inference(
-                request_obj, serviceId, request_state
+                request_obj, request_state
             )
         elif task_type == _ULCATaskType.NER:
             request_obj = ULCANerInferenceRequest(**request_body)
             return await self.run_ner_triton_inference(
-                request_obj, serviceId, request_state
+                request_obj, request_state
             )
         else:
             # Shouldn't happen, unless the registry is not proper
@@ -574,6 +573,7 @@ class InferenceService:
                 **previous_output_json,
                 controlConfig=request_body.controlConfig,
             )
+            new_request.config.serviceId = serviceId
 
             error_msg, exception = None, None
             try:
