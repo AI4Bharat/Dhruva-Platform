@@ -41,9 +41,9 @@ class FeedbackService:
             json=request.dict(),
         ).json()
 
-    def fetch_feedback_csv(self, request: FeedbackDownloadQuery):
+    def fetch_feedback_csv(self, params: FeedbackDownloadQuery):
         query = {
-            "feedbackTimeStamp": {"$gte": request.fromDate, "$lte": request.toDate},
+            "feedbackTimeStamp": {"$gte": params.fromDate, "$lte": params.toDate},
         }
 
         try:

@@ -41,12 +41,12 @@ async def _get_feedback_questions(
     return feedback_service.fetch_questions(request)
 
 
-@router.post("/export", response_class=StreamingResponse)
+@router.get("/export", response_class=StreamingResponse)
 async def export_feedback_csv(
-    request: FeedbackDownloadQuery,
+    params: FeedbackDownloadQuery = Depends(FeedbackDownloadQuery),
     feedback_service: FeedbackService = Depends(FeedbackService),
 ):
-    file = feedback_service.fetch_feedback_csv(request)
+    file = feedback_service.fetch_feedback_csv(params)
     headers = {"Content-Disposition": 'attachment; filename="feedback.csv"'}
 
     return StreamingResponse(file, headers=headers)
