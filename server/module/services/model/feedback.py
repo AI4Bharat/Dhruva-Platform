@@ -35,7 +35,7 @@ class Feedback(MongoBaseModel, ULCAFeedbackRequest):
 
         row = [
             self.id,
-            datetime.utcfromtimestamp(int(self.feedbackTimeStamp / 1000)).isoformat(),
+            datetime.utcfromtimestamp(int(self.feedbackTimeStamp)).isoformat(),
             self.feedbackLanguage,
             list(map(lambda obj: obj.json(), pipeline_tasks)),
             None if not input_data else input_data.json(),
