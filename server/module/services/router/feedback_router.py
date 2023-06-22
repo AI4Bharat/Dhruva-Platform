@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, status
+from fastapi.responses import StreamingResponse
 
 from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.http_error import HttpErrorResponse
 from schema.auth.common import ApiKeyType
-from schema.services.request import ULCAFeedbackRequest, ULCAFeedbackQuestionRequest
+from schema.services.request import (
+    FeedbackDownloadQuery,
+    ULCAFeedbackQuestionRequest,
+    ULCAFeedbackRequest,
+)
 
 from ..service import FeedbackService
 
@@ -31,5 +36,17 @@ async def _submit_feedback(
 @router.post("/questions")
 async def _get_feedback_questions(
     request: ULCAFeedbackQuestionRequest,
-    feedback_service: FeedbackService = Depends(FeedbackService)):
+    feedback_service: FeedbackService = Depends(FeedbackService),
+):
     return feedback_service.fetch_questions(request)
+
+
+@router.post("/export", response_class=StreamingResponse)
+async def export_feedback_csv(
+    request: FeedbackDownloadQuery,
+    feedback_service: FeedbackService = Depends(FeedbackService),
+):
+    file = feedback_service.fetch_feedback_csv(request)
+    headers = {"Content-Disposition": 'attachment; filename="feedback.csv"'}
+
+    return StreamingResponse(file, headers=headers)
