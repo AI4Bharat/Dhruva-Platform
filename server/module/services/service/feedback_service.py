@@ -53,7 +53,6 @@ class FeedbackService:
 
         file = io.StringIO()
         csv_writer = csv.writer(file)
-        csv_writer.w
         csv_writer.writerows(list(map(lambda doc: doc.to_export_row(), feedback_docs)))
         file.seek(0)
 
