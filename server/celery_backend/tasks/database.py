@@ -1,11 +1,8 @@
 import os
-from dotenv import load_dotenv
-import pymongo
-from pymongo.database import Database
-from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient
 
 import pymongo
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 from pymongo.database import Database
 
@@ -31,6 +28,7 @@ def LogDatastore() -> BlobServiceClient:
 
     token_credential = DefaultAzureCredential()
     blob_service_client = BlobServiceClient(
-            account_url=f'https://{os.environ.get("BLOB_STORE")}.blob.core.windows.net',
-            credential=token_credential)
+        account_url=f'https://{os.environ.get("BLOB_STORE")}.blob.core.windows.net',
+        credential=token_credential,
+    )
     return blob_service_client

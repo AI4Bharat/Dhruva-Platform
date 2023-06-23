@@ -22,6 +22,8 @@ NER_RAM_MULTIPLIER = 1
 
 LOGS_CONTAINER = "logs"
 ERROR_CONTAINER = "errors"
+FEEDBACK_CONTAINER = "feedback"
+
 LOCAL_DATA_DIR = "./data"
 
 # Create a local directory to hold blob data

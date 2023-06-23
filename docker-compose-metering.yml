@@ -27,7 +27,7 @@ services:
       - ./server:/src
     env_file:
       - .env
-    command: sh -c "python3 -m celery -A celery_backend.celery_app worker -Q data_log,heartbeat"
+    command: sh -c "python3 -m celery -A celery_backend.celery_app worker -Q data_log,heartbeat,upload_feedback_dump"
     networks:
       - dhruva-network
 
