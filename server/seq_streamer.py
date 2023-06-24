@@ -43,7 +43,11 @@ class StreamingServerTaskSequence:
     This is a SocketIO server for simulating taskSequence inference.
     TODO: Generalize to different sequences. Currently it supports only ASR->Translation->TTS
     '''
-    def __init__(self, async_mode=True) -> None:
+    def __init__(
+        self,
+        async_mode: bool = True,
+        max_connections: int = -1
+    ) -> None:
         if async_mode:
             self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
             self.app = socketio.ASGIApp(
@@ -66,6 +70,7 @@ class StreamingServerTaskSequence:
         # Constants. TODO: Should we allow changing this?
         self.input_audio__bytes_per_sample = 2
         self.input_audio__max_inference_time_in_ms = 20*1000
+        self.max_connections = max_connections if max_connections > 0 else 0
         
         # Storage for state specific to each client (key will be socket connection-ID string, and value would be `UserState`)
         self.client_states = {}
@@ -176,6 +181,11 @@ class StreamingServerTaskSequence:
     def configure_socket_server(self):
         @self.sio.event
         async def connect(sid: str, environ: dict, auth):
+            
+            if self.max_connections and len(self.client_states) >= self.max_connections:
+                await self.sio.emit("abort", data=("Server Error: Max connections exceeded! Please try again later."), room=sid)
+                return False
+
             print('Connected with:', sid)
             # query_dict = parse_qs(environ["QUERY_STRING"])
 
