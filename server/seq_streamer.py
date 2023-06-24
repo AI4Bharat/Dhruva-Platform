@@ -121,7 +121,10 @@ class StreamingServerTaskSequence:
             "inputData": {
                 "audio": audio_payload_list,
             },
-            "pipelineTasks": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run]
+            "pipelineTasks": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run],
+            "controlConfig": {
+                "dataTracking": False
+            },
         }
         
         # Run inference via Dhruva REST API
