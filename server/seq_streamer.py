@@ -69,7 +69,7 @@ class StreamingServerTaskSequence:
 
         # Constants. TODO: Should we allow changing this?
         self.input_audio__bytes_per_sample = 2
-        self.input_audio__max_inference_time_in_ms = 20*1000
+        self.input_audio__max_inference_time_in_ms = 30*1000
         self.max_connections = max_connections if max_connections > 0 else 0
         
         # Storage for state specific to each client (key will be socket connection-ID string, and value would be `UserState`)
@@ -255,10 +255,11 @@ class StreamingServerTaskSequence:
                         raw_audio = np.array(array.array('h', audioContent), dtype=np.float64) / (2**15 - 1)
 
                         if not self.client_states[sid].input_audio__auto_chunking:
+                            # If max continuous stream limit exceeded, reset the server state
                             remaining_samples_count = self.client_states[sid].input_audio__max_inference_duration_in_samples - len(self.client_states[sid].input_audio__buffer)
                             if remaining_samples_count <= len(raw_audio):
                                 raw_audio = raw_audio[:remaining_samples_count]
-                                disconnect_stream = True
+                                clear_server_state = True
                         
                         # TODO: Make it efficient. Until then, ask the client to use higher stream rate
                         self.client_states[sid].input_audio__buffer = np.concatenate([self.client_states[sid].input_audio__buffer, raw_audio])
