@@ -10,28 +10,45 @@ from . import constants
 
 feedback_store = LogDatastore()
 
+app_db = AppDatabase()
+feedback_collection = app_db.get_collection("feedback")
+
+csv_headers = [
+    "ObjectId",
+    "Feedback Timestamp",
+    "Feedback Language",
+    "Pipeline Tasks",
+    "Input Data",
+    "Pipeline Response",
+    "Suggested Pipeline Response",
+    "Pipeline Feedback",
+    "Task Feedback",
+]
+
 
 @app.task(name="upload.feedback.dump")
 def upload_feedback_dump() -> None:
     """Uploads feedback dumps to cloud storage"""
     file = io.StringIO()
     csv_writer = csv.writer(file)
-    app_db = AppDatabase()
 
-    collection = app_db.get_collection("feedback")
+    csv_writer.writerow(csv_headers)
 
     d = datetime.now()
+
+    start_month = d.month - 1 if d.month - 1 != 0 else 12
     start_date = d.replace(
-        month=d.month - 1, day=1, hour=0, minute=0, second=0, microsecond=0
+        month=start_month, day=1, hour=0, minute=0, second=0, microsecond=0
     ).timestamp()
     end_date = d.replace(
         month=d.month, day=1, hour=0, minute=0, second=0, microsecond=0
     ).timestamp()
+
     query = {
         "feedbackTimeStamp": {"$gte": int(start_date), "$lt": int(end_date)},
     }
 
-    for doc in collection.find(query):
+    for doc in feedback_collection.find(query):
         feedback = Feedback(**doc)
         csv_writer.writerow(feedback.to_export_row())
 

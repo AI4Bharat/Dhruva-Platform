@@ -42,6 +42,18 @@ class FeedbackService:
         ).json()
 
     def fetch_feedback_csv(self, params: FeedbackDownloadQuery):
+        csv_headers = [
+            "ObjectId",
+            "Feedback Timestamp",
+            "Feedback Language",
+            "Pipeline Tasks",
+            "Input Data",
+            "Pipeline Response",
+            "Suggested Pipeline Response",
+            "Pipeline Feedback",
+            "Task Feedback",
+        ]
+
         query = {
             "feedbackTimeStamp": {"$gte": params.fromDate, "$lte": params.toDate},
         }
@@ -53,6 +65,7 @@ class FeedbackService:
 
         file = io.StringIO()
         csv_writer = csv.writer(file)
+        csv_writer.writerow(csv_headers)
         csv_writer.writerows(list(map(lambda doc: doc.to_export_row(), feedback_docs)))
         file.seek(0)
 
