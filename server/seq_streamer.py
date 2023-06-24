@@ -43,7 +43,11 @@ class StreamingServerTaskSequence:
     This is a SocketIO server for simulating taskSequence inference.
     TODO: Generalize to different sequences. Currently it supports only ASR->Translation->TTS
     '''
-    def __init__(self, async_mode=True) -> None:
+    def __init__(
+        self,
+        async_mode: bool = True,
+        max_connections: int = -1
+    ) -> None:
         if async_mode:
             self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
             self.app = socketio.ASGIApp(
@@ -65,7 +69,8 @@ class StreamingServerTaskSequence:
 
         # Constants. TODO: Should we allow changing this?
         self.input_audio__bytes_per_sample = 2
-        self.input_audio__max_inference_time_in_ms = 20*1000
+        self.input_audio__max_inference_time_in_ms = 30*1000
+        self.max_connections = max_connections if max_connections > 0 else 0
         
         # Storage for state specific to each client (key will be socket connection-ID string, and value would be `UserState`)
         self.client_states = {}
@@ -116,7 +121,10 @@ class StreamingServerTaskSequence:
             "inputData": {
                 "audio": audio_payload_list,
             },
-            "pipelineTasks": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run]
+            "pipelineTasks": self.client_states[sid].task_sequence[:self.client_states[sid].sequence_depth_to_run],
+            "controlConfig": {
+                "dataTracking": False
+            },
         }
         
         # Run inference via Dhruva REST API
@@ -176,6 +184,11 @@ class StreamingServerTaskSequence:
     def configure_socket_server(self):
         @self.sio.event
         async def connect(sid: str, environ: dict, auth):
+            
+            if self.max_connections and len(self.client_states) >= self.max_connections:
+                await self.sio.emit("abort", data=("Server Error: Max connections exceeded! Please try again later."), room=sid)
+                return False
+
             print('Connected with:', sid)
             # query_dict = parse_qs(environ["QUERY_STRING"])
 
@@ -245,10 +258,11 @@ class StreamingServerTaskSequence:
                         raw_audio = np.array(array.array('h', audioContent), dtype=np.float64) / (2**15 - 1)
 
                         if not self.client_states[sid].input_audio__auto_chunking:
+                            # If max continuous stream limit exceeded, reset the server state
                             remaining_samples_count = self.client_states[sid].input_audio__max_inference_duration_in_samples - len(self.client_states[sid].input_audio__buffer)
                             if remaining_samples_count <= len(raw_audio):
                                 raw_audio = raw_audio[:remaining_samples_count]
-                                disconnect_stream = True
+                                clear_server_state = True
                         
                         # TODO: Make it efficient. Until then, ask the client to use higher stream rate
                         self.client_states[sid].input_audio__buffer = np.concatenate([self.client_states[sid].input_audio__buffer, raw_audio])

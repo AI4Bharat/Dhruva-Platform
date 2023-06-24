@@ -36,7 +36,9 @@ app = FastAPI(
     description="Backend API for communicating with the Dhruva platform",
 )
 
-streamer = StreamingServerTaskSequence()
+streamer = StreamingServerTaskSequence(
+    max_connections=int(os.environ.get("MAX_SOCKET_CONNECTIONS_PER_WORKER", -1))
+)
 app.mount("/socket.io", streamer.app)
 
 # TODO: Depreciate this soon in-favor of above
