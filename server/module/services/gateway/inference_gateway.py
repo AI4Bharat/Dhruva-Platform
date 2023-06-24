@@ -29,6 +29,7 @@ class InferenceGateway:
             request_body.config.serviceId,
             task_type,
             request_body.config.language.sourceLanguage,
+            request_body.config.language.dict().get("targetLanguage"),
         ).inc()
 
         with INFERENCE_REQUEST_DURATION_SECONDS.labels(
@@ -37,6 +38,7 @@ class InferenceGateway:
             request_body.config.serviceId,
             task_type,
             request_body.config.language.sourceLanguage,
+            request_body.config.language.dict().get("targetLanguage"),
         ).time():
             try:
                 response = requests.post(service.endpoint, json=request_body.dict())

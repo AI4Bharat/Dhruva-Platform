@@ -12,6 +12,7 @@ INFERENCE_REQUEST_COUNT = Counter(
         "inference_service",
         "task_type",
         "source_language",
+        "target_language",
     ),
 )
 
@@ -25,5 +26,6 @@ INFERENCE_REQUEST_DURATION_SECONDS = Histogram(
         "inference_service",
         "task_type",
         "source_language",
+        "target_language",
     ),
 )

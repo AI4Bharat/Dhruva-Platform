@@ -68,9 +68,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "",
           "values": false
         },
@@ -87,7 +85,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) OR vector(0)",
+          "expr": "sum(rate(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) OR vector(0)",
           "interval": "",
           "legendFormat": "",
           "range": true,
@@ -135,9 +133,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "",
           "values": false
         },
@@ -153,7 +149,7 @@
             "uid": "vowwS_B4k"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m]) > 0) by (le)) or vector(0)",
+          "expr": "histogram_quantile(0.5, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m]) > 0) by (le)) or vector(0)",
           "interval": "",
           "legendFormat": "",
           "range": true,
@@ -250,7 +246,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) OR vector(0)",
+          "expr": "sum(rate(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) OR vector(0)",
           "interval": "",
           "legendFormat": "Rate",
           "range": true,
@@ -347,7 +343,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.95, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) by (le)) OR vector(0)",
           "interval": "",
           "legendFormat": "0.95",
           "range": true,
@@ -360,7 +356,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.9, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.9, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.9",
@@ -374,7 +370,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.5, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.5, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.5",
@@ -388,7 +384,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.1, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$language\"}[5m])) by (le)) OR vector(0)",
+          "expr": "histogram_quantile(0.1, sum(rate(dhruva_inference_request_duration_seconds_bucket{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[5m])) by (le)) OR vector(0)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.1",
@@ -398,6 +394,73 @@
       ],
       "title": "Requests Processing Time",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vowwS_B4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 59,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vowwS_B4k"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}) OR vector(0)",
+          "interval": "",
+          "legendFormat": "Rate",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Requests Count",
+      "type": "stat"
     }
   ],
   "refresh": "",
@@ -497,7 +560,27 @@
         },
         "hide": 0,
         "label": "Source Language",
-        "name": "language",
+        "name": "sourceLanguage",
+        "options": [
+          {
+            "selected": true,
+            "text": ".*",
+            "value": ".*"
+          }
+        ],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "label": "Target Language",
+        "name": "targetLanguage",
         "options": [
           {
             "selected": true,
