@@ -33,3 +33,7 @@ class Errors(Enum):
         "kind": "DHRUVA-113",
         "message": "Failed to update health status of service",
     }
+    DHRUVA114 = {
+        "kind": "DHRUVA-114",
+        "message": "Failed to fetch feedback",
+    }
