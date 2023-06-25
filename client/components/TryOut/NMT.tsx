@@ -12,6 +12,8 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
+  useToast,
+  Box,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate";
@@ -56,6 +58,7 @@ const NMTTry: React.FC<Props> = (props) => {
   const [pipelineOutput, setPipelineOutput] = useState<
     PipelineOutput | undefined
   >();
+  const toast = useToast()
 
   const getTranslation = (source: string) => {
     setFetched(false);
@@ -127,13 +130,18 @@ const NMTTry: React.FC<Props> = (props) => {
     return (
       <IndicTransliterate
         renderComponent={(props) => (
-          <Textarea resize="none" h={200} {...props} />
+          <>
+          <Textarea  resize="none" h={200} {...props} />
+          <Box>
+            <Text float={"right"} fontSize={"sm"} color={(tltText.length<=512 ?"gray.300":"red.300")}>{tltText.length}/512</Text>
+          </Box>
+          </>
         )}
         onChangeText={(text: string) => {
           setTltText(text);
         }}
         value={tltText}
-        placeholder="Type your text here to transliterate...."
+        placeholder="Type your text here to translate...."
         lang={currentLanguage.sourceLanguage}
         onChange={undefined}
         onBlur={undefined}
@@ -224,7 +232,19 @@ const NMTTry: React.FC<Props> = (props) => {
           />
           <Button
             onClick={() => {
-              getTranslation(tltText);
+              if(tltText.length <= 512)
+              {
+                getTranslation(tltText);
+              }
+              else
+              {
+                toast({
+                  title: 'Character limit exceeded',
+                  status: 'warning',
+                  duration: 3000,
+                  isClosable: true,
+                })
+              }
             }}
           >
             Translate

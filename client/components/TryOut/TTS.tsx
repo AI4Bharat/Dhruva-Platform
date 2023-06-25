@@ -12,10 +12,10 @@ import {
   StatNumber,
   StatHelpText,
   SimpleGrid,
-  HStack,
-  Input,
+  useToast,
   NumberInput,
   NumberInputField,
+  Box,
 } from "@chakra-ui/react";
 import { FaRegFileAudio } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -56,6 +56,7 @@ const TTSTry: React.FC<Props> = (props) => {
   const [requestWordCount, setRequestWordCount] = useState(0);
   const [requestTime, setRequestTime] = useState("");
   const [audioDuration, setAudioDuration] = useState(0);
+  const toast = useToast()
   const [pipelineInput, setPipelineInput] = useState<
     PipelineInput | undefined
   >();
@@ -157,7 +158,12 @@ const TTSTry: React.FC<Props> = (props) => {
     return (
       <IndicTransliterate
         renderComponent={(props) => (
-          <Textarea resize="none" h={200} {...props} />
+          <>
+          <Textarea  resize="none" h={200} {...props} />
+          <Box>
+            <Text float={"right"} fontSize={"sm"} color={(tltText.length<=512 ?"gray.300":"red.300")}>{tltText.length}/512</Text>
+          </Box>
+          </>
         )}
         onChangeText={(text: string) => {
           setTltText(text);
@@ -287,7 +293,19 @@ const TTSTry: React.FC<Props> = (props) => {
             <Stack direction={"column"} gap={5}>
               <Button
                 onClick={() => {
-                  getTTSAudio(tltText);
+                  if(tltText.length <= 512)
+                  {
+                    getTTSAudio(tltText);
+                  }
+                  else
+                  {
+                    toast({
+                      title: 'Character limit exceeded',
+                      status: 'warning',
+                      duration: 3000,
+                      isClosable: true,
+                    })
+                  }
                 }}
               >
                 <FaRegFileAudio />
