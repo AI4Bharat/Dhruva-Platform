@@ -22,6 +22,6 @@ export const languageOptions = (
       <option value="asr">ASR</option>
       <option value="ner">NER</option>
       <option value="sts">STS</option>
-      <option value="sts">XLIT</option>
+      <option value="xlit">XLIT</option>
     </>
   );
