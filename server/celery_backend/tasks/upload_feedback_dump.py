@@ -36,13 +36,20 @@ def upload_feedback_dump() -> None:
 
     d = datetime.now()
 
-    start_month = d.month - 1 if d.month - 1 != 0 else 12
+    start_month, start_year = (
+        (d.month - 1, d.year) if d.month - 1 != 0 else (12, d.year - 1)
+    )
     start_date = d.replace(
-        month=start_month, day=1, hour=0, minute=0, second=0, microsecond=0
+        year=start_year,
+        month=start_month,
+        day=1,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
     ).timestamp()
-    end_date = d.replace(
-        month=d.month, day=1, hour=0, minute=0, second=0, microsecond=0
-    ).timestamp()
+
+    end_date = d.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp()
 
     query = {
         "feedbackTimeStamp": {"$gte": int(start_date), "$lt": int(end_date)},
