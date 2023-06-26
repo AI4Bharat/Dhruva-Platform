@@ -407,7 +407,7 @@ class InferenceService:
         service = validate_service_id(serviceId, self.service_repository)
         headers = {"Authorization": "Bearer " + service.api_key}
         ip_language = request_body.config.language.sourceLanguage
-        ip_gender = request_body.config.gender
+        ip_gender = request_body.config.gender.value
         target_sr = request_body.config.samplingRate
         standard_rate = 22050
         format = request_body.config.audioFormat
