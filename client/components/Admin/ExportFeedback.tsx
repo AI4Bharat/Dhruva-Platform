@@ -53,8 +53,8 @@ const ExportFeedback = () => {
             }
             else
             {
-            // const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
-            const url = `https://api.dhruva.co/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
+            const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
+            // const url = `https://api.dhruva.co/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
             apiInstance
               .get(url, {
                 responseType: 'blob',
