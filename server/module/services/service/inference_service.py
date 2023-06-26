@@ -417,8 +417,7 @@ class InferenceService:
         results = []
 
         for input in request_body.input:
-            # input_string = input.source.replace("।", ".").strip()
-            input_string = input.strip()
+            input_string = input.source.replace("।", ".").strip()
 
             if input_string:
                 inputs, outputs = get_tts_io_for_triton(
