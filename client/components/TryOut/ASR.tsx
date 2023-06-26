@@ -16,6 +16,7 @@ import {
   Box,
   HStack,
   Spacer,
+  useToast,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -48,6 +49,9 @@ interface Props {
 const ASRTry: React.FC<Props> = (props) => {
   const [streamingClient, setStreamingClient] = useState(new StreamingClient());
 
+  const [timer, setTimer] = useState(0);
+  const [timerInterval, setTimerInterval] = useState(null);
+
   const [languages, setLanguages] = useState<string[]>([]);
   const [language, setLanguage] = useState("");
   const [audioText, setAudioText] = useState("");
@@ -67,6 +71,8 @@ const ASRTry: React.FC<Props> = (props) => {
 
   const [permission, setPermission] = useState<boolean>(true);
   const [modal, setModal] = useState(<></>);
+
+  const toast = useToast();
 
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -204,6 +210,16 @@ const ASRTry: React.FC<Props> = (props) => {
     setFetched(false);
     setFetching(true);
     setPlaceHolder("Recording Audio....");
+
+    // Start the timer
+    setTimer(0);
+    const interval = setInterval(() => 
+    {
+      setTimer(prevTimer => prevTimer + 1);
+    }, 1000);
+
+    // Save the interval ID in the state to clear it later
+    setTimerInterval(interval);
   };
 
   const stopRecording = () => {
@@ -215,6 +231,8 @@ const ASRTry: React.FC<Props> = (props) => {
     setPlaceHolder("Start Recording for ASR Inference...");
     setFetching(false);
     setFetched(true);
+      // Clear the timer interval
+    clearInterval(timerInterval);
   };
 
   useEffect(() => {
@@ -352,6 +370,24 @@ const ASRTry: React.FC<Props> = (props) => {
                 value={audioText}
                 placeholder={placeholder}
               />
+              {recording && (
+                //@ts-ignore
+                <Text color={"gray.300"}>
+                  Recording Time : {timer} / 120 seconds
+                  {
+                    timer >= 120
+                    && 
+                    toast({
+                      title: 'Audio time limit exceeded',
+                      status: 'warning',
+                      duration: 3000,
+                      isClosable: true,
+                    })
+                    && 
+                    stopRecording()
+                  }
+                </Text>
+              )}
               <Stack direction={"row"} gap={5}>
                 {recording ? (
                   <Button

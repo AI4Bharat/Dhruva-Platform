@@ -40,6 +40,4 @@ const createkey = async (key_details : Icreatekey) => {
     const response = await apiInstance.get(`/auth/api-key?api_key_name=${api_key_name}&target_user_id=${target_user_id}`)
     return response.data;
  }
-  
-
 export {listallkeys, createkey, setstatus, listallusers, viewadmindashboard, getkeydata};
