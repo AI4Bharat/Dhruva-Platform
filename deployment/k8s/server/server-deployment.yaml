@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dhruva-server
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -14,7 +15,8 @@ spec:
       containers:
         - name: dhruva-server
           # image: dhruvacr.azurecr.io/dhruvaserver
-          image: servertest.azurecr.io/server:latest
+          # image: servertest.azurecr.io/server:latest
+          image: dhruvatestingcr.azurecr.io/dhruvaserver:latest
           ports:
             - containerPort: 8000
 
@@ -208,3 +210,7 @@ spec:
 
       volumes:
         - name: app-data
+
+        - name: config
+          configMap:
+            name: dhruva-configmap

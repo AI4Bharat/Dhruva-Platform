@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: my-service-monitor
+  namespace: default
+  labels:
+    release: prometheus
+spec:
+  endpoints:
+    - interval: 15s
+      port: app
+      path: /metrics
+      scrapeTimeout: 14s
+      scheme: http
+      # static_config:
+      #   targets:
+      #     - ["localhost:8000"]
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: dhruva-server
