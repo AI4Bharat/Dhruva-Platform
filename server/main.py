@@ -23,6 +23,7 @@ from exception.ulca_set_api_key_tracking_server_error import (
 from log.logger import LogConfig
 from metrics import api_key_name_callback, inference_service_callback, user_id_callback
 from middleware import PrometheusMetricsMiddleware
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 from module import *
 from seq_streamer import StreamingServerTaskSequence
 
@@ -66,6 +67,8 @@ app.add_middleware(
     },
 )
 
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 @app.on_event("startup")
 async def init_mongo_client():
