@@ -4,8 +4,10 @@ from fastapi.responses import StreamingResponse
 from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
+from auth.role_authorization_provider import RoleAuthorizationProvider
 from exception.http_error import HttpErrorResponse
 from schema.auth.common import ApiKeyType
+from schema.auth.common.role_type import RoleType
 from schema.services.request import (
     FeedbackDownloadQuery,
     ULCAFeedbackQuestionRequest,
@@ -45,6 +47,9 @@ async def _get_feedback_questions(
 async def export_feedback_csv(
     params: FeedbackDownloadQuery = Depends(FeedbackDownloadQuery),
     feedback_service: FeedbackService = Depends(FeedbackService),
+    auth: RoleAuthorizationProvider = Depends(
+        RoleAuthorizationProvider([RoleType.ADMIN])
+    ),
 ):
     file = feedback_service.fetch_feedback_csv(params)
     headers = {"Content-Disposition": 'attachment; filename="feedback.csv"'}
