@@ -34,7 +34,7 @@ import ViewServiceTabs from "../../components/Services/ViewServiceTabs";
 import ASRTry from "../../components/TryOut/ASR";
 import NERTry from "../../components/TryOut/NER";
 import NMTTry from "../../components/TryOut/NMT";
-import STSTry from "../../components/TryOut/STS";
+// import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import XLITTry from "../../components/TryOut/XLIT";
 import useMediaQuery from "../../hooks/useMediaQuery";
@@ -69,8 +69,8 @@ export default function ViewService() {
           return <TTSTry languages={languages} serviceId={serviceId} />;
         case "translation":
           return <NMTTry languages={languages} serviceId={serviceId} />;
-        case "sts":
-          return <STSTry languages={languages} serviceId={serviceId} />;
+        // case "sts":
+        //   return <STSTry languages={languages} serviceId={serviceId} />;
         case "ner":
           return <NERTry languages={languages} serviceId={serviceId} />;
         case "transliteration":

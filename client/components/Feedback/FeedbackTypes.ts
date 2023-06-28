@@ -14,7 +14,7 @@ export enum ULCATaskType {
   TTS = "tts",
   TRANSLITERATION = "transliteration",
   NER = "ner",
-  STS = "sts", // TODO: Remove
+  // STS = "sts", // TODO: Remove
 }
 
 interface RequestConfig {

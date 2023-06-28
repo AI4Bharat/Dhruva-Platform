@@ -17,6 +17,7 @@ const monitoring = () => {
   const [apiKeyName, setAPIKeyName] = useState<string>(".*");
   const [inferenceServiceId, setInferenceServiceId] = useState<string>(".*");
   const [sourceLanguage, setSourceLanguage] = useState<string>(".*");
+  const [targetLanguage, setTargetLanguage] = useState<string>(".*");
   const [taskType, setTaskType] = useState<string>(".*");
   const [filteredServices, setFilteredServices] = useState<ServiceList[]>([]);
 
@@ -186,7 +187,7 @@ const monitoring = () => {
           <br></br>
           <Stack direction={["column", "row"]} spacing="1rem">
             <HStack>
-              <FormLabel>Language:</FormLabel>
+              <FormLabel>Source&nbsp;Language:</FormLabel>
               <Select
                 background={"white"}
                 value={sourceLanguage}
@@ -210,6 +211,31 @@ const monitoring = () => {
                 ))}
               </Select>
             </HStack>
+            <HStack>
+            <FormLabel>Target&nbsp;Language:</FormLabel>
+              <Select
+                background={"white"}
+                value={targetLanguage}
+                borderRadius={0}
+                minWidth="15rem"
+                onChange={(e) => {
+                  setTargetLanguage(e.target.value);
+                }}
+              >
+                <option value=".*">Overall</option>
+                {Array.from(
+                  new Set(
+                    selectedService?.model.languages.map(
+                      (s: any) => s.targetLanguage
+                    )
+                  )
+                ).map((language: string) => (
+                  <option key={language} value={language}>
+                    {lang2label[language]}
+                  </option>
+                ))}
+              </Select>
+            </HStack>
           </Stack>
         </Box>
         <br></br>
@@ -217,13 +243,13 @@ const monitoring = () => {
         {smallscreen ? (
           // https://grafana.dhruva.co
           <iframe
-            src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-sourceLanguage=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
+            src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-sourceLanguage=${sourceLanguage}&var-targetLanguage=${targetLanguage}&from=now-1h&to=now&kiosk=tv`}
             height={640}
             width={360}
           />
         ) : (
           <iframe
-            src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-sourceLanguage=${sourceLanguage}&from=now-1h&to=now&kiosk=tv`}
+          src={`${process.env.NEXT_PUBLIC_GRAFANA_URL}/d/Ye6zPeA7y/dhruva-inference-request-dashboard?orgId=2&var-apiKeyName=${apiKeyName}&var-userId=${selectedUser}&var-inferenceServiceId=${inferenceServiceId}&var-taskType=${taskType}&var-sourceLanguage=${sourceLanguage}&var-targetLanguage=${targetLanguage}&from=now-1h&to=now&kiosk=tv`}
             width={"95%"}
             height={600}
           />
