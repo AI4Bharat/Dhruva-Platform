@@ -53,7 +53,7 @@ const ExportFeedback = () => {
             }
             else
             {
-            const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
+            const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/services/feedback/export?fromDate=${FromUnix}&toDate=${ToUnix}`;
             // const url = `https://api.dhruva.co/services/feedback/export?serviceId=${selectedServiceID}&fromDate=${FromUnix}&toDate=${ToUnix}`;
             apiInstance
               .get(url, {
@@ -145,8 +145,8 @@ const ExportFeedback = () => {
         />
         </HStack>
         </Stack>
-        <br/>        <br/>
-        <Text fontSize="lg" fontWeight="bold">
+        <br/>
+        {/* <Text fontSize="lg" fontWeight="bold">
           Select&nbsp;Service:
         </Text>
         <br/>
@@ -166,9 +166,9 @@ const ExportFeedback = () => {
                   return <option value={s.serviceId}>{s.name}</option>;
                 })}
               </Select>
-        </HStack>
+        </HStack> */}
         </Box>
-        <br/>
+        {/* <br/> */}
         <Button colorScheme="orange" onClick={handleClick}>
         Download CSV
         </Button>
