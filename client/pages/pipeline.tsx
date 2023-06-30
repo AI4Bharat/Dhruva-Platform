@@ -347,6 +347,7 @@ function PipelineInterface() {
             <Text className="dview-service-try-option-title">Source:</Text>
             <Select
               value={sourceLanguage}
+              color={"gray.600"}
               onChange={(e) => {
                 setsourceLanguage(e.target.value);
               }}
@@ -364,6 +365,7 @@ function PipelineInterface() {
             <Text className="dview-service-try-option-title">Target:</Text>
             <Select
               value={targetLanguage}
+              color={"gray.600"}
               onChange={(e) => {
                 settargetLanguage(e.target.value);
               }}
@@ -381,6 +383,7 @@ function PipelineInterface() {
             <Text className="dview-service-try-option-title">ASR:</Text>
             <Select
               value={currentASRService}
+              color={"gray.600"}
               onChange={(e) => {
                 setcurrentASRService(e.target.value);
               }}
@@ -395,6 +398,7 @@ function PipelineInterface() {
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">TTS:</Text>
             <Select
+              color={"gray.600"}
               value={currentTTSService}
               onChange={(e) => {
                 setcurrentTTSService(e.target.value);
@@ -410,6 +414,7 @@ function PipelineInterface() {
           <Stack direction={"row"}>
             <Text className="dview-service-try-option-title">NMT:</Text>
             <Select
+              color={"gray.600"}
               value={currentNMTService}
               onChange={(e) => {
                 setcurrentNMTService(e.target.value);

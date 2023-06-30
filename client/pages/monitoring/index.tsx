@@ -102,6 +102,7 @@ const monitoring = () => {
               <FormLabel>Task:</FormLabel>
               <Select
                 background={"white"}
+                color={"gray.600"}
                 value={taskType}
                 minWidth="15rem"
                 onChange={(e) => {
@@ -123,6 +124,7 @@ const monitoring = () => {
               <FormLabel>User:</FormLabel>
               <Select
                 background={"white"}
+                color={"gray.600"}
                 value={selectedUser}
                 minWidth="15rem"
                 borderRadius={0}
@@ -140,6 +142,7 @@ const monitoring = () => {
               <FormLabel>Service:</FormLabel>
               <Select
                 background={"white"}
+                color={"gray.600"}
                 borderRadius={0}
                 value={inferenceServiceId}
                 minWidth="15rem"
@@ -158,6 +161,7 @@ const monitoring = () => {
               <Select
                 background={"white"}
                 borderRadius={0}
+                color={"gray.600"}
                 value={apiKeyName}
                 minWidth="15rem"
                 onChange={(e) => {
@@ -190,6 +194,7 @@ const monitoring = () => {
               <FormLabel>Source&nbsp;Language:</FormLabel>
               <Select
                 background={"white"}
+                color={"gray.600"}
                 value={sourceLanguage}
                 borderRadius={0}
                 minWidth="10rem"
@@ -216,6 +221,7 @@ const monitoring = () => {
             <FormLabel>Target&nbsp;Language:</FormLabel>
               <Select
                 background={"white"}
+                color={"gray.600"}
                 value={targetLanguage}
                 borderRadius={0}
                 minWidth="10rem"
