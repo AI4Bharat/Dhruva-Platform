@@ -212,7 +212,7 @@ const monitoring = () => {
               </Select>
             </HStack>
             <HStack                 
-            display={taskType=="translation"?"flex":"none"}>
+            display={(taskType=="translation"|| taskType=="transliteration")?"flex":"none"}>
             <FormLabel>Target&nbsp;Language:</FormLabel>
               <Select
                 background={"white"}
