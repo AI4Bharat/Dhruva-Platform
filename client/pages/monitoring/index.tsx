@@ -192,7 +192,7 @@ const monitoring = () => {
                 background={"white"}
                 value={sourceLanguage}
                 borderRadius={0}
-                minWidth="15rem"
+                minWidth="10rem"
                 onChange={(e) => {
                   setSourceLanguage(e.target.value);
                 }}
@@ -211,13 +211,14 @@ const monitoring = () => {
                 ))}
               </Select>
             </HStack>
-            <HStack>
+            <HStack                 
+            display={(taskType=="translation"|| taskType=="transliteration")?"flex":"none"}>
             <FormLabel>Target&nbsp;Language:</FormLabel>
               <Select
                 background={"white"}
                 value={targetLanguage}
                 borderRadius={0}
-                minWidth="15rem"
+                minWidth="10rem"
                 onChange={(e) => {
                   setTargetLanguage(e.target.value);
                 }}
