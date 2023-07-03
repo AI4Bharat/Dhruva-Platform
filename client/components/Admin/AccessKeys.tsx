@@ -301,7 +301,7 @@ const AccessKeys = () => {
       <Box
         ml={smallscreen ? "1rem" : "2rem"}
         mr={smallscreen ? "1rem" : "2rem"}
-        mt={smallscreen ? "-2rem" : "1rem"}
+        mt={smallscreen ? "-2rem" : "0rem"}
       >
         {/* Page Heading */}
         <HStack mt="3rem">
@@ -309,9 +309,9 @@ const AccessKeys = () => {
           <Text fontSize={"3xl"} fontWeight={"bold"}>
             API&nbsp;Keys
           </Text>
-          <Text fontSize={"3xl"} fontWeight={"bold"}>
+          {/* <Text fontSize={"3xl"} fontWeight={"bold"}>
             <MdVpnKey />
-          </Text>
+          </Text> */}
         </HStack>
         {/* Searchbar and Create Button */}
         <Stack
@@ -324,19 +324,21 @@ const AccessKeys = () => {
             width={smallscreen ? "90vw" : "30rem"}
           >
             <InputLeftElement
-              color="gray.300"
+            color={"gray.600"}
               pointerEvents="none"
               children={<IoSearchOutline />}
             />
             <Input
+              color={"gray.600"}
               disabled={!selectedUser}
               borderRadius={0}
               onChange={searchToggler}
               placeholder="Search for Keys"
+              _placeholder={{ opacity: 1, color: 'gray.600' }}
             />
           </InputGroup>
           <Select
-            color={"gray.300"}
+            color={"gray.600"}
             background={"light.100"}
             width={smallscreen ? "90vw" : "30rem"}
             borderRadius={0}

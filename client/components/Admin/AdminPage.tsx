@@ -1,14 +1,18 @@
-import { Box, Button, Center,Text } from '@chakra-ui/react';
+import { Box, Button, Center,Divider,HStack,Spacer,Text, VStack } from '@chakra-ui/react';
 import React, { useState } from 'react'
 import AccessKeys from './AccessKeys'
-import {BiArrowBack} from "react-icons/bi";
+import {BiAngry, BiArrowBack, BiKey} from "react-icons/bi";
 import useMediaQuery from '../../hooks/useMediaQuery';
 import ExportFeedback from './ExportFeedback';
+import { MdOutlineFeedback, MdOutlineVpnKey, MdVpnKey } from 'react-icons/md';
+import { FaKey } from 'react-icons/fa';
 
 const AdminPage = () => {
 
   const [render, setRender] = useState(0);  
+  const [selectedSection, setSelectedSection] = useState('accessKeys');
   const smallscreen = useMediaQuery("(max-width: 1080px)");
+
 
   let renderme;
 
@@ -36,8 +40,42 @@ const AdminPage = () => {
     {smallscreen?
     renderme:
     <>
-    <AccessKeys/>
-    <ExportFeedback/>
+    <Box display="flex" ml="-0.5rem" height="100vh" mt="-0.5rem" >
+      
+      <VStack  align="start" spacing="10px" width="200px" background="white" padding="10px">
+      <Divider />
+      <Box height="2rem"></Box>
+      <Box paddingTop="0.75rem" paddingBottom="0.75rem" paddingLeft={"0.5rem"}  width="100%" background={selectedSection == "accessKeys"?"orange.50":"white"} >
+        <HStack>
+        <Text
+            fontWeight={selectedSection === 'accessKeys' ? 'bold' : 'normal'}
+            cursor="pointer"
+            onClick={() => setSelectedSection('accessKeys')}
+          >
+            Access Keys
+          </Text>
+          <BiKey/>
+        </HStack>
+      </Box>
+      <Divider/>
+      <Box paddingTop="0.75rem" paddingBottom="0.75rem" paddingLeft={"0.5rem"} width="100%" background={selectedSection == "exportFeedback"?"orange.50":"white"}>
+        <HStack>
+        <Text
+          fontWeight={selectedSection === 'exportFeedback' ? 'bold' : 'normal'}
+          cursor="pointer"
+          onClick={() => setSelectedSection('exportFeedback')}
+        >
+          Export Feedback
+        </Text>
+        <MdOutlineFeedback/>
+        </HStack>
+        </Box>
+      </VStack>
+      <Box flex="1" padding="10px">
+        {selectedSection === 'accessKeys' && <AccessKeys />}
+        {selectedSection === 'exportFeedback' && <ExportFeedback />}
+      </Box>
+    </Box>
     </>
     }
   </>
