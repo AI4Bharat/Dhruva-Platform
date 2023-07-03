@@ -167,6 +167,75 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "thresholds"
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "id": 59,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vowwS_B4k"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(increase(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}[$__range])) OR vector(0)",
+          "interval": "",
+          "legendFormat": "Rate",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Requests Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vowwS_B4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "palette-classic"
           },
           "custom": {
@@ -221,7 +290,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 5
       },
       "id": 36,
@@ -318,8 +387,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 5
+        "x": 0,
+        "y": 13
       },
       "id": 40,
       "options": {
@@ -394,73 +463,6 @@
       ],
       "title": "Requests Processing Time",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "vowwS_B4k"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 13
-      },
-      "id": 59,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "vowwS_B4k"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(dhruva_inference_request_total{inference_service=~\"$inferenceServiceId\", user_id=~\"$userId\", api_key_name=~\"$apiKeyName\", task_type=~\"$taskType\", source_language=~\"$sourceLanguage\", target_language=~\"$targetLanguage\"}) OR vector(0)",
-          "interval": "",
-          "legendFormat": "Rate",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Requests Count",
-      "type": "stat"
     }
   ],
   "refresh": "",
