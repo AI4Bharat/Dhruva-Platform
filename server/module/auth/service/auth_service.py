@@ -305,7 +305,7 @@ class AuthService:
                     api_keys=keys, total_usage=total_usage
                 )
         except Exception:
-            raise BaseError(Errors.DHRUVA204.value, traceback.format_exc())
+            raise BaseError(Errors.DHRUVA205.value, traceback.format_exc())
 
         return GetAllApiKeysDetailsResponse(api_keys=keys)
 
