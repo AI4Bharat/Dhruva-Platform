@@ -2,7 +2,7 @@ import collections
 import io
 import subprocess
 import tempfile
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.request import urlopen
 
 import numpy as np
@@ -232,7 +232,7 @@ def silero_vad_chunking(
     max_chunk_duration_s: float,
     min_chunk_duration_s: float = 6,
     min_speech_duration_ms: int = 100,
-):
+) -> Tuple[List[np.ndarray], List[Dict[str, float]]]:
     wav = torch.from_numpy(raw_audio).float()
     speech_timestamps: Optional[List[Dict[str, float]]] = get_speech_timestamps(
         wav,
@@ -256,7 +256,7 @@ def silero_vad_chunking(
         speech_timestamps, sample_rate, max_chunk_duration_s, min_chunk_duration_s
     )
 
-    audio_chunks = [
+    audio_chunks: List[np.ndarray] = [
         wav[timestamps["start"] : timestamps["end"]].numpy()
         for timestamps in adjusted_timestamps
     ]
