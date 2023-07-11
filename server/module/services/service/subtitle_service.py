@@ -8,7 +8,7 @@ class SubtitleService:
         for idx, (line, timestamp) in enumerate(transcript_lines):
             start_timestamp = self.__convert_to_srt_timestamp(timestamp["start_secs"])
             end_timestamp = self.__convert_to_srt_timestamp(timestamp["end_secs"])
-            line = f"{idx + 1}\n{start_timestamp} --> {end_timestamp}\n{line}\n\n"
+            line = f"{idx + 1}\n{start_timestamp} --> {end_timestamp}\n{lines.strip()}\n\n"
             string += line
 
         return string
@@ -21,7 +21,7 @@ class SubtitleService:
                 timestamp["start_secs"]
             )
             end_timestamp = self.__convert_to_webvtt_timestamp(timestamp["end_secs"])
-            line = f"{idx + 1}\n{start_timestamp} --> {end_timestamp}\n- {line}\n\n"
+            line = f"{idx + 1}\n{start_timestamp} --> {end_timestamp}\n- {line.strip()}\n\n"
             string += line
 
         return string

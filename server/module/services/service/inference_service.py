@@ -293,7 +293,7 @@ class InferenceService:
                     )
                 case ULCATextFormat.TRANSCRIPT:
                     for line in transcript_lines:
-                        transcript += line[0] + " "
+                        transcript += line[0].strip() + " "
 
             res["output"].append({"source": transcript.strip()})
 
