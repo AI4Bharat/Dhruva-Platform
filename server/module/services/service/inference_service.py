@@ -242,7 +242,7 @@ class InferenceService:
             for i in range(0, len(audio_chunks), batch_size):
                 batch = audio_chunks[i : i + batch_size]
                 inputs, outputs = get_asr_io_for_triton(batch)
-
+                
                 if (
                     "conformer-hi" not in serviceId
                     and "whisper" not in serviceId
@@ -256,7 +256,7 @@ class InferenceService:
                         np.asarray(lang_id).astype("object").reshape((len(batch), 1))
                     )
                     inputs.append(input2)
-
+                
                 response = await self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name=model_name,
@@ -269,23 +269,18 @@ class InferenceService:
                 )
 
                 encoded_result = response.as_numpy("TRANSCRIPTS")
-
-                # if not encoded_result:
-                #     raise Exception("Yes")
-
+                
                 # Combine all outputs
-                transcript = ""
-
                 match request_body.config.transcriptionFormat:
                     case ULCATextFormat.SRT:
                         transcript += "\n".join(
                             [
                                 self._get_srt_subtitle(
-                                    idx, result.decode("utf-8"), speech_timestamps[idx]
+                                    i + idx, result.decode("utf-8"), speech_timestamps[i + idx]
                                 )
                                 for idx, result in enumerate(encoded_result.tolist())
                             ]
-                        )
+                        ) + "\n"
                     case ULCATextFormat.TRANSCRIPT:
                         transcript += " ".join(
                             [
@@ -299,8 +294,8 @@ class InferenceService:
         return ULCAAsrInferenceResponse(**res)
 
     def _get_srt_subtitle(self, idx, result, timestamp: Dict[str, float]):
-        start_timestamp = self.__convert_to_subtitle_timestamp(timestamp["start"])
-        end_timestamp = self.__convert_to_subtitle_timestamp(timestamp["end"])
+        start_timestamp = self.__convert_to_subtitle_timestamp(timestamp["start_secs"])
+        end_timestamp = self.__convert_to_subtitle_timestamp(timestamp["end_secs"])
         line = f"{idx + 1} {start_timestamp} --> {end_timestamp} {result}"
         return line
 
@@ -311,7 +306,7 @@ class InferenceService:
         timestamp -= min * 60
         sec = int(timestamp)
         timestamp -= sec
-        millis = timestamp * 1000
+        millis = int(timestamp * 1000)
 
         return "{}:{}:{},{}".format(
             hour if hour > 9 else f"0{hour}",
