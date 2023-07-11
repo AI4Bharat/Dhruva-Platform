@@ -151,6 +151,16 @@ To add new models and services, please add a JSON fixture in the [Dhruva-Seed](h
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- TESTING -->
+
+## Testing
+
+To perform testing of the models hosted on Dhruva, please refer to the [Dhruva-Evaluation-Suite](https://github.com/AI4Bharat/Dhruva-Evaluation-Suite) repository.
+
+* Functional testing allows users to easily benchmark their models after setting up on Dhruva against any dataset available on HuggingFace, with any metrics such as WER (for ASR), BleU (for NMT) and others.
+* Users can also benchmark inference speeds of all endpoints and measure the Requests/sec rate using the Performance Testing tool
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- CONTRIBUTING -->
 
 ## Contributing
