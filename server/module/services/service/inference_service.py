@@ -40,8 +40,6 @@ from schema.services.response import (
 from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
 
-from server.module.services.service import SubtitleService
-
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
@@ -59,6 +57,7 @@ from ..utils.triton import (
     get_transliteration_io_for_triton,
     get_tts_io_for_triton,
 )
+from .subtitle_service import SubtitleService
 
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
