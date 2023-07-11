@@ -261,7 +261,7 @@ def silero_vad_chunking(
         for timestamps in adjusted_timestamps
     ]
 
-    return (audio_chunks, speech_timestamps)
+    return (audio_chunks, adjusted_timestamps)
 
 
 def adjust_timestamps(
