@@ -4,7 +4,7 @@ import json
 import time
 import traceback
 from copy import deepcopy
-from typing import Union
+from typing import Dict, Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -12,15 +12,12 @@ import requests
 import scipy.signal as sps
 import soundfile as sf
 import tritonclient.http as http_client
-from fastapi import Depends, HTTPException, Request, status
-from pydub import AudioSegment
-from pydub.effects import normalize as pydub_normalize
-from scipy.io import wavfile
-from tritonclient.utils import np_to_triton_dtype
-
 from celery_backend.tasks import log_data
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
 from exception.base_error import BaseError
+from fastapi import Depends, HTTPException, Request, status
+from pydub import AudioSegment
+from pydub.effects import normalize as pydub_normalize
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
@@ -31,6 +28,7 @@ from schema.services.request import (
     ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
 )
+from schema.services.request.ulca_asr_inference_request import ULCATextFormat
 from schema.services.response import (
     ULCAAsrInferenceResponse,
     ULCANerInferenceResponse,
@@ -39,6 +37,8 @@ from schema.services.response import (
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
+from scipy.io import wavfile
+from tritonclient.utils import np_to_triton_dtype
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -55,7 +55,7 @@ from ..utils.triton import (
     get_asr_io_for_triton,
     get_translation_io_for_triton,
     get_transliteration_io_for_triton,
-    get_tts_io_for_triton
+    get_tts_io_for_triton,
 )
 
 
@@ -146,19 +146,13 @@ class InferenceService:
             )
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
-            return await self.run_asr_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_asr_triton_inference(request_obj, request_state)
         elif task_type == _ULCATaskType.TTS:
             request_obj = ULCATtsInferenceRequest(**request_body)
-            return await self.run_tts_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_tts_triton_inference(request_obj, request_state)
         elif task_type == _ULCATaskType.NER:
             request_obj = ULCANerInferenceRequest(**request_body)
-            return await self.run_ner_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_ner_triton_inference(request_obj, request_state)
         else:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
@@ -237,23 +231,12 @@ class InferenceService:
                 "float64"
             ) / (2**15 - 1)
 
-            # Do not perform VAD-chunking for Hindi-Whisper, it was not trained with audio of len < 6secs
-            if serviceId == "ai4bharat/whisper-medium-hi--gpu--t4":
-                # FIXME: Remove this patch once Kaushal has trained a better Hindi-Whisper or after the model is removed from Dhruva
-                audio_chunks = list(
-                    windowed_chunking(
-                        raw_audio, standard_rate, max_chunk_duration_s=chunk_size
-                    )
-                )
-            else:
-                audio_chunks = list(
-                    silero_vad_chunking(
-                        raw_audio,
-                        standard_rate,
-                        max_chunk_duration_s=chunk_size,
-                        min_chunk_duration_s=6.0,
-                    )
-                )
+            audio_chunks, speech_timestamps = silero_vad_chunking(
+                raw_audio,
+                standard_rate,
+                max_chunk_duration_s=chunk_size,
+                min_chunk_duration_s=6.0,
+            )
 
             transcript = ""
             for i in range(0, len(audio_chunks), batch_size):
@@ -286,14 +269,51 @@ class InferenceService:
                 )
 
                 encoded_result = response.as_numpy("TRANSCRIPTS")
+
+                # if not encoded_result:
+                #     raise Exception("Yes")
+
                 # Combine all outputs
-                outputs = " ".join(
-                    [result.decode("utf-8") for result in encoded_result.tolist()]
-                )
-                transcript += " " + outputs
+                outputs = ""
+
+                match request_body.config.transcriptionFormat:
+                    case ULCATextFormat.SRT:
+                        outputs += "\n".join(
+                            [
+                                self._get_srt_subtitle(
+                                    idx, result.decode("utf-8"), speech_timestamps[idx]
+                                )
+                                for idx, result in enumerate(encoded_result.tolist())
+                            ]
+                        )
+                    case ULCATextFormat.TRANSCRIPT:
+                        transcript += " " + outputs
+
             res["output"].append({"source": transcript.strip()})
 
         return ULCAAsrInferenceResponse(**res)
+
+    def _get_srt_subtitle(self, idx, result, timestamp: Dict[str, float]):
+        start_timestamp = self.__convert_to_subtitle_timestamp(timestamp["start"])
+        end_timestamp = self.__convert_to_subtitle_timestamp(timestamp["end"])
+        line = f"{idx + 1} {start_timestamp} --> {end_timestamp} {result}"
+        return line
+
+    def __convert_to_subtitle_timestamp(self, timestamp: float):
+        hour = int(timestamp // 3600)
+        timestamp -= hour * 3600
+        min = int(timestamp // 60)
+        timestamp -= min * 60
+        sec = int(timestamp)
+        timestamp -= sec
+        millis = timestamp * 1000
+
+        return "{}:{}:{},{}".format(
+            hour if hour > 9 else f"0{hour}",
+            ((2 - len(str(min))) * "0") + str(min),
+            ((2 - len(str(sec))) * "0") + str(sec),
+            ((3 - len(str(millis))) * "0") + str(millis),
+        )
 
     async def run_translation_triton_inference(
         self,

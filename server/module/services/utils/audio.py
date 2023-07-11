@@ -2,6 +2,7 @@ import collections
 import io
 import subprocess
 import tempfile
+from typing import Dict, List, Optional
 from urllib.request import urlopen
 
 import numpy as np
@@ -18,6 +19,7 @@ def pad_batch(batch_data: list):
     for idx, data in enumerate(batch_data):
         padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
     return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
+
 
 class Frame(object):
     """Represents a "frame" of audio data."""
@@ -44,7 +46,9 @@ def frame_generator(frame_duration_ms, audio, sample_rate):
         offset += n
 
 
-def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes):
+def vad_collector_old(
+    sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes
+):
     num_padding_frames = int(padding_duration_ms / frame_duration_ms)
     # We use a deque for our sliding window/ring buffer.
     ring_buffer = collections.deque(maxlen=num_padding_frames)
@@ -104,7 +108,9 @@ def vad_collector_old(sample_rate, frame_duration_ms, padding_duration_ms, vad, 
         yield b"".join([f.bytes for f in voiced_frames]), (start_frame, end_frame)
 
 
-def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes):
+def vad_collector(
+    sample_rate, frame_duration_ms, padding_duration_ms, vad, audio_bytes
+):
     num_padding_frames = int(padding_duration_ms / frame_duration_ms)
     # We use a deque for our sliding window/ring buffer.
     ring_buffer = collections.deque(maxlen=num_padding_frames)
@@ -174,7 +180,9 @@ def vad_collector(sample_rate, frame_duration_ms, padding_duration_ms, vad, audi
         yield b"".join([f.bytes for f in voiced_frames]), (start_frame, end_frame)
 
 
-def webrtc_vad_chunking(vad_level: int, chunk_size: int, raw_audio_bytes: bytes, sample_rate: int):
+def webrtc_vad_chunking(
+    vad_level: int, chunk_size: int, raw_audio_bytes: bytes, sample_rate: int
+):
     chunk_size = int(chunk_size)
     vad = webrtcvad.Vad(vad_level)
     for i, (segment, (start_frame, end_frame)) in enumerate(
@@ -218,53 +226,153 @@ model, silero_utils = torch.hub.load(
 ) = silero_utils
 
 
-def silero_vad_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duration_s: float, min_chunk_duration_s: float = None, min_speech_duration_ms: int = 100):
+def silero_vad_chunking(
+    raw_audio: np.ndarray,
+    sample_rate: int,
+    max_chunk_duration_s: float,
+    min_chunk_duration_s: float = 6,
+    min_speech_duration_ms: int = 100,
+):
     wav = torch.from_numpy(raw_audio).float()
-    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=sample_rate, threshold=0.3, min_silence_duration_ms=400, speech_pad_ms=200, min_speech_duration_ms=min_speech_duration_ms)
+    speech_timestamps: Optional[List[Dict[str, float]]] = get_speech_timestamps(
+        wav,
+        model,
+        sampling_rate=sample_rate,
+        threshold=0.3,
+        min_silence_duration_ms=400,
+        speech_pad_ms=200,
+        min_speech_duration_ms=min_speech_duration_ms,
+    )
 
     if not speech_timestamps:
-        return
+        return ([], [])
 
-    # Add metadata in seconds
+    # Store timestamps in seconds
     for speech_dict in speech_timestamps:
-        speech_dict['start_secs'] = round(speech_dict['start'] / sample_rate, 3)
-        speech_dict['end_secs'] = round(speech_dict['end'] / sample_rate, 3)
-    
-    curr_start = speech_timestamps[0]['start']
-    curr_end = speech_timestamps[0]['end']
-    curr_start_secs = speech_timestamps[0]['start_secs']
-    curr_end_secs = speech_timestamps[0]['end_secs']
+        speech_dict["start_secs"] = round(speech_dict["start"] / sample_rate, 3)
+        speech_dict["end_secs"] = round(speech_dict["end"] / sample_rate, 3)
+
+    adjusted_timestamps = adjust_timestamps(
+        speech_timestamps, sample_rate, max_chunk_duration_s, min_chunk_duration_s
+    )
+
+    audio_chunks = [
+        wav[timestamps["start"] : timestamps["end"]].numpy()
+        for timestamps in adjusted_timestamps
+    ]
+
+    return (audio_chunks, speech_timestamps)
+
+
+def adjust_timestamps(
+    speech_timestamps: List[Dict[str, float]],
+    sample_rate: int,
+    max_chunk_duration_s: float,
+    min_chunk_duration_s: float,
+):
+    """
+    Takes the speech timestamps output by the vad model and further
+    splits/merges based on the max_chunk_duration_s/min_chunk_duration_s.
+
+    Returns a list of adjusted timestamps.
+    """
+
+    adjusted_timestamps: List[Dict[str, float]] = []
+
+    curr_start = speech_timestamps[0]["start"]
+    curr_start_secs = speech_timestamps[0]["start_secs"]
+    curr_end_secs = speech_timestamps[0]["end_secs"]
+    chunk_duration = 0
 
     for i in range(1, len(speech_timestamps)):
-        if min_chunk_duration_s and \
-            curr_end_secs - speech_timestamps[i]['start_secs'] < 3 \
-            and speech_timestamps[i]['end_secs'] - curr_start_secs <= min_chunk_duration_s:
+        chunk_gap = curr_end_secs - speech_timestamps[i]["start_secs"]
+        merged_chunks_duration = speech_timestamps[i]["end_secs"] - curr_start_secs
+        chunk_duration = curr_end_secs - curr_start_secs
 
-            curr_end_secs = speech_timestamps[i]['end_secs']
-            curr_end = speech_timestamps[i]['end']
-        else:
-            raw_audio = wav[curr_start : curr_end].numpy()
-            for audio_chunk in windowed_chunking(raw_audio, sample_rate, max_chunk_duration_s):
-                yield audio_chunk
+        # If the gap between the previous chunk and the current chunk is less
+        # than 3 seconds, and the previous chunk and current chunk put together
+        # are less than equal to the minimum chunk duration, merge the chunks
+        # by setting the end timestamp to the current chunk's end timestamp.
+        if chunk_gap < 3 and merged_chunks_duration <= min_chunk_duration_s:
+            curr_end_secs = speech_timestamps[i]["end_secs"]
 
-            curr_start = speech_timestamps[i]['start']
-            curr_end = speech_timestamps[i]['end']
-            curr_start_secs = speech_timestamps[i]['start_secs']
-            curr_end_secs = speech_timestamps[i]['end_secs']
+            # if i < len(speech_timestamps) - 1:
+            continue
 
-    raw_audio = wav[curr_start : curr_end].numpy()
-    for audio_chunk in windowed_chunking(raw_audio, sample_rate, max_chunk_duration_s):
-        yield audio_chunk
+        # Further pass the current chunk duration through windowed chunking to
+        # ensure that the size is within max_chunk_duration_s.y
+        chunked_timestamps = windowed_chunking(
+            curr_start,
+            curr_start_secs,
+            chunk_duration,
+            max_chunk_duration_s,
+            sample_rate,
+        )
+        adjusted_timestamps.extend(chunked_timestamps)
 
-def windowed_chunking(raw_audio: np.ndarray, sample_rate: int, max_chunk_duration_s: float):
-    num_audio_chunks = int(np.ceil(len(raw_audio) / sample_rate / max_chunk_duration_s))
-    if num_audio_chunks > 1:
-        for chunk_idx in range(num_audio_chunks):
-            yield raw_audio[
-                max_chunk_duration_s * chunk_idx * sample_rate : (chunk_idx + 1) * max_chunk_duration_s * sample_rate
-            ]
-    else:
-        yield raw_audio
+        curr_start = speech_timestamps[i]["start"]
+        curr_start_secs = speech_timestamps[i]["start_secs"]
+        curr_end_secs = speech_timestamps[i]["end_secs"]
+
+    # One last chunk will always be left, add it to the adjusted_timestamps
+    chunked_timestamps = windowed_chunking(
+        curr_start,
+        curr_start_secs,
+        chunk_duration,
+        max_chunk_duration_s,
+        sample_rate,
+    )
+    adjusted_timestamps.extend(chunked_timestamps)
+
+    return adjusted_timestamps
+
+
+def windowed_chunking(
+    curr_start: float,
+    curr_start_secs: float,
+    chunk_duration: float,
+    max_chunk_duration_s: float,
+    sample_rate: int,
+):
+    """
+    Checks if the  chunk duration is greater than the max_chunk_duration_s.
+    If it is greater, divide into chunks of max_chunk_duration_s till chunk
+    duration is fully split and return split timestamps.
+
+    For example, if chunk duration is 10 seconds and max_chunk_duration_s is 3 seconds,
+    the split timestamps will be 3s, 3s, 3s, 1s.
+    """
+    chunked_timestamps: List[Dict[str, float]] = []
+
+    start = curr_start
+    start_secs = curr_start_secs
+    remaining_chunk_duration = chunk_duration
+
+    # Keep looping through the current chunk till it is fully split
+    # into chunks whose duration is <= max_chunk_duration_s
+    while remaining_chunk_duration > 0:
+        chunk_size = (
+            max_chunk_duration_s
+            if remaining_chunk_duration - max_chunk_duration_s >= 0
+            else remaining_chunk_duration
+        )
+        remaining_chunk_duration -= chunk_size
+
+        chunked_timestamps.append(
+            {
+                "start": start,
+                "start_secs": start_secs,
+                "end": (start_secs + chunk_size) * sample_rate,
+                "end_secs": (start_secs + chunk_size),
+            }
+        )
+
+        # New start will be previous end + 1
+        start = chunked_timestamps[-1]["end"] + 1
+        start_secs = round(start / sample_rate, 3)
+
+    return chunked_timestamps
+
 
 def download_audio(url: str):
     if "youtube.com" in url or "youtu.be" in url or "drive.google/com" in url:
