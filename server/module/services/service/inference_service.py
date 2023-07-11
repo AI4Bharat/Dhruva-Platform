@@ -274,11 +274,11 @@ class InferenceService:
                 #     raise Exception("Yes")
 
                 # Combine all outputs
-                outputs = ""
+                transcript = ""
 
                 match request_body.config.transcriptionFormat:
                     case ULCATextFormat.SRT:
-                        outputs += "\n".join(
+                        transcript += "\n".join(
                             [
                                 self._get_srt_subtitle(
                                     idx, result.decode("utf-8"), speech_timestamps[idx]
@@ -287,7 +287,12 @@ class InferenceService:
                             ]
                         )
                     case ULCATextFormat.TRANSCRIPT:
-                        transcript += " " + outputs
+                        transcript += " ".join(
+                            [
+                                result.decode("utf-8")
+                                for result in encoded_result.tolist()
+                            ]
+                        )
 
             res["output"].append({"source": transcript.strip()})
 
