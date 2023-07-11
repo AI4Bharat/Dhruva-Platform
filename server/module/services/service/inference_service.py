@@ -4,7 +4,7 @@ import json
 import time
 import traceback
 from copy import deepcopy
-from typing import Dict, Union
+from typing import Dict, List, Tuple, Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -39,6 +39,8 @@ from schema.services.response import (
 )
 from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
+
+from server.module.services.service import SubtitleService
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -111,10 +113,12 @@ class InferenceService:
         service_repository: ServiceRepository = Depends(ServiceRepository),
         model_repository: ModelRepository = Depends(ModelRepository),
         inference_gateway: InferenceGateway = Depends(InferenceGateway),
+        subtitle_service: SubtitleService = Depends(SubtitleService),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
+        self.subtitle_service = subtitle_service
 
     async def run_inference(
         self,
@@ -238,11 +242,11 @@ class InferenceService:
                 min_chunk_duration_s=6.0,
             )
 
-            transcript = ""
+            transcript_lines: List[Tuple[str, Dict[str, float]]] = []
             for i in range(0, len(audio_chunks), batch_size):
                 batch = audio_chunks[i : i + batch_size]
                 inputs, outputs = get_asr_io_for_triton(batch)
-                
+
                 if (
                     "conformer-hi" not in serviceId
                     and "whisper" not in serviceId
@@ -256,7 +260,7 @@ class InferenceService:
                         np.asarray(lang_id).astype("object").reshape((len(batch), 1))
                     )
                     inputs.append(input2)
-                
+
                 response = await self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name=model_name,
@@ -269,51 +273,32 @@ class InferenceService:
                 )
 
                 encoded_result = response.as_numpy("TRANSCRIPTS")
-                
-                # Combine all outputs
-                match request_body.config.transcriptionFormat:
-                    case ULCATextFormat.SRT:
-                        transcript += "\n".join(
-                            [
-                                self._get_srt_subtitle(
-                                    i + idx, result.decode("utf-8"), speech_timestamps[i + idx]
-                                )
-                                for idx, result in enumerate(encoded_result.tolist())
-                            ]
-                        ) + "\n"
-                    case ULCATextFormat.TRANSCRIPT:
-                        transcript += " ".join(
-                            [
-                                result.decode("utf-8")
-                                for result in encoded_result.tolist()
-                            ]
-                        )
+
+                transcript_lines.extend(
+                    [
+                        (result.decode("utf-8"), speech_timestamps[i + idx])
+                        for idx, result in enumerate(encoded_result.tolist())
+                    ]
+                )
+
+            transcript = ""
+
+            match request_body.config.transcriptionFormat:
+                case ULCATextFormat.SRT:
+                    transcript += self.subtitle_service.get_srt_subtitle(
+                        transcript_lines
+                    )
+                case ULCATextFormat.WEBVTT:
+                    transcript += self.subtitle_service.get_webvtt_subtitle(
+                        transcript_lines
+                    )
+                case ULCATextFormat.TRANSCRIPT:
+                    for line in transcript_lines:
+                        transcript += line[0] + " "
 
             res["output"].append({"source": transcript.strip()})
 
         return ULCAAsrInferenceResponse(**res)
-
-    def _get_srt_subtitle(self, idx, result, timestamp: Dict[str, float]):
-        start_timestamp = self.__convert_to_subtitle_timestamp(timestamp["start_secs"])
-        end_timestamp = self.__convert_to_subtitle_timestamp(timestamp["end_secs"])
-        line = f"{idx + 1} {start_timestamp} --> {end_timestamp} {result}"
-        return line
-
-    def __convert_to_subtitle_timestamp(self, timestamp: float):
-        hour = int(timestamp // 3600)
-        timestamp -= hour * 3600
-        min = int(timestamp // 60)
-        timestamp -= min * 60
-        sec = int(timestamp)
-        timestamp -= sec
-        millis = int(timestamp * 1000)
-
-        return "{}:{}:{},{}".format(
-            hour if hour > 9 else f"0{hour}",
-            ((2 - len(str(min))) * "0") + str(min),
-            ((2 - len(str(sec))) * "0") + str(sec),
-            ((3 - len(str(millis))) * "0") + str(millis),
-        )
 
     async def run_translation_triton_inference(
         self,
