@@ -282,7 +282,6 @@ def adjust_timestamps(
     curr_start = speech_timestamps[0]["start"]
     curr_start_secs = speech_timestamps[0]["start_secs"]
     curr_end_secs = speech_timestamps[0]["end_secs"]
-    chunk_duration = curr_end_secs - curr_start_secs
 
     for i in range(1, len(speech_timestamps)):
         chunk_gap = curr_end_secs - speech_timestamps[i]["start_secs"]
@@ -298,7 +297,7 @@ def adjust_timestamps(
             continue
 
         # Further pass the current chunk duration through windowed chunking to
-        # ensure that the size is within max_chunk_duration_s.y
+        # ensure that the size is within max_chunk_duration_s.
         chunked_timestamps = windowed_chunking(
             curr_start,
             curr_start_secs,
@@ -313,6 +312,7 @@ def adjust_timestamps(
         curr_end_secs = speech_timestamps[i]["end_secs"]
 
     # One last chunk will always be left, add it to the adjusted_timestamps
+    chunk_duration = curr_end_secs - curr_start_secs
     chunked_timestamps = windowed_chunking(
         curr_start,
         curr_start_secs,
