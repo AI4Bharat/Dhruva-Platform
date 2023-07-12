@@ -373,7 +373,7 @@ def windowed_chunking(
 
 
 def download_audio(url: str):
-    if "youtube.com" in url or "youtu.be" in url or "drive.google/com" in url:
+    if "youtube.com" in url or "youtu.be" in url or "drive.google.com" in url:
         temp = tempfile.TemporaryDirectory()
         subprocess.call(
             [
