@@ -4,7 +4,7 @@ import json
 import time
 import traceback
 from copy import deepcopy
-from typing import Union
+from typing import Dict, List, Tuple, Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -12,15 +12,12 @@ import requests
 import scipy.signal as sps
 import soundfile as sf
 import tritonclient.http as http_client
-from fastapi import Depends, HTTPException, Request, status
-from pydub import AudioSegment
-from pydub.effects import normalize as pydub_normalize
-from scipy.io import wavfile
-from tritonclient.utils import np_to_triton_dtype
-
 from celery_backend.tasks import log_data
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
 from exception.base_error import BaseError
+from fastapi import Depends, HTTPException, Request, status
+from pydub import AudioSegment
+from pydub.effects import normalize as pydub_normalize
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
@@ -31,6 +28,7 @@ from schema.services.request import (
     ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
 )
+from schema.services.request.ulca_asr_inference_request import ULCATextFormat
 from schema.services.response import (
     ULCAAsrInferenceResponse,
     ULCANerInferenceResponse,
@@ -39,6 +37,8 @@ from schema.services.response import (
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
 )
+from scipy.io import wavfile
+from tritonclient.utils import np_to_triton_dtype
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
@@ -55,8 +55,9 @@ from ..utils.triton import (
     get_asr_io_for_triton,
     get_translation_io_for_triton,
     get_transliteration_io_for_triton,
-    get_tts_io_for_triton
+    get_tts_io_for_triton,
 )
+from .subtitle_service import SubtitleService
 
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
@@ -111,10 +112,12 @@ class InferenceService:
         service_repository: ServiceRepository = Depends(ServiceRepository),
         model_repository: ModelRepository = Depends(ModelRepository),
         inference_gateway: InferenceGateway = Depends(InferenceGateway),
+        subtitle_service: SubtitleService = Depends(SubtitleService),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
+        self.subtitle_service = subtitle_service
 
     async def run_inference(
         self,
@@ -146,19 +149,13 @@ class InferenceService:
             )
         elif task_type == _ULCATaskType.ASR:
             request_obj = ULCAAsrInferenceRequest(**request_body)
-            return await self.run_asr_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_asr_triton_inference(request_obj, request_state)
         elif task_type == _ULCATaskType.TTS:
             request_obj = ULCATtsInferenceRequest(**request_body)
-            return await self.run_tts_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_tts_triton_inference(request_obj, request_state)
         elif task_type == _ULCATaskType.NER:
             request_obj = ULCANerInferenceRequest(**request_body)
-            return await self.run_ner_triton_inference(
-                request_obj, request_state
-            )
+            return await self.run_ner_triton_inference(request_obj, request_state)
         else:
             # Shouldn't happen, unless the registry is not proper
             raise RuntimeError(f"Unknown task_type: {task_type}")
@@ -237,25 +234,14 @@ class InferenceService:
                 "float64"
             ) / (2**15 - 1)
 
-            # Do not perform VAD-chunking for Hindi-Whisper, it was not trained with audio of len < 6secs
-            if serviceId == "ai4bharat/whisper-medium-hi--gpu--t4":
-                # FIXME: Remove this patch once Kaushal has trained a better Hindi-Whisper or after the model is removed from Dhruva
-                audio_chunks = list(
-                    windowed_chunking(
-                        raw_audio, standard_rate, max_chunk_duration_s=chunk_size
-                    )
-                )
-            else:
-                audio_chunks = list(
-                    silero_vad_chunking(
-                        raw_audio,
-                        standard_rate,
-                        max_chunk_duration_s=chunk_size,
-                        min_chunk_duration_s=6.0,
-                    )
-                )
+            audio_chunks, speech_timestamps = silero_vad_chunking(
+                raw_audio,
+                standard_rate,
+                max_chunk_duration_s=chunk_size,
+                min_chunk_duration_s=6.0,
+            )
 
-            transcript = ""
+            transcript_lines: List[Tuple[str, Dict[str, float]]] = []
             for i in range(0, len(audio_chunks), batch_size):
                 batch = audio_chunks[i : i + batch_size]
                 inputs, outputs = get_asr_io_for_triton(batch)
@@ -286,11 +272,29 @@ class InferenceService:
                 )
 
                 encoded_result = response.as_numpy("TRANSCRIPTS")
-                # Combine all outputs
-                outputs = " ".join(
-                    [result.decode("utf-8") for result in encoded_result.tolist()]
+
+                transcript_lines.extend(
+                    [
+                        (result.decode("utf-8"), speech_timestamps[i + idx])
+                        for idx, result in enumerate(encoded_result.tolist())
+                    ]
                 )
-                transcript += " " + outputs
+
+            transcript = ""
+
+            match request_body.config.transcriptionFormat:
+                case ULCATextFormat.SRT:
+                    transcript += self.subtitle_service.get_srt_subtitle(
+                        transcript_lines
+                    )
+                case ULCATextFormat.WEBVTT:
+                    transcript += self.subtitle_service.get_webvtt_subtitle(
+                        transcript_lines
+                    )
+                case ULCATextFormat.TRANSCRIPT:
+                    for line in transcript_lines:
+                        transcript += line[0].strip() + " "
+
             res["output"].append({"source": transcript.strip()})
 
         return ULCAAsrInferenceResponse(**res)
