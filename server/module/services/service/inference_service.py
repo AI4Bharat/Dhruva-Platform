@@ -282,7 +282,7 @@ class InferenceService:
 
             transcript = ""
 
-            match request_body.config.transcriptionFormat:
+            match request_body.config.transcriptionFormat.value:
                 case ULCATextFormat.SRT:
                     transcript += self.subtitle_service.get_srt_subtitle(
                         transcript_lines
