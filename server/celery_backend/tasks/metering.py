@@ -1,29 +1,32 @@
-import io
 import base64
+import io
 import logging
+import math
 from typing import List
+
 import soundfile as sf
-from bson import ObjectId
-from .database import AppDatabase
+from sqlalchemy.orm import Session
 
 # Constant multipiers to calculate cost equivalents later
 from .constants import (
-    ASR_GPU_MULTIPLIER,
     ASR_CPU_MULTIPLIER,
+    ASR_GPU_MULTIPLIER,
     ASR_RAM_MULTIPLIER,
-    TTS_CPU_MULTIPLIER,
-    TTS_GPU_MULTIPLIER,
-    TTS_RAM_MULTIPLIER,
-    TTS_TOKEN_CALCULATION_MULTIPLIER,
-    NMT_CPU_MULTIPLIER,
-    NMT_GPU_MULTIPLIER,
-    NMT_RAM_MULTIPLIER,
-    NMT_TOKEN_CALCULATION_MULTIPLIER,
     NER_CPU_MULTIPLIER,
     NER_GPU_MULTIPLIER,
     NER_RAM_MULTIPLIER,
     NER_TOKEN_CALCULATION_MULTIPLIER,
+    NMT_CPU_MULTIPLIER,
+    NMT_GPU_MULTIPLIER,
+    NMT_RAM_MULTIPLIER,
+    NMT_TOKEN_CALCULATION_MULTIPLIER,
+    TTS_CPU_MULTIPLIER,
+    TTS_GPU_MULTIPLIER,
+    TTS_RAM_MULTIPLIER,
+    TTS_TOKEN_CALCULATION_MULTIPLIER,
 )
+from .database import AppDatabase
+from .metering_database import ApiKey, engine
 
 metering_db = AppDatabase()
 
@@ -39,7 +42,7 @@ def calculate_asr_usage(data) -> int:
     for d in data:
         audio = base64.b64decode(d["audioContent"])
         length = get_audio_length(audio)
-        total_usage += (
+        total_usage += math.ceil(
             length * ASR_GPU_MULTIPLIER * ASR_CPU_MULTIPLIER * ASR_RAM_MULTIPLIER
         )
 
@@ -101,46 +104,15 @@ def calculate_ner_usage(data: List) -> int:
 
 
 def write_to_db(api_key_id: str, inference_units: int, service_id: str):
-    """
-    - Check doc presence or create
-    - Check subdocument presence or create
-    Currently no single method to check for document as well as subdocument level upsert
-    """
-    metering_collection = metering_db["api_key"]
-    doc = metering_collection.find_one({"_id": ObjectId(api_key_id)})
-
-    if doc is None:
-        print("No document found for the API key")
-        return
-
-    # Check for the document
-    if "services" in doc and doc["services"]:
-        # Check for services
-        for service in doc["services"]:
-            if service["service_id"] == service_id:
-                service["usage"] += inference_units
-                service["hits"] += 1
-                break
-        else:
-            # Insert service sub document
-            doc["services"].append({"service_id": service_id, "usage": inference_units, "hits": 1})
-
-        doc["usage"] += inference_units
-        doc["hits"] += 1
-        res = metering_collection.replace_one({"_id": doc["_id"]}, doc)
-
-    else:
-        # Create the serviceId and set usage
-        metering_collection.update_one(
-            {"_id": doc["_id"]},
-            {
-                "$set": {
-                    "services": [{"service_id": service_id, "usage": inference_units, "hits": 1}],
-                    "usage": inference_units,
-                    "hits": 1
-                }
-            }
+    with Session(engine) as session:
+        api_key = ApiKey(
+            api_key_id=api_key_id,
+            inference_service_id=service_id,
+            usage=inference_units,
         )
+
+        session.add(api_key)
+        session.commit()
 
 
 def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: str):
