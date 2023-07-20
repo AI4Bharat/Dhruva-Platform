@@ -1,0 +1,66 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dhruva-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dhruva-server
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    # - type: Object
+    #   object:
+    #     metric:
+    #       name: starlette_request_duration_seconds_bucket
+    #     describedObject:
+    #       apiVersion: apps/v1
+    #       kind: Deployment
+    #       name: dhruva-server
+    #     target:
+    #       type: Value
+    #       value: "5"
+    - type: External
+      external:
+        metric:
+          name: starlette_request_duration_seconds_bucket
+        target:
+          type: Value
+          value: "5"
+# apiVersion: autoscaling/v1
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: dhruva-hpa
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: dhruva-server
+#   minReplicas: 1
+#   maxReplicas: 10
+#   targetCPUUtilizationPercentage: 50
+
+# apiVersion: autoscaling/v2beta2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: dhruva-server
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: dhruva-server
+#   minReplicas: 1
+#   maxReplicas: 10
+#   metrics:
+#     # - type: Pods
+#     #   pods:
+#     #     metricName: starlette_request_duration_seconds_bucket
+#     #     targetAverageValue: 20
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: starlette_request_duration_seconds_bucket
+#         target:
+#           type: AverageValue
+#           averageValue: "10"

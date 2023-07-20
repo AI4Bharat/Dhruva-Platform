@@ -11,14 +11,34 @@ spec:
     metadata:
       labels:
         app: dhruva-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - dhruva-server
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: dhruva-server
-          # image: dhruvacr.azurecr.io/dhruvaserver
-          # image: servertest.azurecr.io/server:latest
-          image: dhruvatestingcr.azurecr.io/dhruvaserver:latest
+          image: dhruvatestcr.azurecr.io/dhruvaserver:latest
+
           ports:
             - containerPort: 8000
+          resources:
+            limits:
+              cpu: "1000m"
+            requests:
+              cpu: "800m"
 
           imagePullPolicy: Always
 
