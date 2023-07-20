@@ -73,8 +73,9 @@ services:
     volumes:
       - timescaledb:/home/postgres/pgdata/data
     environment:
-      - POSTGRES_PASSWORD=$TIMESCALE
-      - POSTGRES_DB=$TIMESCALE_DB
+      - POSTGRES_PASSWORD=$TIMESCALE_PASSWORD
+      - POSTGRES_DB=$TIMESCALE_DATABASE_NAME
+      - POSTGRES_USER=$TIMESCALE_USER
     env_file:
       - .env
     networks:
