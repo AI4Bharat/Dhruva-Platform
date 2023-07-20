@@ -15,3 +15,6 @@ server/data
 */.cache
 *silero_vad.tar.gz
 deployment/k8s/server/server-secrets.yaml
+deployment/k8s/server/prometheus/custom-metrics-api/metrics-ca-config.json
+deployment/k8s/server/prometheus/custom-metrics-api/metrics-ca.crt
+deployment/k8s/server/prometheus/custom-metrics-api/metrics-ca.key
