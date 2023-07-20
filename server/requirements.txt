@@ -51,3 +51,6 @@ torch==2.0.0
 torchaudio==2.0.1
 mongodb-migrations==1.2.1
 yt-dlp>=2023.3.4
+SQLAlchemy==2.0.19
+sqlalchemy-timescaledb==0.4.1
+psycopg2==2.9.6
