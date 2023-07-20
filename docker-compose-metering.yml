@@ -65,6 +65,22 @@ services:
     networks:
       - dhruva-network
 
+  timescaledb:
+    container_name: timescaledb
+    image: "timescale/timescaledb-ha:pg15-latest"
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb:/home/postgres/pgdata/data
+    environment:
+      - POSTGRES_PASSWORD=$TIMESCALE_PASSWORD
+      - POSTGRES_DB=$TIMESCALE_DATABASE_NAME
+      - POSTGRES_USER=$TIMESCALE_USER
+    env_file:
+      - .env
+    networks:
+      - dhruva-network
+
   # Use Flower later for monitoring
   # celery-flower:
   #   container_name: celery-flower
@@ -85,6 +101,9 @@ services:
   #   ports:
   #     - "5555:5555"
   #   command: sh -c "python3 -m celery -A celery_backend.celery_app flower --port=5555 --basic_auth=admin:admin --broker_api=http://admin:admin@rabbithost:15672/api/ --address=0.0.0.0"
+
+volumes:
+  timescaledb: {}
 
 networks:
   dhruva-network:
