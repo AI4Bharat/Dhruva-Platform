@@ -1,20 +1,11 @@
 import datetime
-import os
 
-from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, Float, Text, create_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, DateTime, Float, Text, create_engine, select
+from sqlalchemy.orm import Session, declarative_base
 
-load_dotenv()
-
-connection_string = "timescaledb://{}:{}@{}:{}/{}".format(
-    os.environ["TIMESCALE_USER"],
-    os.environ["TIMESCALE_PASSWORD"],
-    os.environ["TIMESCALE_HOST"],
-    os.environ["TIMESCALE_PORT"],
-    os.environ["TIMESCALE_DATABASE_NAME"],
+engine = create_engine(
+    "timescaledb://dhruva:polestar&timescale@20.193.155.30:5432/metering"
 )
-engine = create_engine(connection_string)
 
 Base = declarative_base()
 
@@ -23,7 +14,8 @@ class ApiKey(Base):
     __table_args__ = {"timescaledb_hypertable": {"time_column_name": "timestamp"}}
     __tablename__ = "apikey"
 
-    api_key_id = Column("api_key_name", Text)
+    api_key_id = Column("api_key_id", Text)
+    # user_id = Column("user_id", Text)
     inference_service_id = Column("inference_service_id", Text)
     usage = Column("usage", Float)
     timestamp = Column(
@@ -35,3 +27,9 @@ class ApiKey(Base):
 
 
 Base.metadata.create_all(engine)
+
+with Session(engine) as session:
+    m = ApiKey(api_key_id="yes", inference_service_id="ues", usage=1.23)
+
+    session.add(m)
+    session.commit()
