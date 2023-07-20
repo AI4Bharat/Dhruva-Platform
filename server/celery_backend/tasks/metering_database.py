@@ -23,7 +23,7 @@ class ApiKey(Base):
     __table_args__ = {"timescaledb_hypertable": {"time_column_name": "timestamp"}}
     __tablename__ = "apikey"
 
-    api_key_id = Column("api_key_name", Text)
+    api_key_id = Column("api_key_id", Text)
     inference_service_id = Column("inference_service_id", Text)
     usage = Column("usage", Float)
     timestamp = Column(
