@@ -2,9 +2,10 @@ import base64
 import io
 import logging
 import math
-from typing import List
+from typing import List, Optional
 
 import soundfile as sf
+from bson import ObjectId
 from sqlalchemy.orm import Session
 
 # Constant multipiers to calculate cost equivalents later
@@ -28,7 +29,7 @@ from .constants import (
 from .database import AppDatabase
 from .metering_database import ApiKey, engine
 
-metering_db = AppDatabase()
+db = AppDatabase()
 
 
 def get_audio_length(audio) -> float:
@@ -104,19 +105,38 @@ def calculate_ner_usage(data: List) -> int:
 
 
 def write_to_db(api_key_id: str, inference_units: int, service_id: str):
+    api_key_collection = db["api_key"]
+    user_collection = db["user"]
+
+    api_key = api_key_collection.find_one({"_id": ObjectId(api_key_id)})
+    if not api_key:
+        print("No document found for the API key")
+        return
+
+    user = user_collection.find_one({"_id": api_key["user_id"]})
+    if not user:
+        print("Invalid user id for API key")
+        return
+
     with Session(engine) as session:
         api_key = ApiKey(
             api_key_id=api_key_id,
+            api_key_name=api_key["name"],
+            user_id=str(user["_id"]),
+            user_email=user["email"],
             inference_service_id=service_id,
             usage=inference_units,
         )
 
         session.add(api_key)
-        session.commit()
 
 
-def meter_usage(api_key_id: str, input_data: List, usage_type: str, service_id: str):
+def meter_usage(
+    api_key_id: Optional[str], input_data: List, usage_type: str, service_id: str
+):
     """Meters usage and writes to Mongo"""
+    if not api_key_id:
+        return
 
     inference_units = 0
     if usage_type == "asr":

@@ -24,6 +24,9 @@ class ApiKey(Base):
     __tablename__ = "apikey"
 
     api_key_id = Column("api_key_id", Text)
+    api_key_name = Column("api_key_name", Text)
+    user_id = Column("user_id", Text)
+    user_email = Column("user_email", Text)
     inference_service_id = Column("inference_service_id", Text)
     usage = Column("usage", Float)
     timestamp = Column(
