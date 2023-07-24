@@ -9,11 +9,11 @@ from typing import List
 
 import sqlalchemy
 from dotenv import load_dotenv
-from metering_database import ApiKey, engine
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..celery_app import app
+from .metering_database import ApiKey, engine
 
 load_dotenv()
 
