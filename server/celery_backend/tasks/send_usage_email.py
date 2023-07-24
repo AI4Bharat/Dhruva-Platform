@@ -80,7 +80,9 @@ def create_email(sender: str, recipients: str):
     message = MIMEMultipart()
     message["From"] = sender
     message["To"] = recipients
-    message["Subject"] = "Weekly Dhruva Usage Report"
+    message["Subject"] = "Weekly Dhruva Usage Report - ".format(
+        os.environ["ENVIRONMENT"].capitalize()
+    )
     part = MIMEBase("application", "octet-stream")
     part.set_payload(get_csv().read())
     part.add_header(
