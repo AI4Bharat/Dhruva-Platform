@@ -19,13 +19,13 @@ from .metering_database import ApiKey, engine
 load_dotenv()
 
 
-def get_usage_unit(task_type: str):
+def get_usage_val_and_unit(task_type: str, val: float):
     if task_type in ("translation", "transliteration", "tts"):
-        return "Input Characters"
+        return (val / 1000, "Input Kilo-Characters")
     elif task_type == "asr":
-        return "Output Audio Time"
+        return (val / 3600, "Input Audio Time (In Hours)")
     else:
-        return ""
+        return (val, "")
 
 
 def get_csv():
@@ -68,7 +68,8 @@ def get_csv():
     with Session(engine) as session:
         rows = session.execute(stmt).all()
         for row in rows:
-            r = (*row, get_usage_unit(row[3]))
+            val, unit = get_usage_val_and_unit(row[3], row[5])
+            r = (*row[:5], val, unit)
             c.writerow(r)
 
     file.seek(0)
