@@ -20,7 +20,13 @@ load_dotenv()
 
 
 def get_csv():
-    headers = ("API KEY NAME", "USER EMAIL", "INFERENCE SERVICE ID", "USAGE", "COUNT")
+    headers = (
+        "API KEY NAME",
+        "USER EMAIL",
+        "INFERENCE SERVICE ID",
+        "USAGE",
+        "REQUEST COUNT",
+    )
 
     file = io.StringIO()
     c = csv.writer(file)
