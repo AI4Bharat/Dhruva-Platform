@@ -5,12 +5,13 @@ import smtplib
 import ssl
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-from typing import List
 
 import sqlalchemy
 from dotenv import load_dotenv
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import INTERVAL
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import concat
 
 from ..celery_app import app
 from .metering_database import ApiKey, engine
@@ -19,27 +20,35 @@ load_dotenv()
 
 
 def get_csv():
+    headers = ("API KEY NAME", "USER EMAIL", "INFERENCE SERVICE ID", "USAGE", "COUNT")
+
     file = io.StringIO()
     c = csv.writer(file)
+    c.writerow(headers)
 
-    stmt = select(
-        ApiKey.api_key_id,
-        ApiKey.api_key_name,
-        ApiKey.user_id,
-        ApiKey.user_email,
-        sqlalchemy.func.sum(ApiKey.usage),
-        sqlalchemy.func.count(ApiKey.usage),
-    ).group_by(
-        ApiKey.api_key_id,
-        ApiKey.api_key_name,
-        ApiKey.user_id,
-        ApiKey.user_email,
+    stmt = (
+        select(
+            ApiKey.api_key_name,
+            ApiKey.user_email,
+            ApiKey.inference_service_id,
+            sqlalchemy.func.sum(ApiKey.usage),
+            sqlalchemy.func.count(ApiKey.usage),
+        )
+        .group_by(
+            ApiKey.api_key_id,
+            ApiKey.api_key_name,
+            ApiKey.user_id,
+            ApiKey.user_email,
+            ApiKey.inference_service_id,
+        )
+        .where(
+            sqlalchemy.func.now() - sqlalchemy.func.cast(concat(7, " DAYS"), INTERVAL)
+            <= ApiKey.timestamp
+        )
     )
-
     with Session(engine) as session:
-        rows = session.scalars(stmt).all()
-        for row in rows:
-            c.writerow(row)
+        rows = session.execute(stmt).all()
+        c.writerows(rows)
 
     file.seek(0)
     return file

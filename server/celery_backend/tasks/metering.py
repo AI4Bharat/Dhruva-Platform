@@ -129,6 +129,7 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
         )
 
         session.add(api_key)
+        session.commit()
 
 
 def meter_usage(
