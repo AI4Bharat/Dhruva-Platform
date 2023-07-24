@@ -104,7 +104,9 @@ def calculate_ner_usage(data: List) -> int:
     return total_usage
 
 
-def write_to_db(api_key_id: str, inference_units: int, service_id: str):
+def write_to_db(
+    api_key_id: str, inference_units: int, service_id: str, usage_type: str
+):
     api_key_collection = db["api_key"]
     user_collection = db["user"]
 
@@ -125,6 +127,7 @@ def write_to_db(api_key_id: str, inference_units: int, service_id: str):
             user_id=str(user["_id"]),
             user_email=user["email"],
             inference_service_id=service_id,
+            task_type=usage_type,
             usage=inference_units,
         )
 
@@ -148,4 +151,4 @@ def meter_usage(
         inference_units = calculate_tts_usage(input_data)
 
     logging.info(f"inference units: {inference_units}")
-    write_to_db(api_key_id, inference_units, service_id)
+    write_to_db(api_key_id, inference_units, service_id, usage_type)

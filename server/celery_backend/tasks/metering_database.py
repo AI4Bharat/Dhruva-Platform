@@ -28,6 +28,7 @@ class ApiKey(Base):
     user_id = Column("user_id", Text)
     user_email = Column("user_email", Text)
     inference_service_id = Column("inference_service_id", Text)
+    task_type = Column("task_type", Text)
     usage = Column("usage", Float)
     timestamp = Column(
         "timestamp",

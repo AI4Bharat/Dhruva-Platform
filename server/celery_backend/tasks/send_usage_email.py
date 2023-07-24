@@ -19,13 +19,24 @@ from .metering_database import ApiKey, engine
 load_dotenv()
 
 
+def get_usage_unit(task_type: str):
+    if task_type in ("translation", "transliteration", "tts"):
+        return "Input Characters"
+    elif task_type == "asr":
+        return "Output Audio Time"
+    else:
+        return ""
+
+
 def get_csv():
     headers = (
         "API KEY NAME",
         "USER EMAIL",
         "INFERENCE SERVICE ID",
-        "USAGE",
+        "TASK_TYPE",
         "REQUEST COUNT",
+        "USAGE",
+        "UNIT FOR USAGE",
     )
 
     file = io.StringIO()
@@ -37,8 +48,9 @@ def get_csv():
             ApiKey.api_key_name,
             ApiKey.user_email,
             ApiKey.inference_service_id,
-            sqlalchemy.func.sum(ApiKey.usage),
+            ApiKey.task_type,
             sqlalchemy.func.count(ApiKey.usage),
+            sqlalchemy.func.sum(ApiKey.usage),
         )
         .group_by(
             ApiKey.api_key_id,
@@ -46,6 +58,7 @@ def get_csv():
             ApiKey.user_id,
             ApiKey.user_email,
             ApiKey.inference_service_id,
+            ApiKey.task_type,
         )
         .where(
             sqlalchemy.func.now() - sqlalchemy.func.cast(concat(7, " DAYS"), INTERVAL)
@@ -54,7 +67,9 @@ def get_csv():
     )
     with Session(engine) as session:
         rows = session.execute(stmt).all()
-        c.writerows(rows)
+        for row in rows:
+            r = (*row, get_usage_unit(row[3]))
+            c.writerow(r)
 
     file.seek(0)
     return file
