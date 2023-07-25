@@ -40,8 +40,6 @@ from schema.services.response import (
 from scipy.io import wavfile
 from tritonclient.utils import np_to_triton_dtype
 
-from .post_processor_service import PostProcessorService
-
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model.model import ModelCache
@@ -59,6 +57,7 @@ from ..utils.triton import (
     get_transliteration_io_for_triton,
     get_tts_io_for_triton,
 )
+from .post_processor_service import PostProcessorService
 from .subtitle_service import SubtitleService
 
 
@@ -115,7 +114,7 @@ class InferenceService:
         model_repository: ModelRepository = Depends(ModelRepository),
         inference_gateway: InferenceGateway = Depends(InferenceGateway),
         subtitle_service: SubtitleService = Depends(SubtitleService),
-        post_processor_service: PostProcessorService = Depends(PostProcessorService)
+        post_processor_service: PostProcessorService = Depends(PostProcessorService),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
@@ -288,10 +287,18 @@ class InferenceService:
                 for idx, transcript_line in enumerate(transcript_lines):
                     line = transcript_line[0]
                     if "itn" in request_body.config.postProcessors:
-                        line = await self.post_processor_service.run_itn(line, request_body.config.language.sourceLanguage, request_state)
-                    
+                        line = await self.post_processor_service.run_itn(
+                            line,
+                            request_body.config.language.sourceLanguage,
+                            request_state,
+                        )
+
                     if "punctuation" in request_body.config.postProcessors:
-                        line = await self.post_processor_service.run_itn(line, request_body.config.language.sourceLanguage, request_state)
+                        line = await self.post_processor_service.run_itn(
+                            line,
+                            request_body.config.language.sourceLanguage,
+                            request_state,
+                        )
 
                     new_transcript_line = (line, transcript_line[1])
                     transcript_lines[idx] = new_transcript_line
@@ -314,8 +321,6 @@ class InferenceService:
             res["output"].append({"source": transcript.strip()})
 
         return ULCAAsrInferenceResponse(**res)
-    
-    def __run_itn_post_processor(self, transcript_lines)
 
     async def run_translation_triton_inference(
         self,
