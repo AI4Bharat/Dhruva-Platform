@@ -57,6 +57,7 @@ from ..utils.triton import (
     get_transliteration_io_for_triton,
     get_tts_io_for_triton,
 )
+from .post_processor_service import PostProcessorService
 from .subtitle_service import SubtitleService
 
 
@@ -113,11 +114,13 @@ class InferenceService:
         model_repository: ModelRepository = Depends(ModelRepository),
         inference_gateway: InferenceGateway = Depends(InferenceGateway),
         subtitle_service: SubtitleService = Depends(SubtitleService),
+        post_processor_service: PostProcessorService = Depends(PostProcessorService),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.inference_gateway = inference_gateway
         self.subtitle_service = subtitle_service
+        self.post_processor_service = post_processor_service
 
     async def run_inference(
         self,
@@ -279,6 +282,26 @@ class InferenceService:
                         for idx, result in enumerate(encoded_result.tolist())
                     ]
                 )
+
+            if request_body.config.postProcessors:
+                for idx, transcript_line in enumerate(transcript_lines):
+                    line = transcript_line[0]
+                    if "itn" in request_body.config.postProcessors:
+                        line = await self.post_processor_service.run_itn(
+                            line,
+                            request_body.config.language.sourceLanguage,
+                            request_state,
+                        )
+
+                    if "punctuation" in request_body.config.postProcessors:
+                        line = await self.post_processor_service.run_itn(
+                            line,
+                            request_body.config.language.sourceLanguage,
+                            request_state,
+                        )
+
+                    new_transcript_line = (line, transcript_line[1])
+                    transcript_lines[idx] = new_transcript_line
 
             transcript = ""
 
