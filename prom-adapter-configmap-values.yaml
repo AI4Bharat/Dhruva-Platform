@@ -1,0 +1,30 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: adapter-config
+#   namespace: default
+# data:
+#   config.yaml: |
+#     rules:
+
+#     - seriesQuery: 'starlette_request_duration_seconds_count'
+#       resources:
+#         overrides:
+#           kubernetes_namespace:
+#             resource: namespace
+#           kubernetes_pod_name:
+#             resource: pod
+#       name:
+#         metricsQuery: starlette_request_duration_seconds_count{app_name="starlette", status_code="200"}
+prometheus:
+  url: http://prometheus-kube-prometheus-prometheus.default
+
+rules:
+  custom:
+    - seriesQuery: '{__name__=~"^starlette_requests_total$"}'
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ""
+        as: "starlette_requests_total"
+      metricsQuery: (starlette_requests_total)

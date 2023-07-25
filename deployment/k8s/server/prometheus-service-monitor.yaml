@@ -12,9 +12,7 @@ spec:
       path: /metrics
       scrapeTimeout: 14s
       scheme: http
-      # static_config:
-      #   targets:
-      #     - ["localhost:8000"]
+
   namespaceSelector:
     matchNames:
       - default

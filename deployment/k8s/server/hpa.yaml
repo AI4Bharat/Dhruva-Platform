@@ -10,26 +10,10 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
-    - type: Object
-      object:
+    - type: Pods
+      pods:
         metric:
-          name: starlette_request_duration_seconds_bucket
-        describedObject:
-          apiVersion: v1beta1.custom.metrics.k8s.io
-          kind: Deployment
-          name: dhruva-server
+          name: starlette_request_duration_seconds_count
         target:
-          type: Value
-          value: "5"
-
-    # - type: Object
-    #   object:
-    #     metric:
-    #       name: starlette_request_duration_seconds_bucket
-    #     describedObject:
-    #       apiVersion: apps/v1
-    #       kind: Deployment
-    #       name: dhruva-server
-    #     target:
-    #       type: Value
-    #       value: "5"
+          type: AverageValue
+          averageValue: 19

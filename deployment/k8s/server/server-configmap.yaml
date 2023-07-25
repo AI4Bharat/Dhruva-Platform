@@ -16,6 +16,10 @@ data:
         scrape_interval: 1s
         scrape_timeout: 1s
 
+        static_configs:
+          - targets:
+              - "dhruva-server.default:80"
+
         kubernetes_sd_configs:
         - role: endpoints
 
@@ -31,17 +35,27 @@ data:
           action: replace
           target_label: __metrics_path__
           regex: (.+)
-        - source_labels: [__address__, __meta_kubernetes_service_annotation_dhruva_prometheus_port]
+        # - source_labels: [__address__, __meta_kubernetes_service_annotation_dhruva_prometheus_port]
+        #   action: replace
+        #   target_label: __address__
+        #   regex: ([^:]+)(?::\d+)?;(\d+)
+        #   replacement: $1:$2
+        - source_labels: [__meta_kubernetes_namespace]
           action: replace
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          action: replace
+          target_label: kubernetes_service
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: kubernetes_pod
+
+        - source_labels: [__meta_kubernetes_pod_label_app]
+          action: keep
+          regex: dhruva-server
+
+        - source_labels: [__address__]
+          action: replace
+          regex: ([^:]+)(?::\d+)?
+          replacement: ${1}:8080
           target_label: __address__
-          regex: ([^:]+)(?::\d+)?;(\d+)
-          replacement: $1:$2
-        # - source_labels: [__meta_kubernetes_namespace]
-        #   action: replace
-        #   target_label: kubernetes_namespace
-        # - source_labels: [__meta_kubernetes_service_name]
-        #   action: replace
-        #   target_label: kubernetes_service
-        # - source_labels: [__meta_kubernetes_pod_name]
-        #   action: replace
-        #   target_label: kubernetes_pod
