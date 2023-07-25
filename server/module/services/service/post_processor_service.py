@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import tritonclient.http as http_client
 from dotenv import load_dotenv
-from fastapi import Request
+from fastapi import Depends, Request
 
 from ..gateway import InferenceGateway
 
@@ -12,7 +12,9 @@ load_dotenv()
 
 
 class PostProcessorService:
-    def __init__(self, inference_gateway: InferenceGateway) -> None:
+    def __init__(
+        self, inference_gateway: InferenceGateway = Depends(InferenceGateway)
+    ) -> None:
         self.inference_gateway = inference_gateway
 
     async def run_itn(
