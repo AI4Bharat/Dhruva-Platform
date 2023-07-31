@@ -97,7 +97,7 @@ def create_email(sender: str, recipients: str):
     from_date = to_date - timedelta(days=7)
 
     body = MIMEText(
-        "Report from {} to {} IST.".format(
+        "Report from {} to {}.".format(
             from_date.strftime("%d, %b %Y"), to_date.strftime("%d, %b %Y")
         ),
         "plain",
