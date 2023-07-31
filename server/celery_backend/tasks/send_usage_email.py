@@ -93,10 +93,15 @@ def create_email(sender: str, recipients: str):
     )
     message.attach(part)
 
-    to_date = datetime.now()
+    to_date = datetime.now() + timedelta(hours=5, minutes=30)
     from_date = to_date - timedelta(days=7)
 
-    body = MIMEText("Report from {} to {}".format(from_date, to_date), "plain")
+    body = MIMEText(
+        "Report from {} to {} IST.".format(
+            from_date.strftime("%d, %b %Y"), to_date.strftime("%d, %b %Y")
+        ),
+        "plain",
+    )
     message.attach(body)
     return message.as_string()
 
