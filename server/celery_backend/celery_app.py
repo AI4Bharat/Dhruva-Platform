@@ -19,7 +19,7 @@ app.conf.beat_schedule = {
     },
     "send_usage_email": {
         "task": "send.usage.email",
-        "schedule": crontab(day_of_week="1", hour="13", minute="30"),  # in utc
+        "schedule": crontab(day_of_week="1", hour="3", minute="0"),  # in utc
         "options": {"queue": "send_usage_email"},
     },
 }
