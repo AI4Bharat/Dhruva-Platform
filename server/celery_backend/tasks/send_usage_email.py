@@ -3,8 +3,10 @@ import io
 import os
 import smtplib
 import ssl
+from datetime import datetime, timedelta
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import sqlalchemy
 from dotenv import load_dotenv
@@ -90,6 +92,12 @@ def create_email(sender: str, recipients: str):
         "attachment; filename=Report.csv",
     )
     message.attach(part)
+
+    to_date = datetime.now()
+    from_date = to_date - timedelta(days=7)
+
+    body = MIMEText("Report from {} to {}".format(from_date, to_date), "plain")
+    message.attach(body)
     return message.as_string()
 
 
