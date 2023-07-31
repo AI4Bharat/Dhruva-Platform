@@ -14,7 +14,7 @@ app.conf.beat_schedule = {
     },
     "upload_feedback_dump": {
         "task": "upload.feedback.dump",
-        "schedule": crontab(day_of_month="1", hour="5", minute="30"),  # in utc
+        "schedule": crontab(day_of_month="1", hour="6", minute="30"),  # in utc
         "options": {"queue": "upload_feedback_dump"},
     },
     "send_usage_email": {
