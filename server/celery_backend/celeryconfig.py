@@ -15,4 +15,5 @@ imports = (
     "celery_backend.tasks.log_data",
     "celery_backend.tasks.heartbeat",
     "celery_backend.tasks.upload_feedback_dump",
+    "celery_backend.tasks.send_usage_email",
 )
