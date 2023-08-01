@@ -13,7 +13,14 @@ spec:
     - type: Pods
       pods:
         metric:
-          name: starlette_request_duration_seconds_count
+          name: starlette_requests
         target:
           type: AverageValue
-          averageValue: 19
+          averageValue: "70m"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60

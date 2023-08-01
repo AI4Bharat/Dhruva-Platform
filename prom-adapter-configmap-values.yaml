@@ -21,10 +21,18 @@ prometheus:
 
 rules:
   custom:
-    - seriesQuery: '{__name__=~"^starlette_requests_total$"}'
+    # - seriesQuery: '{__name__=~"^starlette_requests_total$"}'
+    #   resources:
+    #     template: <<.Resource>>
+    #   name:
+    #     matches: ""
+    #     as: "starlette_requests_total"
+    #   metricsQuery: (starlette_requests_total)
+
+    - seriesQuery: '{__name__=~"^starlette_requests$"}'
       resources:
         template: <<.Resource>>
       name:
         matches: ""
-        as: "starlette_requests_total"
-      metricsQuery: (starlette_requests_total)
+        as: "starlette_requests"
+      metricsQuery: (starlette_requests[1m])
