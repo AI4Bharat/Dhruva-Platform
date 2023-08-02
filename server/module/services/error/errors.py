@@ -37,3 +37,8 @@ class Errors(Enum):
         "kind": "DHRUVA-114",
         "message": "Failed to fetch feedback",
     }
+    DHRUVA115 = {
+        "kind": "DHRUVA-115",
+        "message": "Invalid task type in database",
+    }
+    DHRUVA116 = {"kind": "DHRUVA-116", "message": "Failed to fetch file from link"}

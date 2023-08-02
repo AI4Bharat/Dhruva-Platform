@@ -1,10 +1,9 @@
 from typing import Optional
 
-from fastapi import Depends
-from pymongo.database import Database
-
 from db.BaseRepository import BaseRepository
 from db.database import AppDatabase
+from fastapi import Depends
+from pymongo.database import Database
 
 from ..model import Service
 
@@ -17,6 +16,9 @@ class ServiceRepository(BaseRepository[Service]):
 
     def find_by_id(self, id: str) -> Optional[Service]:
         return super().find_one({"serviceId": id})
+
+    def get_by_service_id(self, id: str) -> Service:
+        return super().get_one({"serviceId": id})
 
     def delete_one(self, id: str):
         result = self.collection.delete_one({"serviceId": id})

@@ -38,7 +38,7 @@ class PostProcessorService:
 
         headers = {"Authorization": "Bearer " + os.environ["ITN_ENDPOINT_API_KEY"]}
 
-        response1 = await self.inference_gateway.send_triton_request(
+        response = await self.inference_gateway.send_triton_request(
             url=os.environ["ITN_ENDPOINT"],
             model_name="itn",
             input_list=inputs,
@@ -48,7 +48,10 @@ class PostProcessorService:
             task_type="",
         )
 
-        batch_result = response1.as_numpy("OUTPUT_TEXT")
+        batch_result = response.as_numpy("OUTPUT_TEXT")
+        if batch_result is None:
+            batch_result = np.array([])
+
         res = " ".join([result.decode("utf8") for result in batch_result])
         return res
 
@@ -73,7 +76,7 @@ class PostProcessorService:
 
         headers = {"Authorization": "Bearer " + os.environ["ITN_ENDPOINT_API_KEY"]}
 
-        response1 = await self.inference_gateway.send_triton_request(
+        response = await self.inference_gateway.send_triton_request(
             url=os.environ["ITN_ENDPOINT"],
             model_name="punctuation",
             input_list=inputs,
@@ -83,6 +86,9 @@ class PostProcessorService:
             task_type="",
         )
 
-        batch_result = response1.as_numpy("OUTPUT_TEXT")
+        batch_result = response.as_numpy("OUTPUT_TEXT")
+        if batch_result is None:
+            batch_result = np.array([])
+
         res = " ".join([result.decode("utf8") for result in batch_result])
         return res
