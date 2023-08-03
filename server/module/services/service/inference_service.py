@@ -4,21 +4,16 @@ import json
 import time
 import traceback
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple, Union
-from urllib.request import urlopen
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
-import requests
-import scipy.signal as sps
 import soundfile as sf
-import tritonclient.http as http_client
 from celery_backend.tasks import log_data
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
 from exception import NullValueError
 from exception.base_error import BaseError
 from fastapi import Depends, HTTPException, Request, status
 from pydub import AudioSegment
-from pydub.effects import normalize as pydub_normalize
 from schema.services.common import LANG_CODE_TO_SCRIPT_CODE, _ULCATaskType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
@@ -41,7 +36,6 @@ from schema.services.response import (
     ULCATtsInferenceResponse,
 )
 from scipy.io import wavfile
-from tritonclient.utils import np_to_triton_dtype
 
 from server.schema.services.common import (
     AudioFormat,
@@ -55,12 +49,6 @@ from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model import Model, ModelCache, Service, ServiceCache
 from ..repository import ModelRepository, ServiceRepository
-from ..utils.audio import (
-    download_audio,
-    silero_vad_chunking,
-    webrtc_vad_chunking,
-    windowed_chunking,
-)
 from . import AudioService, PostProcessorService, SubtitleService, TritonUtilsService
 
 
@@ -189,7 +177,7 @@ class InferenceService:
             # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
             batch_size, chunk_size = (1, 16) if "whisper" in serviceId else (32, 20)
 
-            audio_chunks, speech_timestamps = silero_vad_chunking(
+            audio_chunks, speech_timestamps = self.audio_service.silero_vad_chunking(
                 final_audio,
                 standard_rate,
                 max_chunk_duration_s=chunk_size,
@@ -240,80 +228,6 @@ class InferenceService:
             res.output.append(_ULCAText(source=transcript.strip()))
 
         return res
-
-    def __get_audio_bytes(self, input: _ULCAAudio):
-        try:
-            if input.audioContent:
-                file_bytes = base64.b64decode(input.audioContent)
-            else:  # Either input audioContent or audioUri have to exist. Validation in Pydantic class.
-                file_bytes = download_audio(input.audioUri)  # type: ignore
-        except Exception:
-            raise BaseError(Errors.DHRUVA116.value, traceback.format_exc())
-
-        return file_bytes
-
-    def __process_asr_input(self, file_handle: io.BytesIO, standard_rate: int):
-        data, sampling_rate = sf.read(file_handle)
-        data = data.tolist()
-        raw_audio = np.array(data)  # in float64
-
-        mono_raw_audio = self.audio_service.stereo_to_mono(raw_audio)
-        resampled_audio = self.audio_service.resample_audio(
-            mono_raw_audio, sampling_rate, standard_rate
-        )
-        equalized_audio = self.audio_service.equalize_amplitude(
-            resampled_audio, standard_rate
-        )
-        final_audio = self.audio_service.dequantize_audio(equalized_audio)
-
-        return final_audio
-
-    async def __run_asr_post_processors(
-        self,
-        transcript_lines: List[Tuple[str, Dict[str, float]]],
-        post_processors: List[str],
-        source_language: str,
-        request_state: Request,
-    ):
-        for idx, transcript_line in enumerate(transcript_lines):
-            line = transcript_line[0]
-            if "itn" in post_processors:
-                line = await self.post_processor_service.run_itn(
-                    line,
-                    source_language,
-                    request_state,
-                )
-
-            if "punctuation" in post_processors:
-                line = await self.post_processor_service.run_itn(
-                    line,
-                    source_language,
-                    request_state,
-                )
-
-            new_transcript_line = (line, transcript_line[1])
-            transcript_lines[idx] = new_transcript_line
-
-        return transcript_lines
-
-    def __create_asr_response_format(
-        self,
-        transcript_lines: List[Tuple[str, Dict[str, float]]],
-        transcription_format: ULCATextFormat,
-    ):
-        transcript = ""
-        match transcription_format:
-            case ULCATextFormat.SRT:
-                transcript += self.subtitle_service.get_srt_subtitle(transcript_lines)
-            case ULCATextFormat.WEBVTT:
-                transcript += self.subtitle_service.get_webvtt_subtitle(
-                    transcript_lines
-                )
-            case ULCATextFormat.TRANSCRIPT:
-                for line in transcript_lines:
-                    transcript += line[0].strip() + " "
-
-        return transcript
 
     async def run_translation_triton_inference(
         self,
@@ -694,3 +608,77 @@ class InferenceService:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
                 pass
         return {"pipelineResponse": results}
+
+    def __get_audio_bytes(self, input: _ULCAAudio):
+        try:
+            if input.audioContent:
+                file_bytes = base64.b64decode(input.audioContent)
+            else:  # Either input audioContent or audioUri have to exist. Validation in Pydantic class.
+                file_bytes = self.audio_service.download_audio(input.audioUri)  # type: ignore
+        except Exception:
+            raise BaseError(Errors.DHRUVA116.value, traceback.format_exc())
+
+        return file_bytes
+
+    def __process_asr_input(self, file_handle: io.BytesIO, standard_rate: int):
+        data, sampling_rate = sf.read(file_handle)
+        data = data.tolist()
+        raw_audio = np.array(data)  # in float64
+
+        mono_raw_audio = self.audio_service.stereo_to_mono(raw_audio)
+        resampled_audio = self.audio_service.resample_audio(
+            mono_raw_audio, sampling_rate, standard_rate
+        )
+        equalized_audio = self.audio_service.equalize_amplitude(
+            resampled_audio, standard_rate
+        )
+        final_audio = self.audio_service.dequantize_audio(equalized_audio)
+
+        return final_audio
+
+    async def __run_asr_post_processors(
+        self,
+        transcript_lines: List[Tuple[str, Dict[str, float]]],
+        post_processors: List[str],
+        source_language: str,
+        request_state: Request,
+    ):
+        for idx, transcript_line in enumerate(transcript_lines):
+            line = transcript_line[0]
+            if "itn" in post_processors:
+                line = await self.post_processor_service.run_itn(
+                    line,
+                    source_language,
+                    request_state,
+                )
+
+            if "punctuation" in post_processors:
+                line = await self.post_processor_service.run_itn(
+                    line,
+                    source_language,
+                    request_state,
+                )
+
+            new_transcript_line = (line, transcript_line[1])
+            transcript_lines[idx] = new_transcript_line
+
+        return transcript_lines
+
+    def __create_asr_response_format(
+        self,
+        transcript_lines: List[Tuple[str, Dict[str, float]]],
+        transcription_format: ULCATextFormat,
+    ):
+        transcript = ""
+        match transcription_format:
+            case ULCATextFormat.SRT:
+                transcript += self.subtitle_service.get_srt_subtitle(transcript_lines)
+            case ULCATextFormat.WEBVTT:
+                transcript += self.subtitle_service.get_webvtt_subtitle(
+                    transcript_lines
+                )
+            case ULCATextFormat.TRANSCRIPT:
+                for line in transcript_lines:
+                    transcript += line[0].strip() + " "
+
+        return transcript
