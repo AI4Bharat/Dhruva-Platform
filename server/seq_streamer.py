@@ -9,7 +9,7 @@ from urllib.parse import parse_qs
 import numpy as np
 import requests
 import socketio
-from module.services.utils.audio import silero_vad_chunking
+from module.services.service.audio_service import AudioService
 from pydantic import BaseModel
 from schema.services.common import _ULCATaskType
 from scipy.io.wavfile import write as scipy_wav_write
@@ -68,6 +68,8 @@ class StreamingServerTaskSequence:
         else:
             # self.inference_url = "https://api.dhruva.ai4bharat.org/services/inference/pipeline"
             exit(f"ERROR: Please set the env var `BACKEND_PORT`")
+
+        self.audio_service = AudioService()
 
         # Constants. TODO: Should we allow changing this?
         self.input_audio__bytes_per_sample = 2
@@ -161,7 +163,7 @@ class StreamingServerTaskSequence:
     def run_inference(self, sid: str, is_final: bool) -> str:
         if self.client_states[sid].input_audio__auto_chunking:
             audio_chunks, _ = list(
-                silero_vad_chunking(
+                self.audio_service.silero_vad_chunking(
                     self.client_states[sid].input_audio__buffer,
                     self.client_states[sid].input_audio__sampling_rate,
                     16,

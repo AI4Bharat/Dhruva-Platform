@@ -2,12 +2,16 @@ from typing import List
 
 import numpy as np
 import tritonclient.http as http_client
+from fastapi import Depends
 from tritonclient.utils import np_to_triton_dtype
 
-from ..utils.audio import pad_batch
+from .audio_service import AudioService
 
 
 class TritonUtilsService:
+    def __init__(self, audio_service: AudioService = Depends(AudioService)):
+        self.audio_service = audio_service
+
     def get_string_tensor(self, string_values, tensor_name: str):
         string_obj = np.array(string_values, dtype="object")
         input_obj = http_client.InferInput(
@@ -73,7 +77,7 @@ class TritonUtilsService:
     def get_asr_io_for_triton(
         self, audio_chunks: List[np.ndarray], service_id: str, language: str
     ):
-        o = pad_batch(audio_chunks)
+        o = self.audio_service.pad_batch(audio_chunks)
         input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
         input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
         input0.set_data_from_numpy(o[0])

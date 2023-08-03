@@ -2,14 +2,13 @@ import json
 import time
 from typing import Any, Callable, Dict, Optional, Union
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.routing import APIRoute, Request, Response
-
 from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from celery_backend.tasks import log_data
 from exception.base_error import BaseError
 from exception.http_error import HttpErrorResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.routing import APIRoute, Request, Response
 from schema.auth.common import ApiKeyType
 from schema.services.request import (
     ULCAAsrInferenceRequest,
