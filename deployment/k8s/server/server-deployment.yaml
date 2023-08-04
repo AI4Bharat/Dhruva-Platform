@@ -16,18 +16,6 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - dhruva-server
-                topologyKey: kubernetes.io/hostname
       containers:
         - name: dhruva-server
           image: dhruvatestcr.azurecr.io/dhruvaserver:latest
