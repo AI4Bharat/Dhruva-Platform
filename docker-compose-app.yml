@@ -27,7 +27,6 @@ services:
     ports:
       - "$FRONTEND_PORT:$FRONTEND_PORT"
     volumes:
-      - ./client:/usr/app
       - app_data:/client
     env_file:
       - .env
