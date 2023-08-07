@@ -114,9 +114,13 @@ def send_usage_email() -> None:
     smtp_username = os.environ["SMTP_USERNAME"]
     smtp_password = os.environ["SMTP_PASSWORD"]
 
+    print("Sending usage report on email")
+
     email = create_email(sender, email_list)
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL(os.environ["SMTP_SERVER"], 465, context=context) as server:
         server.login(smtp_username, smtp_password)
         server.sendmail(sender, email_list.split(","), email)
+
+    print("Sent usage report on email")
