@@ -12,7 +12,7 @@ from celery_backend.tasks import log_data
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
 from exception.base_error import BaseError
 from exception.null_value_error import NullValueError
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Request, status
 from pydub import AudioSegment
 from schema.services.common import (
     LANG_CODE_TO_SCRIPT_CODE,
@@ -45,6 +45,8 @@ from schema.services.response import (
 )
 from scipy.io import wavfile
 
+from server.exception.client_error import ClientError
+
 from ..error.errors import Errors
 from ..gateway import InferenceGateway
 from ..model import Model, ModelCache, Service, ServiceCache
@@ -52,7 +54,7 @@ from ..repository import ModelRepository, ServiceRepository
 from .audio_service import AudioService
 from .post_processor_service import PostProcessorService
 from .subtitle_service import SubtitleService
-from .triton_utils_service import  TritonUtilsService
+from .triton_utils_service import TritonUtilsService
 
 
 def populate_service_cache(serviceId: str, service_repository: ServiceRepository):
@@ -76,8 +78,8 @@ def validate_service_id(serviceId: str, service_repository):
         try:
             service = populate_service_cache(serviceId, service_repository)
         except NullValueError:
-            raise HTTPException(
-                status.HTTP_404_BAD_REQUEST, detail={"message": "Service Id not found"}
+            raise ClientError(
+                status_code=status.HTTP_404_BAD_REQUEST, message="Invalid Service Id"
             )
         except Exception:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
@@ -370,7 +372,7 @@ class InferenceService:
         results = []
 
         for input in request_body.input:
-            input_string = self.process_tts_input(input.source)
+            input_string = self.__process_tts_input(input.source)
 
             if input_string:
                 inputs, outputs = self.triton_utils_service.get_tts_io_for_triton(
@@ -421,10 +423,6 @@ class InferenceService:
 
         return ULCATtsInferenceResponse(audio=results, config=base_audio_config)
 
-    def process_tts_input(self, text: str):
-        processed_text = text.replace("।", ".").strip()
-        return processed_text
-
     async def run_ner_triton_inference(
         self,
         request_body: ULCANerInferenceRequest,
@@ -444,33 +442,6 @@ class InferenceService:
         )
 
         return ULCANerInferenceResponse(**res)
-
-    def __auto_select_service_id(
-        self, task_type: _ULCATaskType, config: Dict[str, Any]
-    ) -> str:
-        match task_type:
-            case _ULCATaskType.ASR:
-                if config["language"]["sourceLanguage"] == "en":
-                    serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
-                elif config["language"]["sourceLanguage"] == "hi":
-                    serviceId = "ai4bharat/conformer-hi-gpu--t4"
-                elif config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
-                    serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
-                else:
-                    serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
-            case _ULCATaskType.TRANSLATION:
-                serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
-            case _ULCATaskType.TTS:
-                if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
-                    serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
-                elif config["language"]["sourceLanguage"] in {"en", "brx", "mni"}:
-                    serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
-                else:
-                    serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
-            case _:
-                raise BaseError(Errors.DHRUVA115.value)
-
-        return serviceId
 
     async def run_pipeline_inference(
         self,
@@ -685,3 +656,34 @@ class InferenceService:
                     transcript += line[0].strip() + " "
 
         return transcript
+
+    def __process_tts_input(self, text: str):
+        processed_text = text.replace("।", ".").strip()
+        return processed_text
+
+    def __auto_select_service_id(
+        self, task_type: _ULCATaskType, config: Dict[str, Any]
+    ) -> str:
+        match task_type:
+            case _ULCATaskType.ASR:
+                if config["language"]["sourceLanguage"] == "en":
+                    serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
+                elif config["language"]["sourceLanguage"] == "hi":
+                    serviceId = "ai4bharat/conformer-hi-gpu--t4"
+                elif config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
+                    serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
+                else:
+                    serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+            case _ULCATaskType.TRANSLATION:
+                serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
+            case _ULCATaskType.TTS:
+                if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
+                    serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+                elif config["language"]["sourceLanguage"] in {"en", "brx", "mni"}:
+                    serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
+                else:
+                    serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
+            case _:
+                raise BaseError(Errors.DHRUVA115.value)
+
+        return serviceId

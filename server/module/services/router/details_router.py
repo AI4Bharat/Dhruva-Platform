@@ -1,13 +1,12 @@
 import traceback
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception.base_error import BaseError
-from exception.http_error import HttpErrorResponse
+from exception.client_error import ClientError, ClientErrorResponse
+from fastapi import APIRouter, Depends, status
 from schema.auth.common import ApiKeyType
 from schema.services.request import (
     CreateSnapshotRequest,
@@ -31,7 +30,7 @@ router = APIRouter(
         Depends(AuthProvider),
         Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={"401": {"model": ClientErrorResponse}},
 )
 
 
@@ -74,7 +73,7 @@ async def _view_model_details(
         raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
     if not response:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise ClientError(status.HTTP_404_NOT_FOUND, message="Invalid Model Id")
 
     return response
 

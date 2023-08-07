@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
-from exception.http_error import HttpErrorResponse
+from exception.client_error import ClientErrorResponse
 from schema.auth.request import (
     CreateApiKeyRequest,
     GetAllApiKeysRequest,
@@ -32,7 +32,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={"401": {"model": ClientErrorResponse}},
 )
 
 

@@ -6,7 +6,7 @@ from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProv
 from auth.auth_provider import AuthProvider
 from celery_backend.tasks import log_data
 from exception.base_error import BaseError
-from exception.http_error import HttpErrorResponse
+from exception.client_error import ClientErrorResponse
 from fastapi import APIRouter, Depends, Request
 from fastapi.routing import APIRoute, Request, Response
 from schema.auth.common import ApiKeyType
@@ -109,8 +109,8 @@ router = APIRouter(
         Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
     responses={
-        "401": {"model": HttpErrorResponse},
-        "403": {"model": HttpErrorResponse},
+        "401": {"model": ClientErrorResponse},
+        "403": {"model": ClientErrorResponse},
     },
 )
 

@@ -4,12 +4,11 @@ import time
 from typing import Any, Dict, List, Optional
 
 import jsonpickle
+from celery_backend.tasks import push_metrics
 from fastapi import Request
 from fastapi.logger import logger
 from prometheus_client import CollectorRegistry, Counter, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware
-
-from celery_backend.tasks import push_metrics
 
 
 class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
@@ -26,8 +25,8 @@ class PrometheusGlobalMetricsMiddleware(BaseHTTPMiddleware):
         app,
         app_name: str,
         registry: CollectorRegistry,
-        custom_labels: List[str] = None,
-        custom_metrics: List[Any] = None,
+        custom_labels: List[str] = [],
+        custom_metrics: List[Any] = [],
     ):
         super().__init__(app)
         self.app_name = app_name.lower()

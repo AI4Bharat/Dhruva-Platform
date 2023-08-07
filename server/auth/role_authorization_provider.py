@@ -1,10 +1,10 @@
 from typing import Any, Dict, List
 
 from bson import ObjectId
-from fastapi import Depends, HTTPException, Request, status
-from pymongo.database import Database
-
 from db.database import AppDatabase
+from exception import ClientError
+from fastapi import Depends, Request, status
+from pymongo.database import Database
 from schema.auth.common import RoleType
 
 
@@ -24,7 +24,7 @@ class RoleAuthorizationProvider:
             return
 
         if user_role not in self.roles:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={"message": "Not authorized"},
+                message="Not authorized",
             )

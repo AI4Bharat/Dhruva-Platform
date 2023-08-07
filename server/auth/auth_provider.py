@@ -2,15 +2,13 @@ from typing import Optional
 
 from auth import api_key_provider, auth_token_provider
 from auth.token_type import TokenType
-from fastapi import Depends, Header, HTTPException, Request, status
+from db.database import AppDatabase
+from fastapi import Depends, Header, Request, status
 from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from pymongo.database import Database
 
-from auth import api_key_provider, auth_token_provider
-from auth.token_type import TokenType
-from db.database import AppDatabase
-
+from server.exception.client_error import ClientError
 
 
 def AuthProvider(
@@ -27,9 +25,9 @@ def AuthProvider(
     match x_auth_source:
         case TokenType.AUTH_TOKEN:
             if not credentials_bearer:
-                raise HTTPException(
+                raise ClientError(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail={"message": "Not authenticated"},
+                    message="Not authenticated",
                 )
 
             validate_status = auth_token_provider.validate_credentials(
@@ -37,9 +35,9 @@ def AuthProvider(
             )
         case TokenType.API_KEY:
             if not credentials_key:
-                raise HTTPException(
+                raise ClientError(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail={"message": "Not authenticated"},
+                    message="Not authenticated",
                 )
 
             validate_status = api_key_provider.validate_credentials(
@@ -47,7 +45,7 @@ def AuthProvider(
             )
 
     if not validate_status:  # type: ignore
-        raise HTTPException(
+        raise ClientError(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"message": "Not authenticated"},
+            message="Not authenticated",
         )

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class BaseError(Exception):
     def __init__(
         self,
-        error: dict[str, str],
+        error: Dict[str, str],
         traceback: Optional[str] = None,
     ) -> None:
         self.error_kind = error["kind"]

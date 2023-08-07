@@ -3,16 +3,14 @@ from collections import OrderedDict
 from logging.config import dictConfig
 
 import pymongo
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from fastapi.logger import logger
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-
 from cache.app_cache import get_cache_connection
+from custom_metrics import *
 from db.database import db_clients
+from db.metering_database import Base, engine
 from db.populate_db import seed_collection
+from dotenv import load_dotenv
 from exception.base_error import BaseError
+from exception.client_error import ClientError
 from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
 from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
 from exception.ulca_set_api_key_tracking_client_error import (
@@ -21,8 +19,12 @@ from exception.ulca_set_api_key_tracking_client_error import (
 from exception.ulca_set_api_key_tracking_server_error import (
     ULCASetApiKeyTrackingServerError,
 )
+from fastapi import FastAPI, Request
+from fastapi.logger import logger
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi_sqlalchemy import DBSessionMiddleware
 from log.logger import LogConfig
-from custom_metrics import *
 from middleware import PrometheusGlobalMetricsMiddleware
 from module import *
 from seq_streamer import StreamingServerTaskSequence
@@ -67,11 +69,18 @@ app.add_middleware(
     custom_metrics=[INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS],
 )
 
+app.add_middleware(DBSessionMiddleware, custom_engine=engine)
+
 
 @app.on_event("startup")
 async def init_mongo_client():
     db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
     db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
+
+
+@app.on_event("startup")
+async def init_metering_db():
+    Base.metadata.create_all(engine)
 
 
 @app.on_event("startup")
@@ -132,6 +141,21 @@ async def ulca_delete_api_key_server_error_handler(
         content={
             "isRevoked": False,
             "message": exc.error_kind + " - Internal Server Error",
+        },
+    )
+
+
+@app.exception_handler(ClientError)
+async def client_error_handler(request: Request, exc: ClientError):
+    if exc.log_exception:
+        logger.error(exc)
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": {
+                "message": f"{exc.message}",
+            }
         },
     )
 

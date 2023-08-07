@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import StreamingResponse
-
 from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
-from exception.http_error import HttpErrorResponse
+from exception.client_error import ClientErrorResponse
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import StreamingResponse
 from schema.auth.common import ApiKeyType
 from schema.services.request import (
     FeedbackDownloadQuery,
@@ -20,7 +19,7 @@ router = APIRouter(
         Depends(AuthProvider),
         Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={"401": {"model": ClientErrorResponse}},
 )
 
 

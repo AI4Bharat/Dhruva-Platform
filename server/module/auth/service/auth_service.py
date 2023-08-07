@@ -11,8 +11,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from bson import ObjectId
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
-
+from exception import ClientError
 from exception.base_error import BaseError
 from exception.ulca_delete_api_key_client_error import ULCADeleteApiKeyClientError
 from exception.ulca_delete_api_key_server_error import ULCADeleteApiKeyServerError
@@ -22,6 +21,8 @@ from exception.ulca_set_api_key_tracking_client_error import (
 from exception.ulca_set_api_key_tracking_server_error import (
     ULCASetApiKeyTrackingServerError,
 )
+from fastapi import Depends, status
+from fastapi_sqlalchemy import db
 from module.auth.model import Session
 from schema.auth.request import (
     CreateApiKeyRequest,
@@ -44,6 +45,7 @@ from schema.auth.response.ulca_api_key_tracking_response import (
     ULCAApiKeyTrackingResponseStatus,
 )
 
+from ...services.model import ApiKeyMetering
 from ..error import Errors
 from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
@@ -69,9 +71,9 @@ class AuthService:
             raise BaseError(Errors.DHRUVA201.value, traceback.format_exc())
 
         if not user:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"message": "Invalid credentials"},
+                message="Invalid credentials",
             )
 
         ph = PasswordHasher()
@@ -80,9 +82,9 @@ class AuthService:
         try:
             ph.verify(user.password, request.password)
         except VerifyMismatchError:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"message": "Invalid credentials"},
+                message="Invalid credentials",
             )
         except Exception:
             raise BaseError(Errors.DHRUVA202.value, traceback.format_exc())
@@ -120,15 +122,15 @@ class AuthService:
         try:
             headers = jwt.get_unverified_header(request.token)
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid refresh token"},
+            raise ClientError(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="Invalid refresh token",
             )
 
         if headers.get("tok") != "refresh":
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid refresh token"},
+                message="Invalid refresh token",
             )
 
         try:
@@ -136,9 +138,9 @@ class AuthService:
                 request.token, key=os.environ["JWT_SECRET_KEY"], algorithms=["HS256"]
             )
         except Exception:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid refresh token"},
+                message="Invalid refresh token",
             )
 
         session = Session(
@@ -173,9 +175,9 @@ class AuthService:
                 id if not request.target_user_id else ObjectId(request.target_user_id)
             )
         except Exception:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid target user id"},
+                message="Invalid target user id",
             )
 
         try:
@@ -188,9 +190,9 @@ class AuthService:
         if existing_api_key and request.regenerate:
             key = self.__regenerate_api_key(existing_api_key)
         elif existing_api_key and not request.regenerate:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "API Key name already exists"},
+                message="API Key name already exists",
             )
         else:
             key = self.__generate_new_api_key(request, user_id)
@@ -249,9 +251,9 @@ class AuthService:
                 id if not params.target_user_id else ObjectId(params.target_user_id)
             )
         except Exception:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid target user id"},
+                message="Invalid target user id",
             )
 
         try:
@@ -262,9 +264,9 @@ class AuthService:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if not key:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "API Key does not exist"},
+                message="API Key does not exist",
             )
 
         return key
@@ -290,9 +292,9 @@ class AuthService:
                 id if not params.target_user_id else ObjectId(params.target_user_id)
             )
         except Exception:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid target user id"},
+                message="Invalid target user id",
             )
 
         try:
@@ -336,9 +338,9 @@ class AuthService:
                 id if not params.target_user_id else ObjectId(params.target_user_id)
             )
         except Exception:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Invalid target user id"},
+                message="Invalid target user id",
             )
 
         try:
@@ -349,9 +351,9 @@ class AuthService:
             raise BaseError(Errors.DHRUVA208.value, traceback.format_exc())
 
         if not api_key:
-            raise HTTPException(
+            raise ClientError(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"message": "Api key not found"},
+                message="Api key not found",
             )
 
         if params.data_tracking:

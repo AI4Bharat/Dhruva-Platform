@@ -4,11 +4,11 @@ import traceback
 from typing import List, Optional
 
 from bson import ObjectId
-from fastapi import Depends, HTTPException, status
-from pydantic import AnyHttpUrl, parse_obj_as
-
 from exception.base_error import BaseError
+from exception.client_error import ClientError
+from fastapi import Depends, status
 from module.auth.repository.api_key_repository import ApiKeyRepository
+from pydantic import AnyHttpUrl, parse_obj_as
 from schema.services.request import CreateSnapshotRequest, ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
@@ -39,7 +39,9 @@ class DetailsService:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
 
         if not service:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            raise ClientError(
+                status_code=status.HTTP_404_NOT_FOUND, message="Invalid Service Id"
+            )
 
         try:
             model = self.model_repository.get_by_id(service.modelId)
@@ -62,7 +64,10 @@ class DetailsService:
             raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
         return ServiceViewResponse(
-            **service.dict(), model=model.dict(), key_usage=api_keys, total_usage=total_usage
+            **service.dict(),
+            model=model.dict(),
+            key_usage=api_keys,
+            total_usage=total_usage
         )
 
     def list_services(self) -> List[ServiceListResponse]:

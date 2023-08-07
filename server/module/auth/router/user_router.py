@@ -1,13 +1,12 @@
 import traceback
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import EmailStr
-
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
-from exception.base_error import BaseError
-from exception.http_error import HttpErrorResponse
+from exception import BaseError, ClientError
+from exception.client_error import ClientErrorResponse
+from fastapi import APIRouter, Depends, status
+from pydantic import EmailStr
 from schema.auth.request import (
     CreateUserRequest,
     GetUserQuery,
@@ -28,7 +27,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
     ],
-    responses={"401": {"model": HttpErrorResponse}},
+    responses={"401": {"model": ClientErrorResponse}},
 )
 
 
@@ -43,8 +42,8 @@ async def _get_user(
         raise BaseError(Errors.DHRUVA206.value, traceback.format_exc())
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail={"message": "User not found"}
+        raise ClientError(
+            status_code=status.HTTP_404_NOT_FOUND, message="User not found"
         )
 
     return user

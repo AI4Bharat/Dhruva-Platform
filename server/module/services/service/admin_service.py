@@ -1,17 +1,16 @@
 import datetime
 import traceback
 
-from fastapi import Depends
-
 from exception.base_error import BaseError
+from fastapi import Depends
 from schema.auth.response.get_all_api_keys_response import GetAllApiKeysDetailsResponse
 from schema.services.request import (
     ModelCreateRequest,
     ModelUpdateRequest,
     ServiceCreateRequest,
+    ServiceHeartbeatRequest,
     ServiceUpdateRequest,
 )
-from schema.services.request import ServiceHeartbeatRequest
 
 from ...auth.service.auth_service import AuthService
 from ..error.errors import Errors
@@ -39,16 +38,16 @@ class AdminService:
             ) = self.auth_service.get_all_api_keys_with_usage(
                 page, limit, target_user_id
             )
-
-            return GetAllApiKeysDetailsResponse(
-                api_keys=api_keys,
-                total_usage=total_usage,
-                page=page,
-                limit=limit,
-                total_pages=total_pages,
-            )
         except Exception:
             raise BaseError(Errors.DHRUVA109.value, traceback.format_exc())
+
+        return GetAllApiKeysDetailsResponse(
+            api_keys=api_keys,
+            total_usage=total_usage,
+            page=page,
+            limit=limit,
+            total_pages=total_pages,
+        )
 
     def create_service(self, request: ServiceCreateRequest):
         svc = request.dict()
@@ -108,17 +107,17 @@ class AdminService:
         ModelCache.delete(id)
         return self.model_repository.delete_one(id)
 
-    def inference_service_status(self,request_body:ServiceHeartbeatRequest):
+    def inference_service_status(self, request_body: ServiceHeartbeatRequest):
         try:
             service = self.service_repository.find_by_id(request_body.serviceId)
             if not service:
                 raise BaseError(Errors.DHRUVA104.value)
             service = service.dict()
-            if 'healthStatus' not in service:
-                service['healthStatus'] = {}
-            service['healthStatus']['status'] = request_body.status
-            service['healthStatus']['lastUpdated'] = str(datetime.datetime.now())
+            if "healthStatus" not in service:
+                service["healthStatus"] = {}
+            service["healthStatus"]["status"] = request_body.status
+            service["healthStatus"]["lastUpdated"] = str(datetime.datetime.now())
             self.service_repository.update_one(service)
-            return {"message":"Service status updated successfully"}
+            return {"message": "Service status updated successfully"}
         except:
             raise BaseError(Errors.DHRUVA113.value, traceback.format_exc())
