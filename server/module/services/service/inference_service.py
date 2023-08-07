@@ -11,6 +11,7 @@ import soundfile as sf
 from celery_backend.tasks import log_data
 from custom_metrics import INFERENCE_REQUEST_COUNT, INFERENCE_REQUEST_DURATION_SECONDS
 from exception.base_error import BaseError
+from exception.client_error import ClientError
 from exception.null_value_error import NullValueError
 from fastapi import Depends, Request, status
 from pydub import AudioSegment
@@ -44,8 +45,6 @@ from schema.services.response import (
     ULCATtsInferenceResponse,
 )
 from scipy.io import wavfile
-
-from server.exception.client_error import ClientError
 
 from ..error.errors import Errors
 from ..gateway import InferenceGateway

@@ -3,12 +3,11 @@ from typing import Optional
 from auth import api_key_provider, auth_token_provider
 from auth.token_type import TokenType
 from db.database import AppDatabase
+from exception.client_error import ClientError
 from fastapi import Depends, Header, Request, status
 from fastapi.security import APIKeyHeader, HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from pymongo.database import Database
-
-from server.exception.client_error import ClientError
 
 
 def AuthProvider(
