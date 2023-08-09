@@ -123,10 +123,10 @@ class InferenceService:
         request_state: Request,
     ) -> ULCAInferenceResponse:
         serviceId = request.config.serviceId
-        service: Service = validate_service_id(serviceId, self.service_repository)  # type: ignore
-        model: Model = validate_model_id(service.modelId, self.model_repository)  # type: ignore
+        service = validate_service_id(serviceId, self.service_repository)
+        model = validate_model_id(service.modelId, self.model_repository)  # type: ignore
 
-        task_type = model.task.type
+        task_type = model.task_type  # type: ignore
         request_body = request.dict()
 
         match task_type:
