@@ -78,7 +78,7 @@ def validate_service_id(serviceId: str, service_repository):
             service = populate_service_cache(serviceId, service_repository)
         except NullValueError:
             raise ClientError(
-                status_code=status.HTTP_404_BAD_REQUEST, message="Invalid Service Id"
+                status_code=status.HTTP_404_NOT_FOUND, message="Invalid Service Id"
             )
         except Exception:
             raise BaseError(Errors.DHRUVA104.value, traceback.format_exc())
