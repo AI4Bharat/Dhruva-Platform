@@ -626,7 +626,7 @@ class InferenceService:
                 )
 
             if "punctuation" in post_processors:
-                line = await self.post_processor_service.run_itn(
+                line = await self.post_processor_service.run_punctuation(
                     line,
                     source_language,
                     request_state,
