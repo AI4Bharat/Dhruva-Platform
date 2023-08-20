@@ -22,8 +22,9 @@ from schema.services.common import (
     _ULCABaseAudioConfig,
     _ULCALanguage,
     _ULCATaskType,
-    _ULCAText,
+    _ULCATextNBest,
 )
+from schema.services.common.ulca_text_n_best import _NBestToken
 from schema.services.request import (
     ULCAAsrInferenceRequest,
     ULCAGenericInferenceRequest,
@@ -224,12 +225,14 @@ class InferenceService:
                 )
 
             transcript_source_lines: List[Tuple[str, Dict[str, float]]] = transcript_lines  # type: ignore
+            n_best_tokens: List[_NBestToken] = []
 
             if request_body.config.bestTokenCount > 0:
                 transcript_source_lines: List[Tuple[str, Dict[str, float]]] = []
                 for transcript_line in transcript_lines:
-                    js = json.loads(transcript_line)  # type: ignore
-                    transcript_source_lines.append((js[0]["source"], js[1]))
+                    js = json.loads(transcript_line[0])  # type: ignore
+                    transcript_source_lines.append((js["source"], transcript_line[1]))
+                    n_best_tokens.extend(js["nBestTokens"])
 
             if request_body.config.postProcessors:
                 transcript_source_lines = await self.__run_asr_post_processors(
@@ -243,14 +246,91 @@ class InferenceService:
                 transcript_source_lines, request_body.config.transcriptionFormat.value
             )
 
-            n_best_tokens = None
+            res.output.append(
+                _ULCATextNBest(
+                    source=transcript.strip(),
+                    nBestTokens=n_best_tokens if n_best_tokens else None,
+                )
+            )
 
-            if request_body.config.bestTokenCount > 0:
-                n_best_tokens = []
-                for transcript_line in transcript_lines:
-                    n_best_tokens.extend(transcript_line[0]['nBestTokens']) # type: ignore
+        return res
 
-            res.output.append(_ULCAText(source=transcript.strip(), nBestTokens=n_best_tokens))
+    async def run_asr_topk_triton_inference(
+        self,
+        request_body: ULCAAsrInferenceRequest,
+        request_state: Request,
+    ) -> ULCAAsrInferenceResponse:
+        serviceId = request_body.config.serviceId
+
+        service: Service = validate_service_id(serviceId, self.service_repository)  # type: ignore
+        headers = {"Authorization": "Bearer " + service.api_key}
+
+        language = request_body.config.language.sourceLanguage
+        model_name = "asr_am_topk_ensemble"
+        standard_rate = 16000
+
+        res = ULCAAsrInferenceResponse(output=[])
+        for input in request_body.audio:
+            file_bytes = self.__get_audio_bytes(input)
+            file_handle = io.BytesIO(file_bytes)
+
+            final_audio = self.__process_asr_input(file_handle, standard_rate)
+
+            # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
+            batch_size, chunk_size = (1, 16) if "whisper" in serviceId else (32, 20)
+
+            audio_chunks, speech_timestamps = self.audio_service.silero_vad_chunking(
+                final_audio,
+                standard_rate,
+                max_chunk_duration_s=chunk_size,
+                min_chunk_duration_s=6.0,
+            )
+
+            transcript_lines: List[Tuple[Dict[str, Any], Dict[str, float]]] = []
+            for i in range(0, len(audio_chunks), batch_size):
+                batch = audio_chunks[i : i + batch_size]
+                inputs, outputs = self.triton_utils_service.get_asr_io_for_triton(
+                    batch, serviceId, language, request_body.config.bestTokenCount
+                )
+
+                response = await self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name=model_name,
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                    request_state=request_state,
+                    task_type="asr",
+                    request_body=request_body,
+                )
+
+                encoded_result = response.as_numpy("TRANSCRIPTS")
+                if encoded_result is None:
+                    encoded_result = np.array([])
+
+                transcript_lines.extend(
+                    [
+                        (json.loads(result.decode("utf-8")), speech_timestamps[i + idx])
+                        for idx, result in enumerate(encoded_result.tolist())
+                    ]
+                )
+
+            transcript_source_lines = [
+                (transcript_line[0]["source"], transcript_line[1])
+                for transcript_line in transcript_lines
+            ]
+
+            transcript = self.__create_asr_response_format(
+                transcript_source_lines, request_body.config.transcriptionFormat.value
+            )
+
+            n_best_tokens = []
+            for transcript_line in transcript_lines:
+                n_best_tokens.extend(transcript_line[0]["nBestTokens"])
+
+            res.output.append(
+                _ULCAText(source=transcript.strip(), nBestTokens=n_best_tokens)
+            )
 
         return res
 
