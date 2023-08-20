@@ -75,7 +75,7 @@ class TritonUtilsService:
         return inputs, outputs
 
     def get_asr_io_for_triton(
-        self, audio_chunks: List[np.ndarray], service_id: str, language: str
+        self, audio_chunks: List[np.ndarray], service_id: str, language: str, n_best_tok: int = 0
     ):
         o = self.audio_service.pad_batch(audio_chunks)
         input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
@@ -86,6 +86,7 @@ class TritonUtilsService:
 
         if (
             "conformer-hi" not in service_id
+            and "conformer-ta" not in service_id
             and "whisper" not in service_id
             and language != "en"
         ):
@@ -97,6 +98,12 @@ class TritonUtilsService:
                 np.asarray(lang_id).astype("object").reshape((len(audio_chunks), 1))
             )
             inputs.append(input2)
+
+        if n_best_tok > 0:
+            input3 = http_client.InferInput("TOPK", o[1].shape, "INT32")
+            input3.set_data_from_numpy(np.array([n_best_tok]*len(o[1])).reshape(o[1].shape).astype('int32'))
+            inputs.append(input3)
+
 
         outputs = [http_client.InferRequestedOutput("TRANSCRIPTS")]
         return inputs, outputs

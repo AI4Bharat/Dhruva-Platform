@@ -107,6 +107,43 @@ class AudioService:
 
         return (audio_chunks, adjusted_timestamps)
 
+    def download_audio(self, url: str):
+        if "youtube.com" in url or "youtu.be" in url or "drive.google.com" in url:
+            temp = tempfile.TemporaryDirectory()
+            subprocess.call(
+                [
+                    "yt-dlp",
+                    "-x",
+                    "--audio-format",
+                    "mp3",
+                    "--audio-quality",
+                    "0",
+                    url,
+                    "--output",
+                    temp.name + "/file.mp3",
+                ]
+            )
+
+            with open(temp.name + "/file.mp3", "rb") as fhand:
+                file_bytes = fhand.read()
+
+            temp.cleanup()
+
+        else:
+            file_bytes = urlopen(url).read()
+
+        return file_bytes
+
+    def pad_batch(self, batch_data: list):
+        batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
+        max_length = max(batch_data_lens)
+        batch_size = len(batch_data)
+
+        padded_zero_array = np.zeros((batch_size, max_length), dtype=np.float32)
+        for idx, data in enumerate(batch_data):
+            padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
+        return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
+
     def __adjust_timestamps(
         self,
         speech_timestamps: List[Dict[str, float]],
@@ -214,40 +251,3 @@ class AudioService:
             start_secs = round(start / sample_rate, 3)
 
         return chunked_timestamps
-
-    def download_audio(self, url: str):
-        if "youtube.com" in url or "youtu.be" in url or "drive.google.com" in url:
-            temp = tempfile.TemporaryDirectory()
-            subprocess.call(
-                [
-                    "yt-dlp",
-                    "-x",
-                    "--audio-format",
-                    "mp3",
-                    "--audio-quality",
-                    "0",
-                    url,
-                    "--output",
-                    temp.name + "/file.mp3",
-                ]
-            )
-
-            with open(temp.name + "/file.mp3", "rb") as fhand:
-                file_bytes = fhand.read()
-
-            temp.cleanup()
-
-        else:
-            file_bytes = urlopen(url).read()
-
-        return file_bytes
-
-    def pad_batch(self, batch_data: list):
-        batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
-        max_length = max(batch_data_lens)
-        batch_size = len(batch_data)
-
-        padded_zero_array = np.zeros((batch_size, max_length), dtype=np.float32)
-        for idx, data in enumerate(batch_data):
-            padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
-        return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
