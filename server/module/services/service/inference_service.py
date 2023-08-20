@@ -192,7 +192,9 @@ class InferenceService:
                 min_chunk_duration_s=6.0,
             )
 
-            transcript_lines: List[Tuple[Union[str, Dict[str, str]], Dict[str, float]]] = []
+            transcript_lines: List[
+                Tuple[Union[str, Dict[str, float]], Dict[str, float]]
+            ] = []
             for i in range(0, len(audio_chunks), batch_size):
                 batch = audio_chunks[i : i + batch_size]
                 inputs, outputs = self.triton_utils_service.get_asr_io_for_triton(
@@ -221,10 +223,13 @@ class InferenceService:
                     ]
                 )
 
-            transcript_source_lines:List[Tuple[str, Dict[str, float]]] = transcript_lines # type: ignore
+            transcript_source_lines: List[Tuple[str, Dict[str, float]]] = transcript_lines  # type: ignore
 
             if request_body.config.bestTokenCount > 0:
-                transcript_source_lines = [(transcript_line[0]["source"], transcript_line[1]) for transcript_line in transcript_lines] # type: ignore
+                transcript_source_lines: List[Tuple[str, Dict[str, float]]] = []
+                for transcript_line in transcript_lines:
+                    js = json.loads(transcript_line)  # type: ignore
+                    transcript_source_lines.append((js[0]["source"], js[1]))
 
             if request_body.config.postProcessors:
                 transcript_source_lines = await self.__run_asr_post_processors(
