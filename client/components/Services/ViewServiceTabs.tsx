@@ -39,24 +39,32 @@ const ViewServiceTabs = ({
             </Text>
             <HStack>
               <Text className="dview-service-info-item"> Health : </Text>
-              <Text
-                fontWeight={"bold"}
-                color={
-                  serviceInfo["healthStatus"]["status"] == "healthy"
-                    ? "green.300"
-                    : "red.300"
-                }
-              >
-                {serviceInfo["healthStatus"]["status"]}
-              </Text>
+              {serviceInfo["healthStatus"] ? (
+                <Text
+                  fontWeight={"bold"}
+                  color={
+                    serviceInfo["healthStatus"]["status"] == "healthy"
+                      ? "green.300"
+                      : "red.300"
+                  }
+                >
+                  {serviceInfo["healthStatus"]["status"]}
+                </Text>
+              ) : (
+                <Text color="gray.500">Status Unavailable</Text>
+              )}
             </HStack>
-            <Text className="dview-service-info-item">
-              (updated:{" "}
-              {new Date(
-                serviceInfo["healthStatus"]["lastUpdated"]
-              ).toDateString()}{" "}
-              )
-            </Text>
+            {serviceInfo["healthStatus"] ? (
+              <Text className="dview-service-info-item">
+                (updated:{" "}
+                {new Date(
+                  serviceInfo["healthStatus"]["lastUpdated"]
+                ).toDateString()}{" "}
+                )
+              </Text>
+            ) : (
+              <></>
+            )}
           </Stack>
         </Stack>
       </TabPanel>
