@@ -213,9 +213,8 @@ const ASRTry: React.FC<Props> = (props) => {
 
     // Start the timer
     setTimer(0);
-    const interval = setInterval(() => 
-    {
-      setTimer(prevTimer => prevTimer + 1);
+    const interval = setInterval(() => {
+      setTimer((prevTimer) => prevTimer + 1);
     }, 1000);
 
     // Save the interval ID in the state to clear it later
@@ -231,7 +230,7 @@ const ASRTry: React.FC<Props> = (props) => {
     setPlaceHolder("Start Recording for ASR Inference...");
     setFetching(false);
     setFetched(true);
-      // Clear the timer interval
+    // Clear the timer interval
     clearInterval(timerInterval);
   };
 
@@ -374,18 +373,14 @@ const ASRTry: React.FC<Props> = (props) => {
                 //@ts-ignore
                 <Text color={"gray.300"}>
                   Recording Time : {timer} / 120 seconds
-                  {
-                    timer >= 120
-                    && 
+                  {timer >= 120 &&
                     toast({
-                      title: 'Audio time limit exceeded',
-                      status: 'warning',
+                      title: "Audio time limit exceeded",
+                      status: "warning",
                       duration: 3000,
                       isClosable: true,
-                    })
-                    && 
-                    stopRecording()
-                  }
+                    }) &&
+                    stopRecording()}
                 </Text>
               )}
               <Stack direction={"row"} gap={5}>

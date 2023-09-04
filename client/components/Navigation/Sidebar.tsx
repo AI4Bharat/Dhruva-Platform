@@ -203,33 +203,37 @@ const Sidebar: React.FC = () => {
               </Button>
             </Link>
           </Box> */}
-          <Box>
-            <Link href={"/monitoring"}>
-              <Button
-                mb="2"
-                ml={isOpen ? 0 : 0}
-                h={10}
-                variant={number === 4 ? "solid" : "ghost"}
-                background={number === 4 ? "orange.500" : "transperent"}
-                color={number === 4 ? "white" : "black"}
-                size="l"
-                boxShadow={number === 4 ? "xl" : "none"}
-                w={"100%"}
-                justifyContent="flex-start"
-              >
-                <Box>
-                  <BiChart style={{ marginLeft: 12 }} size={25} />
-                </Box>
-                {isOpen ? (
-                  <Text marginLeft={4} fontWeight={"normal"}>
-                    Monitoring
-                  </Text>
-                ) : (
-                  <></>
-                )}
-              </Button>
-            </Link>
-          </Box>
+          {userRole === "ADMIN" ? (
+            <Box>
+              <Link href={"/monitoring"}>
+                <Button
+                  mb="2"
+                  ml={isOpen ? 0 : 0}
+                  h={10}
+                  variant={number === 4 ? "solid" : "ghost"}
+                  background={number === 4 ? "orange.500" : "transperent"}
+                  color={number === 4 ? "white" : "black"}
+                  size="l"
+                  boxShadow={number === 4 ? "xl" : "none"}
+                  w={"100%"}
+                  justifyContent="flex-start"
+                >
+                  <Box>
+                    <BiChart style={{ marginLeft: 12 }} size={25} />
+                  </Box>
+                  {isOpen ? (
+                    <Text marginLeft={4} fontWeight={"normal"}>
+                      Monitoring
+                    </Text>
+                  ) : (
+                    <></>
+                  )}
+                </Button>
+              </Link>
+            </Box>
+          ) : (
+            <></>
+          )}
 
           {userRole === "ADMIN" ? (
             <Box>
