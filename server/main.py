@@ -74,7 +74,7 @@ app.add_middleware(DBSessionMiddleware, custom_engine=engine)
 
 @app.on_event("startup")
 async def init_mongo_client():
-    db_client = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
+    db_client["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
 
 
 @app.on_event("startup")
