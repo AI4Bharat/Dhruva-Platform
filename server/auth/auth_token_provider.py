@@ -10,7 +10,7 @@ from pymongo.database import Database
 
 from .errors import Errors
 
-load_dotenv(override=True)
+load_dotenv()
 
 
 def validate_credentials(credentials: str, request: Request, db: Database) -> bool:

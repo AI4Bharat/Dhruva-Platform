@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from mongodb_migrations.cli import MigrationManager
 from mongodb_migrations.config import Configuration, Execution
 
-load_dotenv(override=True)
+load_dotenv()
 
 
 def parse_connection_string(conn_str: str):

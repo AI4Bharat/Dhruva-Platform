@@ -1,18 +1,14 @@
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from pymongo.database import Database
 
-load_dotenv(override=True)
+load_dotenv()
 
-db_clients = dict()
+db_client: Optional[Database] = None
 
 
 def AppDatabase() -> Database:
-    mongo_db = db_clients["app"][os.environ["APP_DB_NAME"]]
-    return mongo_db
-
-
-def LogDatabase() -> Database:
-    mongo_db = db_clients["log"][os.environ["LOG_DB_NAME"]]
+    mongo_db = db_client[os.environ["APP_DB_NAME"]] # type: ignore
     return mongo_db

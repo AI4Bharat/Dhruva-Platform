@@ -5,7 +5,7 @@ from logging.config import dictConfig
 import pymongo
 from cache.app_cache import get_cache_connection
 from custom_metrics import *
-from db.database import db_clients
+from db.database import db_client
 from db.metering_database import Base, engine
 from db.populate_db import seed_collection
 from dotenv import load_dotenv
@@ -31,7 +31,7 @@ from seq_streamer import StreamingServerTaskSequence
 
 dictConfig(LogConfig().dict())
 
-load_dotenv(override=True)
+load_dotenv()
 
 app = FastAPI(
     title="Dhruva API",
@@ -74,8 +74,7 @@ app.add_middleware(DBSessionMiddleware, custom_engine=engine)
 
 @app.on_event("startup")
 async def init_mongo_client():
-    db_clients["app"] = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
-    db_clients["log"] = pymongo.MongoClient(os.environ["LOG_DB_CONNECTION_STRING"])
+    db_client = pymongo.MongoClient(os.environ["APP_DB_CONNECTION_STRING"])
 
 
 @app.on_event("startup")

@@ -50,7 +50,7 @@ from ..error import Errors
 from ..model.api_key import ApiKey, ApiKeyCache
 from ..repository import ApiKeyRepository, SessionRepository, UserRepository
 
-load_dotenv(override=True)
+load_dotenv()
 
 
 class AuthService:
