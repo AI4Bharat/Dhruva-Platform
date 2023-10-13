@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -7,29 +8,22 @@ from urllib.request import urlopen
 import numpy as np
 import scipy.signal as sps
 import torch
+from fastapi import Depends
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 
-model, silero_utils = torch.hub.load(
-    repo_or_dir=os.environ.get("VAD_DIR", "/root/.cache/torch/hub/snakers_silero_vad"),
-    model="silero_vad",
-    # force_reload=True,
-    source="local",
-    onnx=False,
-)
-(
-    get_speech_timestamps,
-    _,
-    _,
-    _,
-    _,
-) = silero_utils
+from ..gateway import InferenceGateway
+from ..service import TritonUtilsService
 
 
 class AudioService:
-    def __init__(self):
-        self.model = model
-        self.get_speech_timestamps = get_speech_timestamps
+    def __init__(
+            self, 
+            triton_utils_service: TritonUtilsService = Depends(TritonUtilsService), 
+            inference_gateway: InferenceGateway = Depends(InferenceGateway)
+    ):
+        self.triton_utils_service = triton_utils_service
+        self.inference_gateway = inference_gateway
 
     def stereo_to_mono(self, audio: np.ndarray):
         if len(audio.shape) > 1:  # Stereo to mono
@@ -67,7 +61,7 @@ class AudioService:
         )
         return dequantized_audio
 
-    def silero_vad_chunking(
+    async def silero_vad_chunking(
         self,
         raw_audio: np.ndarray,
         sample_rate: int,
@@ -76,17 +70,45 @@ class AudioService:
         min_speech_duration_ms: int = 100,
     ) -> Tuple[List[np.ndarray], List[Dict[str, float]]]:
         wav = torch.from_numpy(raw_audio).float()
-        speech_timestamps: Optional[
-            List[Dict[str, float]]
-        ] = self.get_speech_timestamps(
-            wav,
-            self.model,
-            sampling_rate=sample_rate,
-            threshold=0.3,
-            min_silence_duration_ms=400,
-            speech_pad_ms=200,
-            min_speech_duration_ms=min_speech_duration_ms,
+        # speech_timestamps: Optional[
+        #     List[Dict[str, float]]
+        # ] = self.get_speech_timestamps(
+        #     wav,
+        #     self.model,
+        #     sampling_rate=sample_rate,
+        #     threshold=0.3,
+        #     min_silence_duration_ms=400,
+        #     speech_pad_ms=200,
+        #     min_speech_duration_ms=min_speech_duration_ms,
+        # )
+
+        inputs, outputs = self.triton_utils_service.get_vad_io_for_triton(
+            wav, 
+            sample_rate, 
+            0.3, 
+            400, 
+            200, 
+            min_speech_duration_ms
         )
+
+        headers = {"Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]}
+
+        response = await self.inference_gateway.send_triton_request(
+            url=os.environ["SPEECH_UTILS_ENDPOINT"],
+            model_name="vad",
+            input_list=inputs,
+            output_list=outputs,
+            headers=headers,
+            task_type="",
+            request_state=None,
+        )
+
+        batch_result = response.as_numpy("TRANSCRIPTIONS")
+
+        if not batch_result:
+            speech_timestamps = None
+        else:
+            speech_timestamps = json.loads(batch_result[0].decode("utf-8"))
 
         if not speech_timestamps:
             return ([], [])

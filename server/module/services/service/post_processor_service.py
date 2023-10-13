@@ -21,7 +21,6 @@ class PostProcessorService:
         self,
         line: str,
         language: str,
-        request_state: Request,
     ):
         input1 = http_client.InferInput("INPUT_TEXT", [1, 1], "BYTES")
         input1.set_data_from_numpy(
@@ -44,7 +43,7 @@ class PostProcessorService:
             input_list=inputs,
             output_list=outputs,
             headers=headers,
-            request_state=request_state,
+            request_state=None,
             task_type="",
         )
 
@@ -59,7 +58,6 @@ class PostProcessorService:
         self,
         line: str,
         language: str,
-        request_state: Request,
     ):
         input1 = http_client.InferInput("INPUT_TEXT", [1, 1], "BYTES")
         input1.set_data_from_numpy(
@@ -82,7 +80,7 @@ class PostProcessorService:
             input_list=inputs,
             output_list=outputs,
             headers=headers,
-            request_state=request_state,
+            request_state=None,
             task_type="",
         )
 

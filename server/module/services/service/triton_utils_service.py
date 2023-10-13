@@ -112,3 +112,31 @@ class TritonUtilsService:
 
         outputs = [http_client.InferRequestedOutput("TRANSCRIPTS")]
         return inputs, outputs
+
+    def get_vad_io_for_triton(
+            self, 
+            audio: np.ndarray, 
+            sampling_rate: int, 
+            threshold: float, 
+            min_silence_duration_ms: int, 
+            speech_pad_ms: int, 
+            min_speech_duration_ms: int
+    ):
+        audio_signal, audio_len = self.audio_service.pad_batch([audio])
+        input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
+        input0.set_data_from_numpy(audio_signal)
+        input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
+        input1.set_data_from_numpy(np.asarray([[sampling_rate]]).astype('int32'))
+        input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
+        input2.set_data_from_numpy(np.asarray([[threshold]]).astype('float32'))
+        input3 = http_client.InferInput("MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32")
+        input3.set_data_from_numpy(np.asarray([[min_silence_duration_ms]]).astype('int32'))
+        input4 = http_client.InferInput("SPEECH_PAD_MS", audio_len.shape, "INT32")
+        input4.set_data_from_numpy(np.asarray([[speech_pad_ms]]).astype('int32'))
+        input5 = http_client.InferInput("MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32")
+        input5.set_data_from_numpy(np.asarray([[min_speech_duration_ms]]).astype('int32'))
+
+        inputs = [input0, input1, input2, input3, input4, input5]
+        outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
+
+        return inputs, outputs

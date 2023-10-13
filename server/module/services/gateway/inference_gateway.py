@@ -57,14 +57,14 @@ class InferenceGateway:
         model_name: str,
         input_list: list,
         output_list: list,
-        request_state: Request,
+        request_state: Optional[Request],
         task_type: str,
         request_body: Optional[Any] = None,
     ):
         if request_body:
             INFERENCE_REQUEST_COUNT.labels(
-                request_state.state.api_key_name,
-                request_state.state.user_id,
+                request_state.state.api_key_name, # type: ignore
+                request_state.state.user_id, # type: ignore
                 request_body.config.serviceId,
                 task_type,
                 request_body.config.language.sourceLanguage,
@@ -99,8 +99,8 @@ class InferenceGateway:
         end = time.perf_counter()
         if request_body:
             INFERENCE_REQUEST_DURATION_SECONDS.labels(
-                request_state.state.api_key_name,
-                request_state.state.user_id,
+                request_state.state.api_key_name, # type: ignore
+                request_state.state.user_id, # type: ignore
                 request_body.config.serviceId,
                 task_type,
                 request_body.config.language.sourceLanguage,
