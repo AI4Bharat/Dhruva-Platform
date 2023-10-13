@@ -68,37 +68,31 @@ class AudioService:
         min_speech_duration_ms: int = 100,
     ) -> Tuple[List[np.ndarray], List[Dict[str, float]]]:
         wav = torch.from_numpy(raw_audio).float()
-        # speech_timestamps: Optional[
-        #     List[Dict[str, float]]
-        # ] = self.get_speech_timestamps(
-        #     wav,
-        #     self.model,
-        #     sampling_rate=sample_rate,
-        #     threshold=0.3,
-        #     min_silence_duration_ms=400,
-        #     speech_pad_ms=200,
-        #     min_speech_duration_ms=min_speech_duration_ms,
-        # )
-
         audio_signal, audio_len = self.pad_batch([wav])
+
         input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
         input0.set_data_from_numpy(audio_signal)
         input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
-        input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype('int32'))
+        input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype("int32"))
         input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
-        input2.set_data_from_numpy(np.asarray([[0.3]]).astype('float32'))
-        input3 = http_client.InferInput("MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32")
-        input3.set_data_from_numpy(np.asarray([[400]]).astype('int32'))
+        input2.set_data_from_numpy(np.asarray([[0.3]]).astype("float32"))
+        input3 = http_client.InferInput(
+            "MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32"
+        )
+        input3.set_data_from_numpy(np.asarray([[400]]).astype("int32"))
         input4 = http_client.InferInput("SPEECH_PAD_MS", audio_len.shape, "INT32")
-        input4.set_data_from_numpy(np.asarray([[200]]).astype('int32'))
-        input5 = http_client.InferInput("MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32")
-        input5.set_data_from_numpy(np.asarray([[100]]).astype('int32'))
+        input4.set_data_from_numpy(np.asarray([[200]]).astype("int32"))
+        input5 = http_client.InferInput(
+            "MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32"
+        )
+        input5.set_data_from_numpy(
+            np.asarray([[min_speech_duration_ms]]).astype("int32")
+        )
 
         inputs = [input0, input1, input2, input3, input4, input5]
         outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
 
         headers = {"Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]}
-
         response = self.inference_gateway.send_triton_request(
             url=os.environ["SPEECH_UTILS_ENDPOINT"],
             model_name="vad",
@@ -109,7 +103,7 @@ class AudioService:
             request_state=None,
         )
 
-        batch_result = response.as_numpy("TRANSCRIPTIONS")
+        batch_result = response.as_numpy("TIMESTAMPS")
 
         if not batch_result:
             speech_timestamps = None
