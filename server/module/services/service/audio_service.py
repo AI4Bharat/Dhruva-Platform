@@ -2,12 +2,13 @@ import json
 import os
 import subprocess
 import tempfile
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 from urllib.request import urlopen
 
 import numpy as np
 import scipy.signal as sps
 import torch
+import tritonclient.http as http_client
 from fastapi import Depends
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
@@ -82,14 +83,22 @@ class AudioService:
         #     min_speech_duration_ms=min_speech_duration_ms,
         # )
 
-        inputs, outputs = self.triton_utils_service.get_vad_io_for_triton(
-            wav, 
-            sample_rate, 
-            0.3, 
-            400, 
-            200, 
-            min_speech_duration_ms
-        )
+        audio_signal, audio_len = self.pad_batch([wav])
+        input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
+        input0.set_data_from_numpy(audio_signal)
+        input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
+        input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype('int32'))
+        input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
+        input2.set_data_from_numpy(np.asarray([[0.3]]).astype('float32'))
+        input3 = http_client.InferInput("MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32")
+        input3.set_data_from_numpy(np.asarray([[400]]).astype('int32'))
+        input4 = http_client.InferInput("SPEECH_PAD_MS", audio_len.shape, "INT32")
+        input4.set_data_from_numpy(np.asarray([[200]]).astype('int32'))
+        input5 = http_client.InferInput("MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32")
+        input5.set_data_from_numpy(np.asarray([[100]]).astype('int32'))
+
+        inputs = [input0, input1, input2, input3, input4, input5]
+        outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
 
         headers = {"Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]}
 
