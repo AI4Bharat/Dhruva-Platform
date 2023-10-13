@@ -14,16 +14,13 @@ from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 
 from ..gateway import InferenceGateway
-from ..service import TritonUtilsService
 
 
 class AudioService:
     def __init__(
             self, 
-            triton_utils_service: TritonUtilsService = Depends(TritonUtilsService), 
             inference_gateway: InferenceGateway = Depends(InferenceGateway)
     ):
-        self.triton_utils_service = triton_utils_service
         self.inference_gateway = inference_gateway
 
     def stereo_to_mono(self, audio: np.ndarray):
@@ -102,7 +99,7 @@ class AudioService:
 
         headers = {"Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]}
 
-        response = await self.inference_gateway.send_triton_request(
+        response = self.inference_gateway.send_triton_request(
             url=os.environ["SPEECH_UTILS_ENDPOINT"],
             model_name="vad",
             input_list=inputs,

@@ -202,7 +202,7 @@ class InferenceService:
                     batch, serviceId, language, request_body.config.bestTokenCount
                 )
 
-                response = await self.inference_gateway.send_triton_request(
+                response = self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name=model_name,
                     input_list=inputs,
@@ -293,7 +293,7 @@ class InferenceService:
             input_texts, source_lang, target_lang
         )
 
-        response = await self.inference_gateway.send_triton_request(
+        response = self.inference_gateway.send_triton_request(
             url=service.endpoint,
             model_name="nmt",
             input_list=inputs,
@@ -342,7 +342,7 @@ class InferenceService:
                     input_string, source_lang, target_lang, is_word_level, top_k
                 )
 
-                response = await self.inference_gateway.send_triton_request(
+                response = self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name="transliteration",
                     input_list=inputs,
@@ -399,7 +399,7 @@ class InferenceService:
                     input_string, ip_gender, ip_language
                 )
 
-                response = await self.inference_gateway.send_triton_request(
+                response = self.inference_gateway.send_triton_request(
                     url=service.endpoint,
                     model_name="tts",
                     input_list=inputs,

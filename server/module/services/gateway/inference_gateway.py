@@ -50,7 +50,7 @@ class InferenceGateway:
 
             return response.json()
 
-    async def send_triton_request(
+    def send_triton_request(
         self,
         url: str,
         headers: dict,
