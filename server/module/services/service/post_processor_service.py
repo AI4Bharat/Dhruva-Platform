@@ -37,7 +37,7 @@ class PostProcessorService:
 
         headers = {"Authorization": "Bearer " + os.environ["ITN_ENDPOINT_API_KEY"]}
 
-        response = await self.inference_gateway.send_triton_request(
+        response = self.inference_gateway.send_triton_request(
             url=os.environ["ITN_ENDPOINT"],
             model_name="itn",
             input_list=inputs,
@@ -74,7 +74,7 @@ class PostProcessorService:
 
         headers = {"Authorization": "Bearer " + os.environ["ITN_ENDPOINT_API_KEY"]}
 
-        response = await self.inference_gateway.send_triton_request(
+        response = self.inference_gateway.send_triton_request(
             url=os.environ["ITN_ENDPOINT"],
             model_name="punctuation",
             input_list=inputs,
