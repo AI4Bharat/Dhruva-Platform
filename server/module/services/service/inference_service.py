@@ -184,13 +184,12 @@ class InferenceService:
             final_audio = self.__process_asr_input(file_handle, standard_rate)
 
             # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
-            batch_size, chunk_size = (1, 16) if "whisper" in serviceId else (32, 20)
+            batch_size, chunk_size = (1, 7) if "whisper" in serviceId else (32, 20)
 
             audio_chunks, speech_timestamps = await self.audio_service.silero_vad_chunking(
                 final_audio,
                 standard_rate,
                 max_chunk_duration_s=chunk_size,
-                min_chunk_duration_s=6.0,
             )
 
             transcript_lines: List[

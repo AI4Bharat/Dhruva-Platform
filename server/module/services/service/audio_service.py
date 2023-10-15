@@ -61,7 +61,6 @@ class AudioService:
         raw_audio: np.ndarray,
         sample_rate: int,
         max_chunk_duration_s: float,
-        min_chunk_duration_s: float = 6,
         min_speech_duration_ms: int = 100,
     ) -> Tuple[List[np.ndarray], List[Dict[str, float]]]:
         wav = torch.from_numpy(raw_audio).float()
@@ -118,7 +117,7 @@ class AudioService:
             speech_dict["end_secs"] = round(speech_dict["end"] / sample_rate, 3)
 
         adjusted_timestamps = self.__adjust_timestamps(
-            speech_timestamps, sample_rate, max_chunk_duration_s, min_chunk_duration_s
+            speech_timestamps, sample_rate, max_chunk_duration_s
         )
 
         audio_chunks: List[np.ndarray] = [
@@ -169,8 +168,7 @@ class AudioService:
         self,
         speech_timestamps: List[Dict[str, float]],
         sample_rate: int,
-        max_chunk_duration_s: float,
-        min_chunk_duration_s: float,
+        max_chunk_duration_s: float
     ):
         """
         Takes the speech timestamps output by the vad model and further
@@ -192,9 +190,9 @@ class AudioService:
 
             # If the gap between the previous chunk and the current chunk is less
             # than 3 seconds, and the previous chunk and current chunk put together
-            # are less than equal to the minimum chunk duration, merge the chunks
+            # are less than equal to the maximum chunk duration, merge the chunks
             # by setting the end timestamp to the current chunk's end timestamp.
-            if chunk_gap < 3 and merged_chunks_duration <= min_chunk_duration_s:
+            if chunk_gap < 3 and merged_chunks_duration <= max_chunk_duration_s:
                 curr_end_secs = speech_timestamps[i]["end_secs"]
                 continue
 
