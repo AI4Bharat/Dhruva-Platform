@@ -17,10 +17,7 @@ from ..gateway import InferenceGateway
 
 
 class AudioService:
-    def __init__(
-            self, 
-            inference_gateway: InferenceGateway = Depends(InferenceGateway)
-    ):
+    def __init__(self, inference_gateway: InferenceGateway = Depends(InferenceGateway)):
         self.inference_gateway = inference_gateway
 
     def stereo_to_mono(self, audio: np.ndarray):
@@ -92,7 +89,9 @@ class AudioService:
         inputs = [input0, input1, input2, input3, input4, input5]
         outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
 
-        headers = {"Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]}
+        headers = {
+            "Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]
+        }
         response = self.inference_gateway.send_triton_request(
             url=os.environ["SPEECH_UTILS_ENDPOINT"],
             model_name="vad",
@@ -187,7 +186,7 @@ class AudioService:
         curr_end_secs = speech_timestamps[0]["end_secs"]
 
         for i in range(1, len(speech_timestamps)):
-            chunk_gap = curr_end_secs - speech_timestamps[i]["start_secs"]
+            chunk_gap = speech_timestamps[i]["start_secs"] - curr_end_secs
             merged_chunks_duration = speech_timestamps[i]["end_secs"] - curr_start_secs
             chunk_duration = curr_end_secs - curr_start_secs
 
@@ -241,7 +240,8 @@ class AudioService:
         duration is fully split and return split timestamps.
 
         For example, if chunk duration is 10 seconds and max_chunk_duration_s is 3 seconds,
-        the split timestamps will be 3s, 3s, 3s, 1s.
+        the split timestamps will be 3s, 3s, 3s, 1s. Since the last 1s chunk is less than 3s,
+        the last chunk will get merged into the previous chunk, resulting in 3s, 3s, 4s.
         """
         chunked_timestamps: List[Dict[str, float]] = []
 
@@ -259,14 +259,19 @@ class AudioService:
             )
             remaining_chunk_duration -= chunk_size
 
-            chunked_timestamps.append(
-                {
-                    "start": int(start),
-                    "start_secs": start_secs,
-                    "end": int((start_secs + chunk_size) * sample_rate),
-                    "end_secs": (start_secs + chunk_size),
-                }
-            )
+            if chunk_size > 3 or len(chunked_timestamps) == 0:
+                chunked_timestamps.append(
+                    {
+                        "start": int(start),
+                        "start_secs": start_secs,
+                        "end": int((start_secs + chunk_size) * sample_rate),
+                        "end_secs": (start_secs + chunk_size),
+                    }
+                )
+            else:
+                last_ct = chunked_timestamps[-1]
+                last_ct["end"] = int((last_ct["end_secs"] + chunk_size) * sample_rate)
+                last_ct["end_secs"] = last_ct["end_secs"] + chunk_size
 
             # New start will be previous end + 1
             start = chunked_timestamps[-1]["end"] + 1
