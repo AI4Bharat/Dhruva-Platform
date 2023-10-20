@@ -12,26 +12,26 @@ app.conf.beat_schedule = {
         "schedule": 300.0,
         "options": {"queue": "heartbeat"},
     },
-    "upload_feedback_dump": {
+    "upload-feedback-dump": {
         "task": "upload.feedback.dump",
         "schedule": crontab(day_of_month="1", hour="6", minute="30"),  # in utc
-        "options": {"queue": "upload_feedback_dump"},
+        "options": {"queue": "upload-feedback-dump"},
     },
-    "send_usage_email": {
+    "send-usage-email": {
         "task": "send.usage.email",
         "schedule": crontab(day_of_week="1", hour="3", minute="0"),  # in utc
-        "options": {"queue": "send_usage_email"},
+        "options": {"queue": "send-usage-email"},
     },
 }
 
 app.conf.task_queues = (
-    Queue("data_log", exchange=Exchange("logs", type="direct")),
-    Queue("metrics_log", exchange=Exchange("metrics", type="direct")),
+    Queue("data-log", exchange=Exchange("logs", type="direct")),
+    Queue("metrics-log", exchange=Exchange("metrics", type="direct")),
     Queue("heartbeat", exchange=Exchange("heartbeat", type="direct")),
     Queue(
-        "upload_feedback_dump", exchange=Exchange("upload_feedback_dump", type="direct")
+        "upload-feedback-dump", exchange=Exchange("upload-feedback-dump", type="direct")
     ),
-    Queue("send_usage_email", exchange=Exchange("send_usage_email", type="direct")),
+    Queue("send-usage-email", exchange=Exchange("send-usage-email", type="direct")),
 )
 
 # Defaults

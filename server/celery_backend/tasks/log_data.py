@@ -17,7 +17,7 @@ from .metering import meter_usage
 log_store = LogDatastore()
 
 
-def log_to_db(
+def log_to_storage(
     client_ip: str,
     error_msg: str,
     input_data: dict,
@@ -140,7 +140,7 @@ def log_data(
         raise ValueError(f"Invalid task type: {usage_type}")
 
     if data_tracking_consent:
-        log_to_db(client_ip, error_msg, req_body, resp_body, api_key_id, service_id)
+        log_to_storage(client_ip, error_msg, req_body, resp_body, api_key_id, service_id)
 
     logging.debug(f"response_time: {response_time}")
     meter_usage(api_key_id, data_usage, usage_type, service_id)
