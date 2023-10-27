@@ -184,12 +184,13 @@ class InferenceService:
             final_audio = self.__process_asr_input(file_handle, standard_rate)
 
             # TODO: Specialised chunked inference for Whisper since it is unstable for long audio at high throughput
-            batch_size, chunk_size = (1, 16) if "whisper" in serviceId else (32, 7)
+            batch_size, chunk_size = (1, 7) if "whisper" in serviceId else (32, 7)
 
-            audio_chunks, speech_timestamps = await self.audio_service.silero_vad_chunking(
-                final_audio,
-                standard_rate,
-                max_chunk_duration_s=chunk_size
+            (
+                audio_chunks,
+                speech_timestamps,
+            ) = await self.audio_service.silero_vad_chunking(
+                final_audio, standard_rate, max_chunk_duration_s=chunk_size
             )
 
             transcript_lines: List[
@@ -237,7 +238,7 @@ class InferenceService:
                 transcript_source_lines = await self.__run_asr_post_processors(
                     transcript_source_lines,
                     request_body.config.postProcessors,
-                    request_body.config.language.sourceLanguage
+                    request_body.config.language.sourceLanguage,
                 )
 
             transcript = self.__create_asr_response_format(
@@ -569,7 +570,7 @@ class InferenceService:
                     else previous_output_json.json(),
                     time.perf_counter() - start_time,
                 ),
-                queue="data_log",
+                queue="data-log",
             )
             if exception:
                 raise exception
@@ -633,7 +634,7 @@ class InferenceService:
         self,
         transcript_lines: List[Tuple[str, Dict[str, float]]],
         post_processors: List[str],
-        source_language: str
+        source_language: str,
     ):
         for idx, transcript_line in enumerate(transcript_lines):
             line = transcript_line[0]

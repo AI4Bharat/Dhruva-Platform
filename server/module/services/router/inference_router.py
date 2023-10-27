@@ -93,7 +93,7 @@ class InferenceLoggingRoute(APIRoute):
                             res_body.decode("utf-8") if res_body else None,
                             time.time() - start_time,
                         ),
-                        queue="data_log",
+                        queue="data-log",
                     )
 
             return response
