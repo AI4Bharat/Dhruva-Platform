@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-import torch
 import tritonclient.http as http_client
 from fastapi import Depends
 from tritonclient.utils import np_to_triton_dtype
@@ -118,11 +117,10 @@ class TritonUtilsService:
         speech_pad_ms: int,
         min_speech_duration_ms: int,
     ):
-        wav = torch.from_numpy(audio).float()
-        audio_signal, audio_len = self.__pad_batch([wav])
+        audio_signal, audio_len = self.__pad_batch([audio])
 
         input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
-        input0.set_data_from_numpy(audio)
+        input0.set_data_from_numpy(audio_signal)
         input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
         input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype("int32"))
         input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
