@@ -8,16 +8,8 @@ from exception.base_error import BaseError
 from exception.client_error import ClientError, ClientErrorResponse
 from fastapi import APIRouter, Depends, status
 from schema.auth.common import ApiKeyType
-from schema.services.request import (
-    CreateSnapshotRequest,
-    ModelViewRequest,
-    ServiceViewRequest,
-)
-from schema.services.response import (
-    CreateGrafanaSnapshotResponse,
-    ServiceListResponse,
-    ServiceViewResponse,
-)
+from schema.services.request import ModelViewRequest, ServiceViewRequest
+from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error import Errors
 from ..model import Model
@@ -75,13 +67,4 @@ async def _view_model_details(
     if not response:
         raise ClientError(status.HTTP_404_NOT_FOUND, message="Invalid Model Id")
 
-    return response
-
-
-@router.post("/grafana_snapshot", response_model=CreateGrafanaSnapshotResponse)
-async def _get_current_grafana_snapshot(
-    request: CreateSnapshotRequest,
-    details_service: DetailsService = Depends(DetailsService),
-):
-    response = details_service.get_grafana_snapshot(request)
     return response

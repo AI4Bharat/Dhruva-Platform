@@ -13,7 +13,6 @@ from schema.services.request import CreateSnapshotRequest, ServiceViewRequest
 from schema.services.response import ServiceListResponse, ServiceViewResponse
 
 from ..error.errors import Errors
-from ..gateway import GrafanaGateway
 from ..repository import ModelRepository, ServiceRepository
 
 
@@ -23,12 +22,10 @@ class DetailsService:
         service_repository: ServiceRepository = Depends(ServiceRepository),
         model_repository: ModelRepository = Depends(ModelRepository),
         api_key_repository: ApiKeyRepository = Depends(ApiKeyRepository),
-        grafana_gateway: GrafanaGateway = Depends(GrafanaGateway),
     ) -> None:
         self.service_repository = service_repository
         self.model_repository = model_repository
         self.api_key_repository = api_key_repository
-        self.grafana_gateway = grafana_gateway
 
     def get_service_details(
         self, request: ServiceViewRequest, user_id: ObjectId
@@ -90,29 +87,3 @@ class DetailsService:
             )
 
         return response_list
-
-    def get_grafana_snapshot(self, request: CreateSnapshotRequest):
-        service_specific_snapshot_path = (
-            "/".join(
-                os.path.dirname(os.path.realpath(__file__))
-                .replace("\\", "/")
-                .split("/")[:-3]
-            )
-            + "/grafana_snapshot/service_specific_snapshot.json"
-        )
-
-        with open(service_specific_snapshot_path, "r") as fhand:
-            service_specific_snapshot = fhand.read()
-
-        service_specific_snapshot = (
-            service_specific_snapshot.replace("$USER_ID", request.user_id)
-            .replace("$INFERENCE_SERVICE_ID", request.inference_service_id)
-            .replace("$API_KEY_NAME", request.api_key_name)
-        )
-
-        response = self.grafana_gateway.create_grafana_snapshot(
-            service_specific_snapshot
-        )
-        response.url = parse_obj_as(AnyHttpUrl, str(response.url) + "?kiosk=tv")
-
-        return response
