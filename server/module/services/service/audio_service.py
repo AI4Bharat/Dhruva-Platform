@@ -99,11 +99,6 @@ class AudioService:
         if not speech_timestamps:
             return ([], [])
 
-        # Store timestamps in seconds
-        for speech_dict in speech_timestamps:
-            speech_dict["start_secs"] = round(speech_dict["start"] / sample_rate, 3)
-            speech_dict["end_secs"] = round(speech_dict["end"] / sample_rate, 3)
-
         adjusted_timestamps = self.adjust_timestamps(
             speech_timestamps, sample_rate, max_chunk_duration_s
         )
@@ -157,6 +152,11 @@ class AudioService:
 
         if not speech_timestamps:
             return []
+
+        # Store timestamps in seconds
+        for speech_dict in speech_timestamps:
+            speech_dict["start_secs"] = round(speech_dict["start"] / sample_rate, 3)
+            speech_dict["end_secs"] = round(speech_dict["end"] / sample_rate, 3)
 
         adjusted_timestamps: List[Dict[str, float]] = []
 
