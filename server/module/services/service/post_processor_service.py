@@ -43,8 +43,6 @@ class PostProcessorService:
             input_list=inputs,
             output_list=outputs,
             headers=headers,
-            request_state=None,
-            task_type="",
         )
 
         batch_result = response.as_numpy("OUTPUT_TEXT")
@@ -80,8 +78,6 @@ class PostProcessorService:
             input_list=inputs,
             output_list=outputs,
             headers=headers,
-            request_state=None,
-            task_type="",
         )
 
         batch_result = response.as_numpy("OUTPUT_TEXT")
