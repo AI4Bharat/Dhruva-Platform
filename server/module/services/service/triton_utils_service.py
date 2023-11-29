@@ -1,17 +1,13 @@
 from typing import List
 
 import numpy as np
+import torch
 import tritonclient.http as http_client
 from fastapi import Depends
 from tritonclient.utils import np_to_triton_dtype
 
-from .audio_service import AudioService
-
 
 class TritonUtilsService:
-    def __init__(self, audio_service: AudioService = Depends(AudioService)):
-        self.audio_service = audio_service
-
     def get_string_tensor(self, string_values, tensor_name: str):
         string_obj = np.array(string_values, dtype="object")
         input_obj = http_client.InferInput(
@@ -81,7 +77,7 @@ class TritonUtilsService:
         language: str,
         n_best_tok: int = 0,
     ):
-        o = self.audio_service.pad_batch(audio_chunks)
+        o = self.__pad_batch(audio_chunks)
         input0 = http_client.InferInput("AUDIO_SIGNAL", o[0].shape, "FP32")
         input1 = http_client.InferInput("NUM_SAMPLES", o[1].shape, "INT32")
         input0.set_data_from_numpy(o[0])
@@ -112,3 +108,51 @@ class TritonUtilsService:
 
         outputs = [http_client.InferRequestedOutput("TRANSCRIPTS")]
         return inputs, outputs
+
+    def get_vad_io_for_triton(
+        self,
+        audio: np.ndarray,
+        sample_rate: int,
+        threshold: float,
+        min_silence_duration_ms: int,
+        speech_pad_ms: int,
+        min_speech_duration_ms: int,
+    ):
+        wav = torch.from_numpy(audio).float()
+        audio_signal, audio_len = self.__pad_batch([wav])
+
+        input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
+        input0.set_data_from_numpy(audio)
+        input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
+        input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype("int32"))
+        input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
+        input2.set_data_from_numpy(np.asarray([[threshold]]).astype("float32"))
+        input3 = http_client.InferInput(
+            "MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32"
+        )
+        input3.set_data_from_numpy(
+            np.asarray([[min_silence_duration_ms]]).astype("int32")
+        )
+        input4 = http_client.InferInput("SPEECH_PAD_MS", audio_len.shape, "INT32")
+        input4.set_data_from_numpy(np.asarray([[speech_pad_ms]]).astype("int32"))
+        input5 = http_client.InferInput(
+            "MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32"
+        )
+        input5.set_data_from_numpy(
+            np.asarray([[min_speech_duration_ms]]).astype("int32")
+        )
+
+        inputs = [input0, input1, input2, input3, input4, input5]
+        outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
+
+        return inputs, outputs
+
+    def __pad_batch(self, batch_data: List):
+        batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
+        max_length = max(batch_data_lens)
+        batch_size = len(batch_data)
+
+        padded_zero_array = np.zeros((batch_size, max_length), dtype=np.float32)
+        for idx, data in enumerate(batch_data):
+            padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
+        return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])

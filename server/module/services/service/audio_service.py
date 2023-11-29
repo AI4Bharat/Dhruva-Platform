@@ -14,11 +14,17 @@ from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
 
 from ..gateway import InferenceGateway
+from .triton_utils_service import TritonUtilsService
 
 
 class AudioService:
-    def __init__(self, inference_gateway: InferenceGateway = Depends(InferenceGateway)):
+    def __init__(
+        self,
+        inference_gateway: InferenceGateway = Depends(InferenceGateway),
+        triton_utils_service: TritonUtilsService = Depends(TritonUtilsService),
+    ):
         self.inference_gateway = inference_gateway
+        self.triton_utils_service = triton_utils_service
 
     def stereo_to_mono(self, audio: np.ndarray):
         if len(audio.shape) > 1:  # Stereo to mono
@@ -56,37 +62,21 @@ class AudioService:
         )
         return dequantized_audio
 
-    async def silero_vad_chunking(
+    def silero_vad_chunking(
         self,
-        raw_audio: np.ndarray,
+        audio: np.ndarray,
         sample_rate: int,
         max_chunk_duration_s: float,
         min_speech_duration_ms: int = 100,
     ) -> Tuple[List[np.ndarray], List[Dict[str, float]]]:
-        wav = torch.from_numpy(raw_audio).float()
-        audio_signal, audio_len = self.pad_batch([wav])
-
-        input0 = http_client.InferInput("WAVPATH", audio_signal.shape, "FP32")
-        input0.set_data_from_numpy(audio_signal)
-        input1 = http_client.InferInput("SAMPLING_RATE", audio_len.shape, "INT32")
-        input1.set_data_from_numpy(np.asarray([[sample_rate]]).astype("int32"))
-        input2 = http_client.InferInput("THRESHOLD", audio_len.shape, "FP32")
-        input2.set_data_from_numpy(np.asarray([[0.3]]).astype("float32"))
-        input3 = http_client.InferInput(
-            "MIN_SILENCE_DURATION_MS", audio_len.shape, "INT32"
+        inputs, outputs = self.triton_utils_service.get_vad_io_for_triton(
+            audio,
+            sample_rate,
+            threshold=0.3,
+            min_silence_duration_ms=400,
+            speech_pad_ms=200,
+            min_speech_duration_ms=min_speech_duration_ms,
         )
-        input3.set_data_from_numpy(np.asarray([[400]]).astype("int32"))
-        input4 = http_client.InferInput("SPEECH_PAD_MS", audio_len.shape, "INT32")
-        input4.set_data_from_numpy(np.asarray([[200]]).astype("int32"))
-        input5 = http_client.InferInput(
-            "MIN_SPEECH_DURATION_MS", audio_len.shape, "INT32"
-        )
-        input5.set_data_from_numpy(
-            np.asarray([[min_speech_duration_ms]]).astype("int32")
-        )
-
-        inputs = [input0, input1, input2, input3, input4, input5]
-        outputs = [http_client.InferRequestedOutput("TIMESTAMPS")]
 
         headers = {
             "Authorization": "Bearer " + os.environ["SPEECH_UTILS_ENDPOINT_API_KEY"]
@@ -97,8 +87,6 @@ class AudioService:
             input_list=inputs,
             output_list=outputs,
             headers=headers,
-            task_type="",
-            request_state=None,
         )
 
         batch_result = response.as_numpy("TIMESTAMPS")
@@ -116,12 +104,12 @@ class AudioService:
             speech_dict["start_secs"] = round(speech_dict["start"] / sample_rate, 3)
             speech_dict["end_secs"] = round(speech_dict["end"] / sample_rate, 3)
 
-        adjusted_timestamps = self.__adjust_timestamps(
+        adjusted_timestamps = self.adjust_timestamps(
             speech_timestamps, sample_rate, max_chunk_duration_s
         )
 
         audio_chunks: List[np.ndarray] = [
-            wav[timestamps["start"] : timestamps["end"]].numpy()
+            audio[timestamps["start"] : timestamps["end"]]
             for timestamps in adjusted_timestamps
         ]
 
@@ -154,21 +142,11 @@ class AudioService:
 
         return file_bytes
 
-    def pad_batch(self, batch_data: list):
-        batch_data_lens = np.asarray([len(data) for data in batch_data], dtype=np.int32)
-        max_length = max(batch_data_lens)
-        batch_size = len(batch_data)
-
-        padded_zero_array = np.zeros((batch_size, max_length), dtype=np.float32)
-        for idx, data in enumerate(batch_data):
-            padded_zero_array[idx, 0 : batch_data_lens[idx]] = data
-        return padded_zero_array, np.reshape(batch_data_lens, [-1, 1])
-
-    def __adjust_timestamps(
+    def adjust_timestamps(
         self,
         speech_timestamps: List[Dict[str, float]],
         sample_rate: int,
-        max_chunk_duration_s: float
+        max_chunk_duration_s: float,
     ):
         """
         Takes the speech timestamps output by the vad model and further
@@ -176,6 +154,9 @@ class AudioService:
 
         Returns a list of adjusted timestamps.
         """
+
+        if not speech_timestamps:
+            return []
 
         adjusted_timestamps: List[Dict[str, float]] = []
 
