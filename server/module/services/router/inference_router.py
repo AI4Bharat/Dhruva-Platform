@@ -16,6 +16,7 @@ from schema.services.request import (
     ULCANerInferenceRequest,
     ULCAPipelineInferenceRequest,
     ULCAS2SInferenceRequest,
+    ULCAOcrInferenceRequest,
     ULCATranslationInferenceRequest,
     ULCATransliterationInferenceRequest,
     ULCATtsInferenceRequest,
@@ -26,6 +27,7 @@ from schema.services.response import (
     ULCANerInferenceResponse,
     ULCAPipelineInferenceResponse,
     ULCAS2SInferenceResponse,
+    ULCAOcrInferenceResponse,
     ULCATranslationInferenceResponse,
     ULCATransliterationInferenceResponse,
     ULCATtsInferenceResponse,
@@ -147,6 +149,19 @@ async def _run_inference_translation(
         request, request_state.state.api_key_name, request_state.state.user_id
     )
 
+@router.post("/ocr", response_model=ULCAOcrInferenceResponse)
+async def _run_inference_ocr(
+    request: ULCAOcrInferenceRequest,
+    request_state: Request,
+    params: ULCAInferenceQuery = Depends(),
+    inference_service: InferenceService = Depends(InferenceService),
+):
+    if params.serviceId:
+        request.set_service_id(params.serviceId)
+
+    return await inference_service.run_ocr_triton_inference(
+        request, request_state.state.api_key_name, request_state.state.user_id
+    )
 
 @router.post("/transliteration", response_model=ULCATransliterationInferenceResponse)
 async def _run_inference_transliteration(

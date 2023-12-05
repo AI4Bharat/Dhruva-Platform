@@ -1,9 +1,11 @@
 from typing import List
-
+from PIL import Image
 import numpy as np
 import tritonclient.http as http_client
 from fastapi import Depends
 from tritonclient.utils import np_to_triton_dtype
+import requests
+import tritonclient.http as httpclient
 
 
 class TritonUtilsService:
@@ -39,6 +41,23 @@ class TritonUtilsService:
         ]
         outputs = [http_client.InferRequestedOutput("OUTPUT_TEXT")]
         return inputs, outputs
+    
+
+
+    def get_ocr_io_for_triton(self, url: str, language: str):
+
+        image = np.asarray(Image.open(requests.get(url, stream=True).raw))
+        input_language_id = np.array([language], dtype="object")
+        # Set Inputs
+        input_tensors = [
+            httpclient.InferInput("INPUT_IMAGE", image.shape, datatype=np_to_triton_dtype(image.dtype)),\
+            httpclient.InferInput("INPUT_LANGUAGE_ID", input_language_id.shape, datatype=np_to_triton_dtype(input_language_id.dtype))]
+        input_tensors[0].set_data_from_numpy(image)
+        input_tensors[1].set_data_from_numpy(input_language_id)
+        # Set outputs
+        outputs = [httpclient.InferRequestedOutput("OUTPUT_TEXT")]
+        return input_tensors , outputs
+
 
     def get_transliteration_io_for_triton(
         self,

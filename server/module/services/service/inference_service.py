@@ -19,6 +19,7 @@ from schema.services.common import (
     LANG_CODE_TO_SCRIPT_CODE,
     AudioFormat,
     _ULCAAudio,
+    _ULCAImage,
     _ULCABaseAudioConfig,
     _ULCALanguage,
     _ULCATaskType,
@@ -27,6 +28,7 @@ from schema.services.common import (
 from schema.services.common.ulca_text_n_best import _NBestToken
 from schema.services.request import (
     ULCAAsrInferenceRequest,
+    ULCAOcrInferenceRequest,
     ULCAGenericInferenceRequest,
     ULCAInferenceRequest,
     ULCANerInferenceRequest,
@@ -42,6 +44,7 @@ from schema.services.request.ulca_vad_inference_request import (
 )
 from schema.services.response import (
     ULCAAsrInferenceResponse,
+    ULCAOcrInferenceResponse,
     ULCAInferenceResponse,
     ULCANerInferenceResponse,
     ULCAPipelineInferenceResponse,
@@ -58,6 +61,7 @@ from ..gateway import InferenceGateway
 from ..model import Model, ModelCache, Service, ServiceCache
 from ..repository import ModelRepository, ServiceRepository
 from .audio_service import AudioService
+from .image_service import ImageService
 from .post_processor_service import PostProcessorService
 from .subtitle_service import SubtitleService
 from .triton_utils_service import TritonUtilsService
@@ -114,6 +118,7 @@ class InferenceService:
         subtitle_service: SubtitleService = Depends(SubtitleService),
         post_processor_service: PostProcessorService = Depends(PostProcessorService),
         audio_service: AudioService = Depends(AudioService),
+        image_service: ImageService = Depends(ImageService),
         triton_utils_service: TritonUtilsService = Depends(TritonUtilsService),
     ) -> None:
         self.service_repository = service_repository
@@ -122,6 +127,7 @@ class InferenceService:
         self.subtitle_service = subtitle_service
         self.post_processor_service = post_processor_service
         self.audio_service = audio_service
+        self.image_service = image_service
         self.triton_utils_service = triton_utils_service
 
     async def run_inference(
@@ -143,6 +149,11 @@ class InferenceService:
             case _ULCATaskType.TRANSLITERATION:
                 request_obj = ULCATransliterationInferenceRequest(**request_body)
                 return await self.run_transliteration_triton_inference(
+                    request_obj, api_key_name, user_id
+                )
+            case _ULCATaskType.OCR:
+                request_obj = ULCAOcrInferenceRequest(**request_body)
+                return await self.run_ocr_triton_inference(
                     request_obj, api_key_name, user_id
                 )
             case _ULCATaskType.ASR:
@@ -279,6 +290,58 @@ class InferenceService:
             )
 
         return res
+    
+    async def run_ocr_triton_inference(
+        self, request_body: ULCAOcrInferenceRequest, api_key_name: str, user_id: str
+    ) -> ULCAOcrInferenceResponse:
+        INFERENCE_REQUEST_COUNT.labels(
+            api_key_name,
+            user_id,
+            request_body.config.serviceId,
+            "ocr",
+            request_body.config.language.sourceLanguage,
+            None,
+        ).inc()
+
+        serviceId = request_body.config.serviceId
+
+        service: Service = validate_service_id(serviceId, self.service_repository)  # type: ignore
+        headers = {"Authorization": "Bearer " + service.api_key}
+
+        language = request_body.config.language.sourceLanguage
+        # NEED TO CHANGE#################
+        url = request_body.audio.imageUri
+        imageContent = request_body.audio.imageContent
+
+        file_bytes = self.__get_image_bytes(input)
+        file_handle = io.BytesIO(file_bytes)
+        ###########################################
+        inputs, outputs = self.triton_utils_service.get_ocr_io_for_triton(url, language)
+
+        with INFERENCE_REQUEST_DURATION_SECONDS.labels(
+            api_key_name,
+            user_id,
+            request_body.config.serviceId,
+            "ocr",
+            request_body.config.language.sourceLanguage,
+            None).time():
+            response = self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="ocr",
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                )
+
+        encoded_result = response.as_numpy("OUTPUT_TEXT")
+        if encoded_result is None:
+            encoded_result = np.array([])
+
+        output_batch = encoded_result[0].decode('UTF-8')
+
+        results = []
+        results.append({"source": , "target": output_batch})
+        return ULCATranslationInferenceResponse(output=results)
 
     async def run_translation_triton_inference(
         self,
@@ -426,6 +489,8 @@ class InferenceService:
             results.append({"source": input_string, "target": result})
 
         return ULCATransliterationInferenceResponse(output=results)
+
+
 
     async def run_tts_triton_inference(
         self, request_body: ULCATtsInferenceRequest, api_key_name: str, user_id: str
@@ -767,6 +832,19 @@ class InferenceService:
             raise BaseError(Errors.DHRUVA116.value, traceback.format_exc())
 
         return file_bytes
+    
+    def __get_image_bytes(self, input: _ULCAImage):
+        try:
+            if input.imageContent:
+                #NEED TO CHANGE
+                file_bytes = base64.b64decode(input.imageContent)
+            else:  # Either input audioContent or audioUri have to exist. Validation in Pydantic class.
+                file_bytes = self.image_service.download_image(input.imageUri)  # type: ignore
+        except Exception:
+            raise BaseError(Errors.DHRUVA116.value, traceback.format_exc())
+
+        return file_bytes
+
 
     def __process_audio_input(
         self, file_handle: io.BytesIO, standard_rate: int, process_audio: bool = True
