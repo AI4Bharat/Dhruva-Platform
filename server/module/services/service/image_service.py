@@ -18,7 +18,5 @@ class ImageService:
         self.triton_utils_service = triton_utils_service
 
     def download_image(self, url: str):
-        
         file_bytes = urlopen(url).read()
-
         return file_bytes

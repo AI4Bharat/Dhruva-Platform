@@ -5,6 +5,7 @@ import time
 import traceback
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
+import cv2
 
 import numpy as np
 import soundfile as sf
@@ -309,39 +310,37 @@ class InferenceService:
         headers = {"Authorization": "Bearer " + service.api_key}
 
         language = request_body.config.language.sourceLanguage
-        # NEED TO CHANGE#################
-        url = request_body.audio.imageUri
-        imageContent = request_body.audio.imageContent
-
-        file_bytes = self.__get_image_bytes(input)
-        file_handle = io.BytesIO(file_bytes)
-        ###########################################
-        inputs, outputs = self.triton_utils_service.get_ocr_io_for_triton(url, language)
-
-        with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-            api_key_name,
-            user_id,
-            request_body.config.serviceId,
-            "ocr",
-            request_body.config.language.sourceLanguage,
-            None).time():
-            response = self.inference_gateway.send_triton_request(
-                    url=service.endpoint,
-                    model_name="ocr",
-                    input_list=inputs,
-                    output_list=outputs,
-                    headers=headers,
-                )
-
-        encoded_result = response.as_numpy("OUTPUT_TEXT")
-        if encoded_result is None:
-            encoded_result = np.array([])
-
-        output_batch = encoded_result[0].decode('UTF-8')
-
         results = []
-        results.append({"source": , "target": output_batch})
-        return ULCATranslationInferenceResponse(output=results)
+        for input in request_body.image:
+
+            file_bytes = self.__get_image_bytes(input)
+            print(f"type of file byte {type(file_bytes)}")
+            print(f"type of file byte{type(language)}")
+
+            inputs, outputs = self.triton_utils_service.get_ocr_io_for_triton(file_bytes, language)
+            
+            with INFERENCE_REQUEST_DURATION_SECONDS.labels(
+                api_key_name,
+                user_id,
+                request_body.config.serviceId,
+                "ocr",
+                request_body.config.language.sourceLanguage,
+                None).time():
+                response = self.inference_gateway.send_triton_request(
+                        url=service.endpoint,
+                        model_name="ocr",
+                        input_list=inputs,
+                        output_list=outputs,
+                        headers=headers,
+                    )
+
+            encoded_result = response.as_numpy("OUTPUT_TEXT")
+            if encoded_result is None:
+                encoded_result = np.array([])
+            output_text = encoded_result[0].decode('UTF-8')
+
+            results.append({"source": output_text, "target": output_text})
+        return ULCAOcrInferenceResponse(output=results)
 
     async def run_translation_triton_inference(
         self,
@@ -836,10 +835,10 @@ class InferenceService:
     def __get_image_bytes(self, input: _ULCAImage):
         try:
             if input.imageContent:
-                #NEED TO CHANGE
-                file_bytes = base64.b64decode(input.imageContent)
+                file_bytes = cv2.imdecode(np.frombuffer(input.imageContent, np.uint8), -1) #3D numpy array
             else:  # Either input audioContent or audioUri have to exist. Validation in Pydantic class.
-                file_bytes = self.image_service.download_image(input.imageUri)  # type: ignore
+                file_content = self.image_service.download_image(input.imageUri)  # type: ignore
+                file_bytes = cv2.imdecode(np.frombuffer(file_content, np.uint8), -1)
         except Exception:
             raise BaseError(Errors.DHRUVA116.value, traceback.format_exc())
 

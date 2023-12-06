@@ -44,18 +44,23 @@ class TritonUtilsService:
     
 
 
-    def get_ocr_io_for_triton(self, url: str, language: str):
+    def get_ocr_io_for_triton(self, image, language: str):
 
-        image = np.asarray(Image.open(requests.get(url, stream=True).raw))
+        # image = np.asarray(Image.open(requests.get(image, stream=True).raw))
         input_language_id = np.array([language], dtype="object")
+
+        print( f"Image shape inside get ocr io : {image.shape}")
+        print(f"language id  shape inside get ocr io : {input_language_id.shape}")
         # Set Inputs
         input_tensors = [
             httpclient.InferInput("INPUT_IMAGE", image.shape, datatype=np_to_triton_dtype(image.dtype)),\
-            httpclient.InferInput("INPUT_LANGUAGE_ID", input_language_id.shape, datatype=np_to_triton_dtype(input_language_id.dtype))]
+            httpclient.InferInput("INPUT_LANGUAGE_ID", input_language_id.shape, datatype=np_to_triton_dtype(input_language_id.dtype))
+            ]
         input_tensors[0].set_data_from_numpy(image)
         input_tensors[1].set_data_from_numpy(input_language_id)
         # Set outputs
         outputs = [httpclient.InferRequestedOutput("OUTPUT_TEXT")]
+        
         return input_tensors , outputs
 
 
