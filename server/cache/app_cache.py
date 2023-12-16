@@ -12,4 +12,5 @@ def get_cache_connection():
         port=os.environ.get("REDIS_PORT"),
         db=os.environ.get("REDIS_DB"),
         password=os.environ.get("REDIS_PASSWORD"),
+        ssl=os.environ.get("REDIS_SECURE"),
     )
