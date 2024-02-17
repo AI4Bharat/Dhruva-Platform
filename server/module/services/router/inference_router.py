@@ -233,13 +233,13 @@ async def _run_inference_sts(
     inference_service: InferenceService = Depends(InferenceService),
 ):
     if request.config.language.sourceLanguage == "en":
-        serviceId = "ai4bharat/conformer-en-gpu--t4"
+        serviceId = "ai4bharat/whisper--gpu-t4"
     elif request.config.language.sourceLanguage == "hi":
-        serviceId = "ai4bharat/conformer-hi-gpu--t4"
+        serviceId = "ai4bharat/conformer-hi--gpu-t4"
     elif request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
-        serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
+        serviceId = "ai4bharat/conformer-multilingual-dravidian--gpu-t4"
     else:
-        serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+        serviceId = "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4"
 
     request.set_service_id(serviceId)
 
@@ -253,7 +253,7 @@ async def _run_inference_sts(
         controlConfig=request.controlConfig,
     )
 
-    translation_request.set_service_id("ai4bharat/indictrans-fairseq-all-gpu--t4")
+    translation_request.set_service_id("ai4bharat/indictrans--gpu-t4")
 
     translation_response = await inference_service.run_translation_triton_inference(
         translation_request,
@@ -269,11 +269,11 @@ async def _run_inference_sts(
 
     request.config.language.sourceLanguage = request.config.language.targetLanguage
     if request.config.language.sourceLanguage in {"kn", "ml", "ta", "te"}:
-        serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+        serviceId = "ai4bharat/indic-tts-dravidian--gpu-t4"
     elif request.config.language.sourceLanguage in {"en", "brx", "mni"}:
-        serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
+        serviceId = "ai4bharat/indic-tts-misc--gpu-t4"
     else:
-        serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
+        serviceId = "ai4bharat/indic-tts-indo-aryan--gpu-t4"
 
     tts_request = ULCATtsInferenceRequest(
         config=request.config,
