@@ -241,10 +241,15 @@ async def _run_inference_sts(
     else:
         serviceId = "ai4bharat/conformer-multilingual-indo-aryan--gpu-t4"
 
-    request.set_service_id(serviceId)
+    asr_request = ULCAAsrInferenceRequest(
+        audio=request.audio,
+        config=request.config,
+        controlConfig=request.controlConfig,
+    )
+    asr_request.set_service_id(serviceId)
 
     asr_response = await inference_service.run_asr_triton_inference(
-        request, request_state.state.api_key_name, request_state.state.user_id
+        asr_request, request_state.state.api_key_name, request_state.state.user_id
     )
 
     translation_request = ULCATranslationInferenceRequest(
