@@ -250,7 +250,9 @@ class InferenceService:
                     ]
                 )
 
-            transcript_source_lines: List[Tuple[str, Dict[str, float]]] = transcript_lines  # type: ignore
+            transcript_source_lines: List[Tuple[str, Dict[str, float]]] = (
+                transcript_lines  # type: ignore
+            )
             n_best_tokens: List[_NBestToken] = []
 
             if request_body.config.bestTokenCount > 0:
@@ -489,17 +491,30 @@ class InferenceService:
                     result = np.array([np.array([])])
 
                 raw_audio = result[0]
-                resampled_audio = self.audio_service.resample_audio(
+                final_audio = self.audio_service.resample_audio(
                     raw_audio, standard_rate, target_sr
                 )
 
+                if input.audioDuration:
+                    cur_duration = len(final_audio) / target_sr
+                    speed_factor = cur_duration / input.audioDuration
+
+                    if speed_factor > 1:
+                        final_audio = self.audio_service.stretch_audio(
+                            final_audio, speed_factor, target_sr
+                        )
+                    elif speed_factor < 1:
+                        final_audio = self.audio_service.append_silence(
+                            final_audio, input.audioDuration - cur_duration, target_sr
+                        )
+
                 byte_io = io.BytesIO()
-                wavfile.write(byte_io, target_sr, resampled_audio)
+                wavfile.write(byte_io, target_sr, final_audio)
 
                 if format != "wav":
-                    AudioSegment.from_file_using_temporary_files(byte_io).export(
-                        byte_io, format=format
-                    )
+                    audio = AudioSegment.from_file_using_temporary_files(byte_io)
+                    request_body.config.audioLength
+                    audio.export(byte_io, format=format)
 
                 encoded_bytes = base64.b64encode(byte_io.read())
                 encoded_string = encoded_bytes.decode()
@@ -741,16 +756,16 @@ class InferenceService:
                 if pipeline_task.taskType == _ULCATaskType.TRANSLATION:
                     # The output (target) of translation should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
-                        previous_output_json["input"][i][
-                            "source"
-                        ] = previous_output_json["input"][i]["target"]
+                        previous_output_json["input"][i]["source"] = (
+                            previous_output_json["input"][i]["target"]
+                        )
                         del previous_output_json["input"][i]["target"]
                 elif pipeline_task.taskType == _ULCATaskType.TRANSLITERATION:
                     # The first output (target) of xlit should be input (source) to next
                     for i in range(len(previous_output_json["input"])):
-                        previous_output_json["input"][i][
-                            "source"
-                        ] = previous_output_json["input"][i]["target"][0]
+                        previous_output_json["input"][i]["source"] = (
+                            previous_output_json["input"][i]["target"][0]
+                        )
                         del previous_output_json["input"][i]["target"]
             else:
                 # This will ideally happen only for TTS, which is the final task supported *as of now*
@@ -815,14 +830,17 @@ class InferenceService:
         return transcript_lines
 
     def __run_asr_pre_processors(self, audio: np.ndarray, pre_processors: List[str]):
-        audio_chunks, speech_timestamps = [audio], [
-            {
-                "start": 0,
-                "start_secs": 0,
-                "end": len(audio),
-                "end_secs": round(len(audio) / 16000, 3),
-            }
-        ]
+        audio_chunks, speech_timestamps = (
+            [audio],
+            [
+                {
+                    "start": 0,
+                    "start_secs": 0,
+                    "end": len(audio),
+                    "end_secs": round(len(audio) / 16000, 3),
+                }
+            ],
+        )
 
         if "vad" in pre_processors:
             audio_chunks, speech_timestamps = self.audio_service.silero_vad_chunking(

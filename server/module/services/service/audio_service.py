@@ -8,10 +8,10 @@ from urllib.request import urlopen
 import numpy as np
 import scipy.signal as sps
 import torch
-import tritonclient.http as http_client
 from fastapi import Depends
 from pydub import AudioSegment
 from pydub.effects import normalize as pydub_normalize
+from torchaudio.io import AudioEffector
 
 from ..gateway import InferenceGateway
 from .triton_utils_service import TritonUtilsService
@@ -136,6 +136,32 @@ class AudioService:
             file_bytes = urlopen(url).read()
 
         return file_bytes
+
+    def stretch_audio(
+        self, input_audio: np.ndarray, speed_factor: float, sample_rate: int
+    ):
+        input_audio = torch.from_numpy(input_audio.reshape(-1, 1).astype(np.float32))
+        effector = AudioEffector(
+            effect=f"atempo={round(speed_factor, 2)}", format="wav"
+        )
+        result = effector.apply(input_audio, sample_rate)
+        return result.squeeze(-1).numpy()
+
+    def append_silence(
+        self, input_audio: np.ndarray, silence_duration: float, sample_rate: int
+    ):
+        audio_segment = AudioSegment(
+            input_audio.tobytes(),
+            sample_width=input_audio.dtype.itemsize,
+            frame_rate=sample_rate,
+            channels=1,
+        )
+        silence_segment = AudioSegment.silent(duration=silence_duration * 1000)
+
+        final_audio_segment = audio_segment + silence_segment
+        final_audio = np.array(final_audio_segment.get_array_of_samples())
+
+        return final_audio
 
     def adjust_timestamps(
         self,
