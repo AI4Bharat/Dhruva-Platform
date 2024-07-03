@@ -130,7 +130,7 @@ def log_data(
 
     elif usage_type == "asr":
         for i, ele in enumerate(req_body["audio"]):
-            if ele["audioUri"]:
+            if ele.get("audioUri"):
                 req_body["audio"][i]["audioContent"] = base64.b64encode(
                     urlopen(ele["audioUri"]).read()
                 ).decode("utf-8")
@@ -140,7 +140,9 @@ def log_data(
         raise ValueError(f"Invalid task type: {usage_type}")
 
     if data_tracking_consent:
-        log_to_storage(client_ip, error_msg, req_body, resp_body, api_key_id, service_id)
+        log_to_storage(
+            client_ip, error_msg, req_body, resp_body, api_key_id, service_id
+        )
 
     logging.debug(f"response_time: {response_time}")
     meter_usage(api_key_id, data_usage, usage_type, service_id)

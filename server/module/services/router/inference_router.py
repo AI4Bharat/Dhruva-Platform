@@ -78,25 +78,30 @@ class InferenceLoggingRoute(APIRoute):
                     else:
                         enable_tracking = controlConfig["dataTracking"]
 
+                config = req_json.get("config", {})
+                service_id = config.get("serviceId")
+
                 url_components = request.url._url.split("?serviceId=")
                 if len(url_components) == 2:
-                    usage_type, service_component = url_components
-                    usage_type = usage_type.split("/")[-1]
+                    service_component = url_components[1]
                     service_id = service_component.replace("%2F", "/")
-                    log_data.apply_async(
-                        (
-                            usage_type,
-                            service_id,
-                            request.headers.get("X-Forwarded-For", request.client.host),
-                            enable_tracking,
-                            error_msg,
-                            api_key_id,
-                            request.state._state.get("input", req_body),
-                            res_body.decode("utf-8") if res_body else None,
-                            time.time() - start_time,
-                        ),
-                        queue="data-log",
-                    )
+
+                usage_type = url_components[0].split("/")[-1]
+
+                log_data.apply_async(
+                    (
+                        usage_type,
+                        service_id,
+                        request.headers.get("X-Forwarded-For", request.client.host),
+                        enable_tracking,
+                        error_msg,
+                        api_key_id,
+                        request.state._state.get("input", req_body),
+                        res_body.decode("utf-8") if res_body else None,
+                        time.time() - start_time,
+                    ),
+                    queue="data-log",
+                )
 
             return response
 
@@ -115,22 +120,6 @@ router = APIRouter(
         "403": {"model": ClientErrorResponse},
     },
 )
-
-
-# For ULCA compatibility. Commenting it out temporarily
-# @router.post("", response_model=ULCAGenericInferenceResponse)
-# async def _run_inference_generic(
-#     request: Union[
-#         ULCAGenericInferenceRequest,
-#         ULCAAsrInferenceRequest,
-#         ULCATranslationInferenceRequest,
-#         ULCATtsInferenceRequest,
-#     ],
-#     request_state: Request,
-#     params: ULCAInferenceQuery = Depends(),
-#     inference_service: InferenceService = Depends(InferenceService)
-# ):
-#     return await inference_service.run_inference(request, params.serviceId, request_state)
 
 
 @router.post("/translation", response_model=ULCATranslationInferenceResponse)
