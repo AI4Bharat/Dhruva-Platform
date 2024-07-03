@@ -69,14 +69,10 @@ class InferenceLoggingRoute(APIRoute):
                 raise other_exception
 
             finally:
+                req_json: Dict[str, Any] = json.loads(req_body)
                 if request.state._state.get("api_key_data_tracking"):
-                    req_json: Dict[str, Any] = json.loads(req_body)
-
-                    controlConfig = req_json.get("controlConfig", {})
-                    if "dataTracking" not in controlConfig:
-                        enable_tracking = True
-                    else:
-                        enable_tracking = controlConfig["dataTracking"]
+                    controlConfig: Dict[str, Any] = req_json.get("controlConfig", {})
+                    enable_tracking = controlConfig.get("dataTracking", True)
 
                 config = req_json.get("config", {})
                 service_id = config.get("serviceId")

@@ -46,7 +46,7 @@ def send_heartbeat(services: List[Dict[str, Any]], models: Dict[str, Any]):
             response = requests.post(
                 f"{BASE_URL}/services/inference/{service['task']['type']}?serviceId={service['serviceId']}",
                 headers=HEADERS,
-                json=json.dumps(body),
+                json=body,
             )
 
             if response.status_code == 200:
