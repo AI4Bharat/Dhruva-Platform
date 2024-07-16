@@ -466,31 +466,54 @@ class InferenceService:
             input_string = self.__process_tts_input(input.source)
 
             if input_string:
-                inputs, outputs = self.triton_utils_service.get_tts_io_for_triton(
-                    input_string, ip_gender, ip_language
-                )
+                sents = []
+                if len(input_string) > 400:
+                    words = input_string.split(" ")
+                    tmp_sent = ""
+                    for word in words:
+                        if len(tmp_sent) + len(word) <= 400:
+                            tmp_sent += " " + word
+                        else:
+                            sents.append(tmp_sent.strip())
+                            tmp_sent = word
+                        
+                    sents.append(tmp_sent)
+                else:
+                    sents.append(input_string)
 
-                with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-                    api_key_name,
-                    user_id,
-                    request_body.config.serviceId,
-                    "tts",
-                    request_body.config.language.sourceLanguage,
-                    None,
-                ).time():
-                    response = self.inference_gateway.send_triton_request(
-                        url=service.endpoint,
-                        model_name="tts",
-                        input_list=inputs,
-                        output_list=outputs,
-                        headers=headers,
+                raw_audios = []
+                for sent in sents:
+                    inputs, outputs = self.triton_utils_service.get_tts_io_for_triton(
+                        sent, ip_gender, ip_language
                     )
 
-                result = response.as_numpy("OUTPUT_GENERATED_AUDIO")
-                if result is None:
-                    result = np.array([np.array([])])
+                    with INFERENCE_REQUEST_DURATION_SECONDS.labels(
+                        api_key_name,
+                        user_id,
+                        request_body.config.serviceId,
+                        "tts",
+                        request_body.config.language.sourceLanguage,
+                        None,
+                    ).time():
+                        response = self.inference_gateway.send_triton_request(
+                            url=service.endpoint,
+                            model_name="tts",
+                            input_list=inputs,
+                            output_list=outputs,
+                            headers=headers,
+                        )
 
-                raw_audio = result[0]
+                    result = response.as_numpy("OUTPUT_GENERATED_AUDIO")
+                    if result is None:
+                        result = np.array([np.array([])])
+
+                    raw_audios.append(result[0])
+
+                if len(raw_audios) > 1:
+                    raw_audio = np.concatenate(raw_audios)
+                else:
+                    raw_audio = raw_audios[0]
+
                 final_audio = self.audio_service.resample_audio(
                     raw_audio, standard_rate, target_sr
                 )
