@@ -65,6 +65,8 @@ def log_to_storage(
             else None
         )
 
+    domain = input_data.get("config", {}).get("domain")
+
     log_document = {
         "client_ip": client_ip,
         "source_language": input_data.get("config", {})
@@ -75,6 +77,7 @@ def log_to_storage(
         .get("targetLanguage"),
         "input": inp,
         "task_type": output_data.get("taskType"),
+        "domain": domain,
         "output": op,
         "api_key_id": api_key_id,
         "service_id": service_id,
