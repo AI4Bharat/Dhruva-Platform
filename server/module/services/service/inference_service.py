@@ -327,31 +327,34 @@ class InferenceService:
             for input in request_body.input
         ]
 
-        inputs, outputs = self.triton_utils_service.get_translation_io_for_triton(
-            input_texts, source_lang, target_lang
-        )
-
-        with INFERENCE_REQUEST_DURATION_SECONDS.labels(
-            api_key_name,
-            user_id,
-            request_body.config.serviceId,
-            "translation",
-            request_body.config.language.sourceLanguage,
-            request_body.config.language.targetLanguage,
-        ).time():
-            response = self.inference_gateway.send_triton_request(
-                url=service.endpoint,
-                model_name="nmt",
-                input_list=inputs,
-                output_list=outputs,
-                headers=headers,
+        max_batch_size = 90
+        output_batch = []
+        for i in range(0, len(input_texts), max_batch_size):
+            inputs, outputs = self.triton_utils_service.get_translation_io_for_triton(
+                input_texts[i : i + max_batch_size], source_lang, target_lang
             )
 
-        encoded_result = response.as_numpy("OUTPUT_TEXT")
-        if encoded_result is None:
-            encoded_result = np.array([])
+            with INFERENCE_REQUEST_DURATION_SECONDS.labels(
+                api_key_name,
+                user_id,
+                request_body.config.serviceId,
+                "translation",
+                request_body.config.language.sourceLanguage,
+                request_body.config.language.targetLanguage,
+            ).time():
+                response = self.inference_gateway.send_triton_request(
+                    url=service.endpoint,
+                    model_name="nmt",
+                    input_list=inputs,
+                    output_list=outputs,
+                    headers=headers,
+                )
 
-        output_batch = encoded_result.tolist()
+            encoded_result = response.as_numpy("OUTPUT_TEXT")
+            if encoded_result is None:
+                encoded_result = np.array([])
+
+            output_batch.extend(encoded_result.tolist())
 
         results = []
         for source_text, result in zip(input_texts, output_batch):
@@ -476,7 +479,7 @@ class InferenceService:
                         else:
                             sents.append(tmp_sent.strip())
                             tmp_sent = word
-                        
+
                     sents.append(tmp_sent)
                 else:
                     sents.append(input_string)
