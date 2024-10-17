@@ -143,14 +143,6 @@ Commit all migrations to the repository and do not delete any migration.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- SEED -->
-
-## Seed
-
-To add new models and services, please add a JSON fixture in the [Dhruva-Seed](https://github.com/AI4Bharat/Dhruva-Seed) repository.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- TESTING -->
 
 ## Testing
