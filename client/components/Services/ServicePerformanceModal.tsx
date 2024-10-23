@@ -37,12 +37,17 @@ const ServicePerformanceModal = ({ ...props }) => {
   const [apiKeyName, setAPIKeyName] = useState<string>(".*");
   const [isUserOverall, setIsUserOverall] = useState(false);
 
-  const { data: userslist } = useQuery(["users"], () => listallusers());
-  const { data: keylist, refetch: refreshKeysList } = useQuery(
-    ["keys"],
-    () => listalluserkeys(service_id, selectedUser),
-    { enabled: isUserOverall }
-  );
+const { data: userslist } = useQuery({
+  queryKey: ["users"],
+  queryFn: () => listallusers(),
+});
+
+const { data: keylist, refetch: refreshKeysList } = useQuery({
+  queryKey: ["keys"],
+  queryFn: () => listalluserkeys(service_id, selectedUser),
+  enabled: isUserOverall,
+});
+
 
   useEffect(() => {
     if (selectedUser === ".*") {

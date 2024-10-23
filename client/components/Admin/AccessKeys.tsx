@@ -53,15 +53,15 @@ const AccessKeys = () => {
     type: string;
     active: boolean;
     masked_key: string;
-    data_tracking: boolean
+    data_tracking: boolean;
   }
 
   interface ModalData {
     name: string;
     active: boolean;
     masked_key: string;
-    data_tracking : boolean;
-    type : string
+    data_tracking: boolean;
+    type: string;
   }
 
   interface Icreatekey {
@@ -69,10 +69,14 @@ const AccessKeys = () => {
     type: string;
     data_tracking: boolean;
     target_user_id: string;
-    regenerate : boolean;
+    regenerate: boolean;
   }
 
-  const { data: userslist } = useQuery(["users"], () => listallusers());
+  const { data: userslist } = useQuery({
+    queryKey: ["users"],
+    queryFn: listallusers,
+  });
+
   const [selectedUser, setSelectedUser] = useState<string>(null);
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
@@ -81,24 +85,24 @@ const AccessKeys = () => {
     type: "INFERENCE",
     data_tracking: true,
     target_user_id: selectedUser,
-    regenerate : false
+    regenerate: false,
   });
 
-  const { data: allkeys, refetch: allkeysrefetch } = useQuery(
-    ["pages", selectedUser],
-    () => listallkeys(selectedUser)
-  );
+  const { data: allkeys, refetch: allkeysrefetch } = useQuery({
+    queryKey: ["pages", selectedUser],
+    queryFn: () => listallkeys(selectedUser),
+  });
 
-  const { data, refetch, isError } = useQuery(
-    ["keys", selectedUser, limit, page],
-    () => viewadmindashboard(selectedUser, limit, page)
-  );
+  const { data, refetch, isError } = useQuery({
+    queryKey: ["keys", selectedUser, limit, page],
+    queryFn: () => viewadmindashboard(selectedUser, limit, page),
+  });
 
-  const totalpages = Math.ceil(allkeys?.length / limit);
+  const totalPages = Math.ceil(allkeys?.length / limit);
 
-  const smallscreen = useMediaQuery("(max-width: 1080px)");
-  const [hide, togglehide] = useState<boolean>(true);
-  const [modalstate, setModalState] = useState<ModalData>({
+  const smallScreen = useMediaQuery("(max-width: 1080px)");
+  const [hide, toggleHide] = useState<boolean>(true);
+  const [modalState, setModalState] = useState<ModalData>({
     name: "",
     masked_key: "",
     type: "",
@@ -108,9 +112,11 @@ const AccessKeys = () => {
   const [searchedKeys, setSearchedKeys] = useState<Key[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [modal, setModal] = useState(<></>);
+  const [modalContent, setModalContent] = useState(<></>);
   const [buttonDisplayText, setButtonDisplayText] = useState<string>("Create");
-  const mutation = useMutation(createkey);
+  const mutation = useMutation({
+    mutationFn: createkey,
+  });
 
   useEffect(() => {
     setPage(1);
@@ -123,18 +129,18 @@ const AccessKeys = () => {
   useEffect(() => {
     refetch();
     allkeysrefetch();
-    togglehide(true);
+    toggleHide(true);
     setSearchedKeys([]);
   }, [limit, page, data]);
 
   useEffect(() => {
     if (data) {
-      togglehide(false);
+      toggleHide(false);
       setSearchedKeys(data.api_keys);
     }
   }, [data]);
 
-  const searchToggler = (event: any) => {
+  const searchToggler = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (data) {
       setSearchedKeys(
         data.api_keys.filter((k) =>
@@ -144,36 +150,22 @@ const AccessKeys = () => {
     }
   };
 
-  const updateName = (newName: string) => {
+  const updateCreateKeyDetails = (field: keyof Icreatekey, value: any) => {
     setCreateKeyDetails((prevState) => ({
       ...prevState,
-      name: newName,
+      [field]: value,
     }));
   };
 
-  const updateType = (newType: string) => {
-    setCreateKeyDetails((prevState) => ({
-      ...prevState,
-      type: newType,
-    }));
-  };
-
-  const updateCollectData = (newCollectData: boolean) => {
-    setCreateKeyDetails((prevState) => ({
-      ...prevState,
-      data_tracking: newCollectData,
-    }));
-  };
-
-  const handlecreate = () => {
-    if (buttonDisplayText == "Create") {
+  const handleCreate = () => {
+    if (buttonDisplayText === "Create") {
       const regex =
-        /[ `!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?~ABCDEFGHIJKLMNOPQRSTUVWXYZ]/; // regular expression that matches special characters and uppercase letters
+        /[ `!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?~ABCDEFGHIJKLMNOPQRSTUVWXYZ]/; // regex for special characters and uppercase letters
       if (!regex.test(createKeyDetails.name)) {
         mutation.mutate(createKeyDetails, {
           onSuccess: (data) => {
             refetch();
-            setModal(
+            setModalContent(
               <>
                 <Box
                   mt="1rem"
@@ -217,8 +209,8 @@ const AccessKeys = () => {
             );
             setButtonDisplayText("Close");
           },
-          onError: (data) => {
-            setModal(
+          onError: () => {
+            setModalContent(
               <Box
                 mt="1rem"
                 width={"100%"}
@@ -235,7 +227,7 @@ const AccessKeys = () => {
           },
         });
       } else {
-        setModal(
+        setModalContent(
           <Box
             mt="1rem"
             width={"100%"}
@@ -245,86 +237,67 @@ const AccessKeys = () => {
             background={"red.50"}
           >
             <Text ml="1rem" mr="1rem" mt="0.5rem" color={"red.600"}>
-              {createKeyDetails.name == ""
+              {createKeyDetails.name === ""
                 ? "Name Cannot Be Empty"
                 : "Invalid Name"}
             </Text>
           </Box>
         );
       }
-      refetch();
-      allkeysrefetch();
     } else {
       onClose();
     }
   };
 
   const renew = () => {
-    setModal(<></>);
+    setModalContent(<></>);
     setButtonDisplayText("Create");
     setCreateKeyDetails({
       name: "",
       type: "INFERENCE",
       data_tracking: true,
       target_user_id: selectedUser,
-      regenerate : false
+      regenerate: false,
     });
   };
 
-  const buttons = [];
+  const pageButtons = Array.from({ length: totalPages }, (_, i) => (
+    <Button key={i + 1} onClick={() => setPage(i + 1)}>
+      {i + 1}
+    </Button>
+  ));
 
-  for (let i = 1; i <= totalpages; i++) {
-    buttons.push(
-      <Button key={i} onClick={() => setPage(i)}>
-        {i}
-      </Button>
-    );
-  }
-
-  const findPerKeyUsage = (key : Key) =>
-  {
-    if(key.services.length > 0)
-    {
-      let count = 0
-      for(let i=0; i< key.services.length; i++)
-      {
-        count += key.services[i].usage;
-      }
-      return count;
-    }
-    else
-      return 0;
-  }
+  const findPerKeyUsage = (key: Key) => {
+    return key.services.length > 0
+      ? key.services.reduce((count, service) => count + service.usage, 0)
+      : 0;
+  };
 
   return (
     <>
       <Box
-        ml={smallscreen ? "1rem" : "2rem"}
-        mr={smallscreen ? "1rem" : "2rem"}
-        mt={smallscreen ? "-2rem" : "0rem"}
+        ml={smallScreen ? "1rem" : "2rem"}
+        mr={smallScreen ? "1rem" : "2rem"}
+        mt={smallScreen ? "-2rem" : "0rem"}
       >
         {/* Page Heading */}
         <HStack mt="3rem">
-          {" "}
           <Text fontSize={"3xl"} fontWeight={"bold"}>
             API&nbsp;Keys
           </Text>
-          {/* <Text fontSize={"3xl"} fontWeight={"bold"}>
-            <MdVpnKey />
-          </Text> */}
         </HStack>
         {/* Searchbar and Create Button */}
         <Stack
           direction={["column", "column", "column", "column", "row"]}
           mt="1rem"
-          mr={smallscreen ? "0rem" : "2rem"}
+          mr={smallScreen ? "0rem" : "2rem"}
         >
           <InputGroup
             background={"light.100"}
-            width={smallscreen ? "90vw" : "30rem"}
+            width={smallScreen ? "90vw" : "30rem"}
           >
             <InputLeftElement
-            color={"gray.600"}
+              color={"gray.600"}
               pointerEvents="none"
               children={<IoSearchOutline />}
             />
@@ -334,283 +307,152 @@ const AccessKeys = () => {
               borderRadius={0}
               onChange={searchToggler}
               placeholder="Search for Keys"
-              _placeholder={{ opacity: 1, color: 'gray.600' }}
+              _placeholder={{ opacity: 1, color: "gray.600" }}
             />
           </InputGroup>
           <Select
             color={"gray.600"}
-            background={"light.100"}
-            width={smallscreen ? "90vw" : "30rem"}
-            borderRadius={0}
-            onChange={(e) => {
-              setSelectedUser(e.target.value);
-              renew();
+            onChange={(event) => {
+              setSelectedUser(event.target.value);
+              updateCreateKeyDetails("target_user_id", event.target.value);
             }}
+            placeholder="Select User"
+            width={smallScreen ? "90vw" : "30rem"}
           >
-            <option defaultValue={null} selected disabled hidden>
-              Select a User
-            </option>
-            {userslist?.map((user: any) => {
-              return <option value={user._id}>{user.name}</option>;
-            })}
+            {userslist &&
+              userslist.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
           </Select>
-          <Spacer />
-          {selectedUser ? (
-            <Button
-              onClick={() => {
-                onOpen();
-                renew();
-              }}
-              width={smallscreen ? "90vw" : "10rem"}
-            >
-              Create a New Key
-            </Button>
-          ) : (
-            <></>
-          )}
-
-          <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>Create a New Key</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody>
-                <FormLabel mt="1rem">Name</FormLabel>
-                <Input
-                  value={createKeyDetails.name}
-                  borderRadius={0}
-                  onChange={(e) => updateName(e.target.value)}
-                />
-                <FormLabel mt="1rem">Type</FormLabel>
-                <Select
-                  borderRadius={0}
-                  value={createKeyDetails.type}
-                  onChange={(e) => updateType(e.target.value)}
-                >
-                  <option>INFERENCE</option>
-                  <option>PLATFORM</option>
-                </Select>
-                <br/>
-                <Checkbox
-                  borderRadius={0}
-                  defaultChecked
-                  onChange={(e) =>
-                    updateCollectData(e.target.checked ? true : false)
-                  }
-                  >
-                    Allow us to track your data?
-                  </Checkbox>
-                <FormLabel mt="1rem">User ID</FormLabel>
-                <Box
-                  width={"100%"}
-                  minH={"3rem"}
-                  border={"1px"}
-                  borderColor={"gray.300"}
-                  background={"blackAlpha.50"}
-                >
-                  <Text ml="1rem" mr="1rem" mt="0.5rem" color={"gray.600"}>
-                    {selectedUser}
-                  </Text>
-                </Box>
-                {modal}
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  mt="2rem"
-                  mr={3}
-                  onClick={() => {
-                    handlecreate();
-                  }}
-                >
-                  {buttonDisplayText}
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+          <Button
+            colorScheme="green"
+            disabled={!selectedUser}
+            onClick={onOpen}
+            width={smallScreen ? "90vw" : "30rem"}
+          >
+            Create Key
+          </Button>
         </Stack>
-        {/* Table */}
-        {selectedUser ? (
-          <>
-            <Box mt="1rem" mb="2rem">
-              {searchedKeys.length !== 0 ? (
-                smallscreen ? (
-                  <Box>
-                    {Object.entries(searchedKeys).map(([id, keysData]) => {
-                      return (
-                        <KeyCard
-                          data_tracking = {keysData.data_tracking}
-                          total_usage = {findPerKeyUsage(keysData)}
-                          refreshCard={refetch}
-                          name={keysData.name}
-                          type={keysData.type}
-                          active={keysData.active}
-                          target_user_id={selectedUser}
-                          k={keysData.masked_key}
-                        />
-                      );
-                    })}
-                  </Box>
-                ) : (
-                  <Box bg="light.100" height={67 * limit}>
-                    <Table variant="unstyled">
-                      <Thead>
-                        <Tr>
-                          <Th>Key Name</Th>
-                          <Th>Type</Th>
-                          <Th>Status</Th>
-                          <Th>Total Usage</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {Object.entries(searchedKeys).map(([id, keysData]) => {
-                          return (
-                            <Tr key={id} fontSize={"sm"}>
-                              <Td>{keysData.name}</Td>
-                              <Td>{keysData.type}</Td>
-                              <Td
-                                fontWeight={"bold"}
-                                color={
-                                  keysData.active ? "green.600" : "red.600"
-                                }
-                              >
-                                {keysData.active ? "active" : "inactive"}
-                              </Td>
-                              <Td>{findPerKeyUsage(keysData)}</Td>
-                              <Td>
-                                <Button
-                                  onClick={() => {
-                                    setModalOpen(true),
-                                      setModalState({
-                                        data_tracking: keysData.data_tracking,
-                                        type : keysData.type,
-                                        name: keysData.name,
-                                        masked_key: keysData.masked_key,
-                                        active: keysData.active,
-                                      });
-                                  }}
-                                  size={"sm"}
-                                  variant={"outline"}
-                                >
-                                  View
-                                </Button>
-                              </Td>
-                            </Tr>
-                          );
-                        })}
-                      </Tbody>
-                    </Table>
-                    <KeyModal
-                      onRefresh={(data) => {
-                        refetch();
-                        setModalState({
-                          type: data.type,
-                          data_tracking: data.data_tracking,
-                          name: data.name,
-                          masked_key: data.masked_key,
-                          active: data.active,
-                        });
-                      }}
-                      isOpen={modalOpen}
-                      onClose={() => {
-                        setModalOpen(false);
-                      }}
-                      name={modalstate.name}
-                      k={modalstate.masked_key}
-                      active={modalstate.active}
-                      user_id={selectedUser}
-                      data_tracking={modalstate.data_tracking}
-                      type={modalstate.type}
-                    />
-                  </Box>
-                )
-              ) : (
-                <HStack
-                  background={"gray.50"}
-                  width={smallscreen ? "100vw" : "auto"}
-                >
-                  <Spacer />
-                  <Box textAlign={"center"} display={hide ? "none" : "block"}>
-                    <Image
-                      height={smallscreen ? 300 : 400}
-                      width={smallscreen ? 300 : 400}
-                      alt="No Results Found"
-                      src="NoResults.svg"
-                    />
-                    <Text fontSize={"lg"} color="gray.400">
-                      {"Uh Oh! No Keys Found"}
-                    </Text>
-                  </Box>
-                  <Spacer />
-                </HStack>
-              )}
-            </Box>
-            {/* Pagination */}
-            {totalpages > 0 && searchedKeys?.length > 0 ? (
-              <Box marginLeft={smallscreen ? "45vw" : "0rem"}>
-                <Center>
-                  <VStack>
-                    <HStack color={"gray.400"}>
-                      <Button
-                        color={page == 1 ? "gray.400" : "gray.600"}
-                        variant={"link"}
-                        onClick={() => {
-                          if (page !== 1) {
-                            setPage(page - 1);
-                          }
-                        }}
-                      >
-                        <AiOutlineLeft fontSize={"x-large"} />
-                      </Button>
-                      <Spacer />
-                      <Spacer />
-                      <Spacer /> <Spacer /> <Spacer /> <Spacer />
-                      <Text fontSize={"large"}>
-                        {page}/{totalpages}
-                      </Text>
-                      <Spacer />
-                      <Spacer /> <Spacer /> <Spacer /> <Spacer /> <Spacer />
-                      <Button
-                        color={page == totalpages ? "gray.400" : "gray.600"}
-                        variant={"link"}
-                        onClick={() => {
-                          if (page !== totalpages) {
-                            setPage(page + 1);
-                          }
-                        }}
-                      >
-                        <AiOutlineRight fontSize={"x-large"} />
-                      </Button>
-                    </HStack>
-                    <br></br>
-                    <br></br>
-                    <HStack>{buttons}</HStack>
-                  </VStack>
-                </Center>
-                <br />
-              </Box>
-            ) : (
-              <></>
-            )}
-          </>
+        {/* Keys Table */}
+        {hide ? (
+          <Center>
+            <Text mt="1rem" fontSize="lg">
+              No Keys Available
+            </Text>
+          </Center>
         ) : (
-          <HStack background={"gray.50"} width={smallscreen ? "100vw" : "auto"}>
-            <Spacer />
-            <Box textAlign={"center"} display={"block"}>
-              <Image
-                height={smallscreen ? 300 : 400}
-                width={smallscreen ? 300 : 400}
-                alt="No Results Found"
-                src="NoResults.svg"
-              />
-              <Text fontSize={"lg"} color="gray.400">
-                {"Select a User to Display Keys"}
-              </Text>
-            </Box>
-            <Spacer />
+          <Table mt="2rem" colorScheme="gray" variant="striped">
+            <Thead>
+              <Tr>
+                <Th>Key Name</Th>
+                <Th>Type</Th>
+                <Th>Usage</Th>
+                <Th>Active</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {searchedKeys.length > 0 &&
+                searchedKeys.map((key: Key) => (
+                  <Tr key={key.id}>
+                    <Td>
+                      <HStack spacing={2}>
+                        <Text fontWeight={"bold"}>{key.name}</Text>
+                        <Button
+                          variant={"link"}
+                          onClick={() => {
+                            setModalState({
+                              ...modalState,
+                              name: key.name,
+                              masked_key: key.masked_key,
+                              type: key.type,
+                              data_tracking: key.data_tracking,
+                              active: key.active,
+                            });
+                            setModalOpen(true);
+                          }}
+                        >
+                          View
+                        </Button>
+                      </HStack>
+                    </Td>
+                    <Td>{key.type}</Td>
+                    <Td>{findPerKeyUsage(key)}</Td>
+                    <Td>
+                      <Checkbox isChecked={key.active} />
+                    </Td>
+                  </Tr>
+                ))}
+            </Tbody>
+          </Table>
+        )}
+        {/* Pagination Buttons */}
+        {totalPages > 0 && (
+          <HStack mt="2rem" spacing={2}>
+            <Button onClick={() => setPage((prev) => Math.max(prev - 1, 1))}>
+              <AiOutlineLeft />
+            </Button>
+            {pageButtons}
+            <Button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            >
+              <AiOutlineRight />
+            </Button>
           </HStack>
         )}
       </Box>
+
+      {/* Modal for Create Key */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Create API Key</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <FormLabel>API Key Name</FormLabel>
+              <Input
+                placeholder="Enter Key Name"
+                onChange={(e) => updateCreateKeyDetails("name", e.target.value)}
+              />
+              <Checkbox
+                isChecked={createKeyDetails.data_tracking}
+                onChange={(e) =>
+                  updateCreateKeyDetails("data_tracking", e.target.checked)
+                }
+              >
+                Enable Data Tracking
+              </Checkbox>
+              <Select
+                placeholder="Select Key Type"
+                onChange={(e) => updateCreateKeyDetails("type", e.target.value)}
+              >
+                <option value="INFERENCE">Inference</option>
+                <option value="TRAINING">Training</option>
+              </Select>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleCreate}>
+              {buttonDisplayText}
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal for Key Details */}
+      {modalOpen && (
+        <KeyModal
+          name={modalState.name}
+          masked_key={modalState.masked_key}
+          data_tracking={modalState.data_tracking}
+          type={modalState.type}
+          active={modalState.active}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </>
   );
 };

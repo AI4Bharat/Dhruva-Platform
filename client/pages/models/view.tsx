@@ -52,10 +52,11 @@ interface Benchmark {
 
 export default function ViewModel({ ...props }) {
   const router = useRouter();
-  const { data: modelInfo, isLoading } = useQuery(
-    ["model", router.query["modelId"]],
-    () => getModel(router.query["modelId"])
-  );
+  const { data: modelInfo, isLoading } = useQuery({
+  queryKey: ["model", router.query["modelId"]],
+  queryFn: () => getModel(router.query["modelId"]),
+});
+
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
   const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
@@ -273,7 +274,7 @@ export default function ViewModel({ ...props }) {
           >
             <GridItem p="1rem" bg="white">
               <Stack spacing={10} direction={"row"}>
-              <Button variant={"ghost"} fontSize={"2xl"} onClick={()=>router.push("/services")}><HiArrowLeft/></Button>
+              <Button variant={"ghost"} fontSize={"2xl"} onClick={()=>router.push("/Dhruva-Platform/client/pages/services")}><HiArrowLeft/></Button>
                 <Heading>{modelInfo["name"]}</Heading>
               </Stack>
               <Tabs isFitted>

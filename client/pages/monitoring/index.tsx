@@ -23,37 +23,42 @@ const monitoring = () => {
 
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
-  const { data: userslist } = useQuery(["users"], () => listallusers());
-  const { data: serviceslist } = useQuery(["services"], () => listServices(), {
+  const { data: userslist } = useQuery({
+    queryKey: ["users"],
+    queryFn: listallusers,
+  });
+
+ const { data: serviceslist } = useQuery({
+   queryKey: ["services"],
+   queryFn: listServices,
+   onSuccess: (data) => {
+     setFilteredServices(data);
+   },
+ });
+
+
+  const { data: selectedService, refetch: servicerefresh } = useQuery({
+    queryKey: ["keys"],
+    queryFn: () => getService(inferenceServiceId),
+  });
+
+
+  const { data: keyslist, refetch: keyslistrefresh } = useQuery({
+    queryKey: ["keys", selectedUser],
+    queryFn: () => listalluserkeys(inferenceServiceId, selectedUser),
     onSuccess: (data) => {
-      setFilteredServices(data);
+      data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
     },
   });
 
-  const { data: selectedService, refetch: servicerefresh } = useQuery(
-    ["keys"],
-    () => getService(inferenceServiceId)
-  );
+  const { data: keyslist2, refetch: keyslistrefresh2 } = useQuery({
+    queryKey: ["keys", selectedUser],
+    queryFn: () => listallkeys(selectedUser),
+    onSuccess: (data) => {
+      data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
+    },
+  });
 
-  const { data: keyslist, refetch: keyslistrefresh } = useQuery(
-    ["keys", selectedUser],
-    () => listalluserkeys(inferenceServiceId, selectedUser),
-    {
-      onSuccess: (data) => {
-        data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
-      },
-    }
-  );
-
-  const { data: keyslist2, refetch: keyslistrefresh2 } = useQuery(
-    ["keys", selectedUser],
-    () => listallkeys(selectedUser),
-    {
-      onSuccess: (data) => {
-        data["api_keys"] && setAPIKeyName(data["api_keys"][0].name);
-      },
-    }
-  );
 
   useEffect(() => {
     keyslistrefresh();

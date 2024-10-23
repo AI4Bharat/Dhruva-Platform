@@ -9,14 +9,16 @@ import { getUser } from "../../api/authAPI";
 const Navbar = () => {
   const [title, setTitle] = useState<String>("Dashboard");
   const router = useRouter();
-  const {data:user} = useQuery(['User'], ()=>getUser(localStorage.getItem('email')))
-  const Logout = () =>
-  {
+  const { data: user } = useQuery({
+    queryKey: ["User"],
+    queryFn: () => getUser(localStorage.getItem("email")),
+  });
+  const Logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("email");
     router.push("/");
-  }
+  };
   useEffect(() => {
     let url = router.pathname.split("/");
     switch (url[1]) {
@@ -56,25 +58,25 @@ const Navbar = () => {
         <Text fontWeight={"bold"} fontSize="3xl" ml="2rem" pt="2rem">
           {title}
         </Text>
-        <Spacer/>
+        <Spacer />
         <Box pt="2rem" pr="25rem">
-        <Menu>
-        <MenuButton
-          px={4}
-          py={2}
-          transition='all 0.2s'
-        >
-          <HStack>
-          <BiUser/>
-          <Text>{user?.name}</Text>
-          </HStack>
-        </MenuButton>
-        <MenuList>
-          <MenuItem onClick={()=>router.push('/profile')} value="profile">My Profile</MenuItem>
-          <MenuItem onClick={Logout} value="logout">Logout</MenuItem>
-        </MenuList>
-      </Menu>
-      </Box>
+          <Menu>
+            <MenuButton px={4} py={2} transition="all 0.2s">
+              <HStack>
+                <BiUser />
+                <Text>{user?.name}</Text>
+              </HStack>
+            </MenuButton>
+            <MenuList>
+              <MenuItem onClick={() => router.push("/profile")} value="profile">
+                My Profile
+              </MenuItem>
+              <MenuItem onClick={Logout} value="logout">
+                Logout
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </Box>
       </HStack>
     </Box>
   );

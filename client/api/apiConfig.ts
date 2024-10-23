@@ -1,7 +1,9 @@
 import axios from "axios";
-
+// import "dotenv/config";
+// require('dotenv').config();
 const dhruvaRootURL: string = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
+console.log(dhruvaRootURL);
 const dhruvaAPI: { [key: string]: string } = {
   listServices: `${dhruvaRootURL}/services/details/list_services`,
   viewService: `${dhruvaRootURL}/services/details/view_service`,

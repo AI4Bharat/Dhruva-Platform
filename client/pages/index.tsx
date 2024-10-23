@@ -27,7 +27,7 @@ export default function Login() {
   useEffect(() => {
     if (
       localStorage.getItem("refresh_token") &&
-      localStorage.getItem("access_token")
+      localStorage.getItem("access_token") 
     ) {
       if (localStorage.getItem("currentpage")) 
       {

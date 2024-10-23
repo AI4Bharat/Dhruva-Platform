@@ -38,7 +38,11 @@ import { ULCATaskType } from "../components/Feedback/FeedbackTypes";
 import { FeedbackModal } from "../components/Feedback/Feedback";
 
 function PipelineInterface() {
-  const { data: services } = useQuery(["services"], listServices);
+    const { data: services } = useQuery({
+      queryKey: ["services"],
+      queryFn: listServices,
+    });
+
   const [asrServices, setasrServices] = useState([]);
   const [ttsServices, setttsServices] = useState([]);
   const [nmtServices, setnmtServices] = useState([]);

@@ -37,6 +37,7 @@ import NMTTry from "../../components/TryOut/NMT";
 // import STSTry from "../../components/TryOut/STS";
 import TTSTry from "../../components/TryOut/TTS";
 import XLITTry from "../../components/TryOut/XLIT";
+import SileroVADComponent from "../../components/TryOut/VAD";
 import useMediaQuery from "../../hooks/useMediaQuery";
 
 export default function ViewService() {
@@ -44,11 +45,12 @@ export default function ViewService() {
   const smallscreen = useMediaQuery("(max-width: 1080px)");
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { data: serviceInfo, isLoading } = useQuery(
-    ["service", router.query["serviceId"]],
-    () => getService(router.query["serviceId"] as string),
-    { enabled: router.isReady }
-  );
+
+  const { data: serviceInfo, isLoading } = useQuery({
+    queryKey: ["service", router.query["serviceId"]],
+    queryFn: () => getService(router.query["serviceId"] as string),
+    enabled: router.isReady,
+  });
 
   const [languages, setLanguages] = useState<LanguageConfig[]>();
   const [tabIndex, setTabIndex] = useState<number>(0);
@@ -75,6 +77,9 @@ export default function ViewService() {
           return <NERTry languages={languages} serviceId={serviceId} />;
         case "transliteration":
           return <XLITTry languages={languages} serviceId={serviceId} />;
+        case "vad": // Add this case for VAD
+          return <SileroVADComponent serviceId={serviceId} />;
+        
       }
     }
   };

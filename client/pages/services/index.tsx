@@ -20,7 +20,11 @@ import ServicesList from "../../components/Mobile/Services/ServicesList";
 import NotFound from "../../components/Utils/NotFound";
 
 export default function Services() {
-  const { data: services } = useQuery(["services"], listServices);
+  const { data: services } = useQuery({
+    queryKey: ["services"],
+    queryFn: listServices,
+  });
+
   const [sourceLang, setSourceLanguage] = useState<string>("");
   const [targetLang, setTargetLanguage] = useState<string>("");
   const [task, setTask] = useState<string>("");
