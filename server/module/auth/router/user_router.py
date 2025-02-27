@@ -1,12 +1,14 @@
 import traceback
 from typing import List
 
+from auth.api_key_type_authorization_provider import ApiKeyTypeAuthorizationProvider
 from auth.auth_provider import AuthProvider
 from auth.request_session_provider import InjectRequestSession, RequestSession
 from exception import BaseError, ClientError
 from exception.client_error import ClientErrorResponse
 from fastapi import APIRouter, Depends, status
 from pydantic import EmailStr
+from schema.auth.common import ApiKeyType
 from schema.auth.request import (
     CreateUserRequest,
     GetUserQuery,
@@ -26,6 +28,7 @@ router = APIRouter(
     prefix="/user",
     dependencies=[
         Depends(AuthProvider),
+        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.PLATFORM)),
     ],
     responses={"401": {"model": ClientErrorResponse}},
 )

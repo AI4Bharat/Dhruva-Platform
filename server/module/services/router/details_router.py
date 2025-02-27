@@ -9,10 +9,13 @@ from exception.client_error import ClientError, ClientErrorResponse
 from fastapi import APIRouter, Depends, status
 from schema.auth.common import ApiKeyType
 from schema.services.request import ModelViewRequest, ServiceViewRequest
-from schema.services.response import ServiceListResponse, ServiceViewResponse
+from schema.services.response import (
+    ModelViewResponse,
+    ServiceListResponse,
+    ServiceViewResponse,
+)
 
 from ..error import Errors
-from ..model import Model
 from ..repository import ModelRepository
 from ..service import DetailsService
 
@@ -44,24 +47,24 @@ async def _view_service_details(
     return response
 
 
-@router.get("/list_models", response_model=List[Model])
+@router.get("/list_models", response_model=List[ModelViewResponse])
 async def _list_models(model_repository: ModelRepository = Depends(ModelRepository)):
     try:
         models_list = model_repository.find_all()
-    except:
+    except Exception:
         raise BaseError(Errors.DHRUVA106.value, traceback.format_exc())
 
     return models_list
 
 
-@router.post("/view_model", response_model=Model)
+@router.post("/view_model", response_model=ModelViewResponse)
 async def _view_model_details(
     request: ModelViewRequest,
     model_repository: ModelRepository = Depends(ModelRepository),
 ):
     try:
         response = model_repository.find_by_id(request.modelId)
-    except:
+    except Exception:
         raise BaseError(Errors.DHRUVA105.value, traceback.format_exc())
 
     if not response:

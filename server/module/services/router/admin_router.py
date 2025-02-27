@@ -21,7 +21,7 @@ router = APIRouter(
     dependencies=[
         Depends(AuthProvider),
         Depends(RoleAuthorizationProvider([RoleType.ADMIN])),
-        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.INFERENCE)),
+        Depends(ApiKeyTypeAuthorizationProvider(ApiKeyType.PLATFORM)),
     ],
     responses={
         "401": {"model": ClientErrorResponse},
