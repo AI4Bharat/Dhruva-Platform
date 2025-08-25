@@ -908,22 +908,18 @@ class InferenceService:
         match task_type:
             case _ULCATaskType.ASR:
                 if config["language"]["sourceLanguage"] == "en":
-                    serviceId = "ai4bharat/whisper-medium-en--gpu--t4"
-                elif config["language"]["sourceLanguage"] == "hi":
-                    serviceId = "ai4bharat/conformer-hi-gpu--t4"
-                elif config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
-                    serviceId = "ai4bharat/conformer-multilingual-dravidian-gpu--t4"
+                    serviceId = "ai4bharat/whisper--gpu-t4"
                 else:
-                    serviceId = "ai4bharat/conformer-multilingual-indo_aryan-gpu--t4"
+                    serviceId = "ai4bharat/conformer-multilingual-all--gpu-t4"
             case _ULCATaskType.TRANSLATION:
                 serviceId = "ai4bharat/indictrans-v2-all-gpu--t4"
             case _ULCATaskType.TTS:
                 if config["language"]["sourceLanguage"] in {"kn", "ml", "ta", "te"}:
-                    serviceId = "ai4bharat/indic-tts-coqui-dravidian-gpu--t4"
+                    serviceId = "ai4bharat/indic-tts-dravidian--gpu-t4"
                 elif config["language"]["sourceLanguage"] in {"en", "brx", "mni"}:
-                    serviceId = "ai4bharat/indic-tts-coqui-misc-gpu--t4"
+                    serviceId = "ai4bharat/indic-tts-misc--gpu-t4"
                 else:
-                    serviceId = "ai4bharat/indic-tts-coqui-indo_aryan-gpu--t4"
+                    serviceId = "ai4bharat/indic-tts-indo-aryan--gpu-t4"
             case _:
                 raise BaseError(Errors.DHRUVA115.value)
 
